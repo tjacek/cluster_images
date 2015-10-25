@@ -1,4 +1,6 @@
 import utils
+import scipy.misc as image
+from instances import Instance
 
 def read_images(path):
     action_files=utils.get_dirs(path)
@@ -11,11 +13,14 @@ def read_images(path):
 def read_action(action_path):
     all_files=utils.get_files(action_path)
     all_files=utils.append_path(action_path+"/",all_files)
-    frames=utils.read_images(all_files)
-    frames=[ frame.flatten() for frame in frames]
-    return frames
+    instances=[]
+    for full_path in all_files:
+        img=image.imread(full_path)
+        img=img.flatten()
+        instances.append(Instance(full_path,img))
+    return instances
 
 if __name__ == "__main__":
     path="images/"
-    print(len(read_images(path)))
+    print(read_images(path)[0])
 
