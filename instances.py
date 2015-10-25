@@ -7,9 +7,12 @@ class Instance(object):
         self.data=data
         self.reduced_data=None
         self.cls=None
-
+     
     def __str__(self):
         return str(self.name)
+
+    def file_id(self):
+        return self.name.split("/")[-1]
 
 def get_data(instances):
     data=[inst.data for inst in instances] 
