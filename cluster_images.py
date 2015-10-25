@@ -11,7 +11,7 @@ def cluster_images(in_path,out_path,n_clusters=4):
 def create_images(in_path,n_clusters):
     images=read_frames.read_images(in_path)
     data=inst.get_data(images)
-    reduced_data=reduce_dim.spectral_reduction(data)
+    reduced_data=reduce_dim.hessian_reduction(data)
     inst.set_reduced(images,reduced_data)
     img_cls=clustering.clustering_kmeans(reduced_data,n_clusters)
     inst.set_cluster(images,img_cls)
@@ -23,7 +23,6 @@ def split_clusters(out_path,images,n_clusters):
     for c_dir in cls_dirs:
         utils.make_dir(c_dir)
     for img in images:
-        print(type(img))
         orginal_img=image.imread(img.name)
         txt_id=img.file_id()
         img_cls=cls_dirs[img.cls]
