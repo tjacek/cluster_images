@@ -8,7 +8,7 @@ def read_images(path):
     images=[]
     for action_path in action_files:
         images+=read_action(action_path)
-    return images
+    return instances.Dataset(images)
 
 def read_action(action_path):
     all_files=utils.get_files(action_path)
@@ -19,8 +19,3 @@ def read_action(action_path):
         img=img.flatten()
         instances.append(Instance(full_path,img))
     return instances
-
-if __name__ == "__main__":
-    path="images/"
-    print(read_images(path)[0])
-
