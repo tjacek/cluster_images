@@ -24,51 +24,46 @@ def make_ae_model(n_hidden,n_visible,numpy_rng):
     bvis = deep.make_var(init_bvis,"bvis")
     return AutoencoderModel(W,bhid,bvis)
 
-def make_ml_functions(da,learning_rate):
-    cost, updates = da.get_cost_updates(
-        corruption_level=0.0,
-        learning_rate=learning_rate
-    )
-    train_da = theano.function([da.x],cost,updates=updates)
-    return train_da
+def make_ml_functions(da,learning_rate=0.1,corruption_level=0.0,
+                      ):
+    tilde_x = da.get_corrupted_input(da.x, corruption_level)
+    y = get_hidden_values(da.model,tilde_x)
+    z = get_reconstructed_input(da.model,y)
+    cost = deep.get_crossentropy_loss(da.x,y,z)
+    params= da.model.get_params()
+    cost,updates=deep.comput_updates(cost, params, learning_rate)
+    train = theano.function([da.x],cost,updates=updates)
+    test = theano.function([da.x],y)
+    get_image = theano.function([da.x],z)
+    return train,test,get_image
 
 class AutoEncoder(object):
     def __init__(self,x,n_visible=3200,n_hidden=800):
         self.init_rng()
         self.model=make_ae_model(n_hidden,n_visible,self.numpy_rng)
         self.x = x
+        self.train,self.test,self.get_image=make_ml_functions(self)
 
     def init_rng(self,theano_rng=None):
         self.numpy_rng,self.theano_rng = deep.make_rng(theano_rng)
 
-    def get_corrupted_input(self, input, corruption_level):
-        return self.theano_rng.binomial(size=input.shape, n=1,
+    def get_corrupted_input(self, x, corruption_level):
+        return self.theano_rng.binomial(size=x.shape, n=1,
                                         p=1 - corruption_level,
-                                        dtype=theano.config.floatX) * input
+                                        dtype=theano.config.floatX) * x
+def get_hidden_values(model, x):
+    return deep.get_sigmoid(x,model.W,model.b)
 
-    def get_hidden_values(self, x):
-        return deep.get_sigmoid(x,self.model.W,self.model.b)
-
-    def get_reconstructed_input(self, hidden):
-        return deep.get_sigmoid(hidden,self.model.W_prime,self.model.b_prime)
-
-    def get_cost_updates(self, corruption_level, learning_rate):
-        tilde_x = self.get_corrupted_input(self.x, corruption_level)
-        y = self.get_hidden_values(tilde_x)
-        z = self.get_reconstructed_input(y)
-        cost = deep.get_crossentropy_loss(self.x,y,z)
-        params= self.model.get_params()
-        return deep.comput_updates(cost, params, learning_rate)
-
+def get_reconstructed_input(model,hidden):
+    return deep.get_sigmoid(hidden,model.W_prime,model.b_prime)
 
 def learning_autoencoder(dataset,training_epochs=100,
             learning_rate=0.1,batch_size=5):
-    #n_train_batches=len(dataset)
 
     x = T.matrix('x')  
     da = AutoEncoder(x)
 
-    train_da=make_ml_functions(da,learning_rate)
+    #train_da=make_ml_functions(da,learning_rate)
 
     timer = utils.Timer()
     n_batches=deep.get_number_of_batches(dataset,batch_size)
@@ -79,7 +74,7 @@ def learning_autoencoder(dataset,training_epochs=100,
         for batch_index in xrange(n_batches):
             #if(( batch_index % 100 ==0)):
             print(batch_index)
-            c.append(train_da(data[batch_index]))
+            c.append(da.train(data[batch_index]))
 
         print 'Training epoch %d, cost ' % epoch, np.mean(c)
 
