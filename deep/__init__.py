@@ -3,6 +3,21 @@ import theano
 import theano.tensor as T
 from theano.tensor.shared_randomstreams import RandomStreams
 
+def get_number_of_batches(dataset,batch_size):
+    n_batches=len(dataset)/batch_size
+    if((len(dataset) % batch_size) != 0):
+        n_batches+=1 
+    return n_batches
+
+def get_batches(dataset,n_batches,batch_size):
+    data=dataset.get_data()
+    indexes= range(n_batches)
+    batchs=[get_batch(i,batch_size,data) for i in indexes]
+    return batchs
+
+def get_batch(i,batch_size,data):
+    return data[i:(i+1)*batch_size]
+
 def init_zeros(size):
     return np.zeros(size,dtype=theano.config.floatX)
 

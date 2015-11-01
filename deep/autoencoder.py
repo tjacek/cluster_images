@@ -24,9 +24,16 @@ def make_ae_model(n_hidden,n_visible,numpy_rng):
     bvis = deep.make_var(init_bvis,"bvis")
     return AutoencoderModel(W,bhid,bvis)
 
+def make_ml_functions(da,learning_rate):
+    cost, updates = da.get_cost_updates(
+        corruption_level=0.0,
+        learning_rate=learning_rate
+    )
+    train_da = theano.function([da.x],cost,updates=updates)
+    return train_da
+
 class AutoEncoder(object):
-    def __init__(
-        self,x,n_visible=3200,n_hidden=800):
+    def __init__(self,x,n_visible=3200,n_hidden=800):
         self.init_rng()
         self.model=make_ae_model(n_hidden,n_visible,self.numpy_rng)
         self.x = x
@@ -53,31 +60,25 @@ class AutoEncoder(object):
         params= self.model.get_params()
         return deep.comput_updates(cost, params, learning_rate)
 
-def learning_autoencoder(dataset,training_epochs=15,
-            learning_rate=0.1,batch_size=25):
-    n_train_batches=len(dataset)
-    x = T.matrix('x')  
 
+def learning_autoencoder(dataset,training_epochs=100,
+            learning_rate=0.1,batch_size=5):
+    #n_train_batches=len(dataset)
+
+    x = T.matrix('x')  
     da = AutoEncoder(x)
 
-    cost, updates = da.get_cost_updates(
-        corruption_level=0.9,
-        learning_rate=learning_rate
-    )
-
-    train_da = theano.function(
-        [x],
-        cost,
-        updates=updates
-    )
+    train_da=make_ml_functions(da,learning_rate)
 
     timer = utils.Timer()
-    data=dataset.get_batches(n_train_batches,1)
+    n_batches=deep.get_number_of_batches(dataset,batch_size)
+    data=deep.get_batches(dataset,n_batches,batch_size)
+
     for epoch in xrange(training_epochs):
         c = []
-        for batch_index in xrange(n_train_batches):
-            if(( batch_index % 100 ==0)):
-                print(batch_index)
+        for batch_index in xrange(n_batches):
+            #if(( batch_index % 100 ==0)):
+            print(batch_index)
             c.append(train_da(data[batch_index]))
 
         print 'Training epoch %d, cost ' % epoch, np.mean(c)
