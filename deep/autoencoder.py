@@ -1,22 +1,9 @@
 import deep
-import timeit
 import numpy as np
 import theano
 import theano.tensor as T
-from theano.tensor.shared_randomstreams import RandomStreams
 import imp
 utils =imp.load_source("utils","/home/user/df/deep_frames/utils.py")
-
-class AutoEncoderReduction(object):
-    def __init__(self,path):
-        self.autoencoder=utils.read_object(path)
-
-    def transform(self,images):
-        x=self.autoencoder.x
-        eq=self.autoencoder.get_hidden_values(x)
-        dim_reduction = theano.function([x],eq)
-        projected=map(dim_reduction,images)
-        return projected
 
 class AutoEncoder(object):
     def __init__(
@@ -31,30 +18,22 @@ class AutoEncoder(object):
         self.params = [self.W, self.b, self.b_prime]
 
     def init_rng(self,theano_rng):
-        self.numpy_rng = np.random.RandomState(123)
-        if not theano_rng:
-            theano_rng=RandomStreams(self.numpy_rng.randint(2 ** 30))
-        self.theano_rng = theano_rng
+        self.numpy_rng,self.theano_rng = deep.make_rng(theano_rng)
 
     def init_hidden_layer(self,W,bhid):
         if not W:
             initial_W =deep.init_random(self.n_hidden,self.n_visible,self.numpy_rng)
-            W = theano.shared(value=initial_W, name='W', borrow=True)
+            W = deep.make_var(initial_W,'W')
         self.W=W
         if not bhid:
-            bhid = theano.shared(
-                value=deep.init_zeros(self.n_hidden),
-                name='b',
-                borrow=True
-            )
+            init_b=deep.init_zeros(self.n_hidden)
+            bhid = deep.make_var(init_b,'b')
 	self.b = bhid
 
     def init_visable_layer(self,bvis):
 	if not bvis:
-            bvis = theano.shared(
-                value=deep.init_zeros(self.n_visible),
-                borrow=True
-            )
+            init_bvis=deep.init_zeros(self.n_visible)
+            bvis = deep.make_var(init_bvis,"bvis")
         self.b_prime = bvis
         self.W_prime = self.W.T
 
@@ -91,7 +70,6 @@ class AutoEncoder(object):
 def learning_autoencoder(dataset,training_epochs=15,
             learning_rate=0.1,batch_size=25):
     n_train_batches=len(dataset)
-    index = T.lscalar()   
     x = T.matrix('x')  
 
     da = AutoEncoder(input=x)
@@ -107,7 +85,7 @@ def learning_autoencoder(dataset,training_epochs=15,
         updates=updates
     )
 
-    start_time = timeit.default_timer()
+    timer = utils.Timer()
     data=dataset.get_batches(n_train_batches,1)
     for epoch in xrange(training_epochs):
         c = []
@@ -118,7 +96,6 @@ def learning_autoencoder(dataset,training_epochs=15,
 
         print 'Training epoch %d, cost ' % epoch, np.mean(c)
 
-    end_time = timeit.default_timer()
-    training_time = (end_time - start_time)
-    print("Training time %d ",training_time)
+    timer.stop()
+    timer.show()
     return da
