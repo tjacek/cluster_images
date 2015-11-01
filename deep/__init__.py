@@ -1,5 +1,6 @@
 import numpy as np
 import theano
+import theano.tensor as T
 from theano.tensor.shared_randomstreams import RandomStreams
 
 def init_zeros(size):
@@ -22,3 +23,17 @@ def make_rng(theano_rng=None):
         theano_rng=RandomStreams(numpy_rng.randint(2 ** 30))
     return numpy_rng,theano_rng
 
+def get_sigmoid(x,w,b):
+    return T.nnet.sigmoid(T.dot(x,w) + b)
+
+def get_crossentropy_loss(x,y,z):
+    L = - T.sum(x * T.log(z) + (1 - x) * T.log(1 - z), axis=1)
+    return T.mean(L)
+
+def comput_updates(loss, params, learning_rate=0.05):
+    gparams = [T.grad(loss, param) for param in params]
+    updates = [
+        (param, param - learning_rate * gparam)
+        for param, gparam in zip(params, gparams)
+    ]
+    return (loss,updates)

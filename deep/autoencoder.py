@@ -26,55 +26,42 @@ def make_ae_model(n_hidden,n_visible,numpy_rng):
 
 class AutoEncoder(object):
     def __init__(
-        self,theano_rng=None,input=None,n_visible=3200,
-        n_hidden=800):
-        self.init_rng(theano_rng)
+        self,x,n_visible=3200,n_hidden=800):
+        self.init_rng()
         self.model=make_ae_model(n_hidden,n_visible,self.numpy_rng)
-        self.init_input(input)
+        self.x = x
 
-    def init_rng(self,theano_rng):
+    def init_rng(self,theano_rng=None):
         self.numpy_rng,self.theano_rng = deep.make_rng(theano_rng)
-
-    def init_input(self,input):
-        if input is None:
-            self.x = T.dmatrix(name='input')
-        else:
-            self.x = input
 
     def get_corrupted_input(self, input, corruption_level):
         return self.theano_rng.binomial(size=input.shape, n=1,
                                         p=1 - corruption_level,
                                         dtype=theano.config.floatX) * input
 
-    def get_hidden_values(self, input):
-        return T.nnet.sigmoid(T.dot(input, self.model.W) + self.model.b)
+    def get_hidden_values(self, x):
+        return deep.get_sigmoid(x,self.model.W,self.model.b)
 
     def get_reconstructed_input(self, hidden):
-        return T.nnet.sigmoid(T.dot(hidden, self.model.W_prime) + self.model.b_prime)
+        return deep.get_sigmoid(hidden,self.model.W_prime,self.model.b_prime)
 
     def get_cost_updates(self, corruption_level, learning_rate):
         tilde_x = self.get_corrupted_input(self.x, corruption_level)
         y = self.get_hidden_values(tilde_x)
         z = self.get_reconstructed_input(y)
-        L = - T.sum(self.x * T.log(z) + (1 - self.x) * T.log(1 - z), axis=1)
-        cost = T.mean(L)
+        cost = deep.get_crossentropy_loss(self.x,y,z)
         params= self.model.get_params()
-        gparams = T.grad(cost,params)
-        updates = [
-            (param, param - learning_rate * gparam)
-            for param, gparam in zip(params, gparams)
-        ]
-        return (cost, updates)
+        return deep.comput_updates(cost, params, learning_rate)
 
 def learning_autoencoder(dataset,training_epochs=15,
             learning_rate=0.1,batch_size=25):
     n_train_batches=len(dataset)
     x = T.matrix('x')  
 
-    da = AutoEncoder(input=x)
+    da = AutoEncoder(x)
 
     cost, updates = da.get_cost_updates(
-        corruption_level=0.,
+        corruption_level=0.9,
         learning_rate=learning_rate
     )
 
