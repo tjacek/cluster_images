@@ -38,15 +38,7 @@ class AutoEncoder(object):
 
     def init_hidden_layer(self,W,bhid):
         if not W:
-            n_units=self.n_hidden + self.n_visible
-            initial_W = np.asarray(
-                self.numpy_rng.uniform(
-                    low=-4 * np.sqrt(6. / n_units),
-                    high=4 * np.sqrt(6. / n_units),
-                    size=(self.n_visible, self.n_hidden)
-                ),
-                dtype=theano.config.floatX
-            )
+            initial_W =deep.init_random(self.n_hidden,self.n_visible,self.numpy_rng)
             W = theano.shared(value=initial_W, name='W', borrow=True)
         self.W=W
         if not bhid:
