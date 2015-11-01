@@ -1,3 +1,4 @@
+import deep
 import timeit
 import numpy as np
 import theano
@@ -50,10 +51,7 @@ class AutoEncoder(object):
         self.W=W
         if not bhid:
             bhid = theano.shared(
-                value=np.zeros(
-                    self.n_hidden,
-                    dtype=theano.config.floatX
-                ),
+                value=deep.init_zeros(self.n_hidden),
                 name='b',
                 borrow=True
             )
@@ -62,10 +60,7 @@ class AutoEncoder(object):
     def init_visable_layer(self,bvis):
 	if not bvis:
             bvis = theano.shared(
-                value=np.zeros(
-                    self.n_visible,
-                    dtype=theano.config.floatX
-                ),
+                value=deep.init_zeros(self.n_visible),
                 borrow=True
             )
         self.b_prime = bvis
