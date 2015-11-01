@@ -5,37 +5,35 @@ import theano.tensor as T
 import imp
 utils =imp.load_source("utils","/home/user/df/deep_frames/utils.py")
 
+class AutoencoderModel(object):
+    def __init__(self,W,b,b_prime):
+        self.W=W
+        self.b=b
+        self.b_prime=b_prime
+        self.W_prime = W.T
+
+    def get_params(self):
+        return [self.W, self.b, self.b_prime]
+
+def make_ae_model(n_hidden,n_visible,numpy_rng):
+    initial_W =deep.init_random(n_hidden,n_visible,numpy_rng)
+    W = deep.make_var(initial_W,'W')
+    init_b=deep.init_zeros(n_hidden)
+    bhid = deep.make_var(init_b,'b')
+    init_bvis=deep.init_zeros(n_visible)
+    bvis = deep.make_var(init_bvis,"bvis")
+    return AutoencoderModel(W,bhid,bvis)
+
 class AutoEncoder(object):
     def __init__(
         self,theano_rng=None,input=None,n_visible=3200,
-        n_hidden=800,W=None,bhid=None,bvis=None):
-        self.n_visible = n_visible
-        self.n_hidden = n_hidden
+        n_hidden=800):
         self.init_rng(theano_rng)
-        self.init_hidden_layer(W,bhid)
-        self.init_visable_layer(bvis)
+        self.model=make_ae_model(n_hidden,n_visible,self.numpy_rng)
         self.init_input(input)
-        self.params = [self.W, self.b, self.b_prime]
 
     def init_rng(self,theano_rng):
         self.numpy_rng,self.theano_rng = deep.make_rng(theano_rng)
-
-    def init_hidden_layer(self,W,bhid):
-        if not W:
-            initial_W =deep.init_random(self.n_hidden,self.n_visible,self.numpy_rng)
-            W = deep.make_var(initial_W,'W')
-        self.W=W
-        if not bhid:
-            init_b=deep.init_zeros(self.n_hidden)
-            bhid = deep.make_var(init_b,'b')
-	self.b = bhid
-
-    def init_visable_layer(self,bvis):
-	if not bvis:
-            init_bvis=deep.init_zeros(self.n_visible)
-            bvis = deep.make_var(init_bvis,"bvis")
-        self.b_prime = bvis
-        self.W_prime = self.W.T
 
     def init_input(self,input):
         if input is None:
@@ -49,10 +47,10 @@ class AutoEncoder(object):
                                         dtype=theano.config.floatX) * input
 
     def get_hidden_values(self, input):
-        return T.nnet.sigmoid(T.dot(input, self.W) + self.b)
+        return T.nnet.sigmoid(T.dot(input, self.model.W) + self.model.b)
 
     def get_reconstructed_input(self, hidden):
-        return T.nnet.sigmoid(T.dot(hidden, self.W_prime) + self.b_prime)
+        return T.nnet.sigmoid(T.dot(hidden, self.model.W_prime) + self.model.b_prime)
 
     def get_cost_updates(self, corruption_level, learning_rate):
         tilde_x = self.get_corrupted_input(self.x, corruption_level)
@@ -60,10 +58,11 @@ class AutoEncoder(object):
         z = self.get_reconstructed_input(y)
         L = - T.sum(self.x * T.log(z) + (1 - self.x) * T.log(1 - z), axis=1)
         cost = T.mean(L)
-        gparams = T.grad(cost, self.params)
+        params= self.model.get_params()
+        gparams = T.grad(cost,params)
         updates = [
             (param, param - learning_rate * gparam)
-            for param, gparam in zip(self.params, gparams)
+            for param, gparam in zip(params, gparams)
         ]
         return (cost, updates)
 
