@@ -24,6 +24,9 @@ class Dataset(object):
         for i,cls in clusters:
             self.instances[i].cls=cls
 
+    def get_name(self,i):
+        return self.instances[i].file_id()
+
     def __len__(self):
         return len(self.instances)
 

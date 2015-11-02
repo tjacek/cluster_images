@@ -1,6 +1,7 @@
 import utils
 import scipy.misc as image
 from instances import Instance
+from sklearn.preprocessing import normalize
 
 def read_images(path):
     action_files=utils.get_dirs(path)
@@ -16,9 +17,8 @@ def read_action(action_path):
     instances=[]
     for full_path in all_files:
         img=image.imread(full_path)
-        print(img.shape)
         img=img.flatten()
         img=img.astype(float)
-        img/=sum(img)
+        img/=max(img)
         instances.append(Instance(full_path,img))
     return instances
