@@ -18,6 +18,9 @@ def get_batches(dataset,n_batches,batch_size):
 def get_batch(i,batch_size,data):
     return data[i:(i+1)*batch_size]
 
+def standarized_images(dataset):
+    return get_batches(dataset,len(dataset),1)
+
 def init_zeros(size):
     return np.zeros(size,dtype=theano.config.floatX)
 

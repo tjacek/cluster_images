@@ -2,6 +2,7 @@ import deep
 import numpy as np
 import theano
 import theano.tensor as T
+import scipy.misc
 import imp
 utils =imp.load_source("utils","/home/user/df/deep_frames/utils.py")
 
@@ -24,8 +25,7 @@ def make_ae_model(n_hidden,n_visible,numpy_rng):
     bvis = deep.make_var(init_bvis,"bvis")
     return AutoencoderModel(W,bhid,bvis)
 
-def make_ml_functions(da,learning_rate=0.1,corruption_level=0.0,
-                      ):
+def make_ml_functions(da,learning_rate=0.1,corruption_level=0.0):
     tilde_x = da.get_corrupted_input(da.x, corruption_level)
     y = get_hidden_values(da.model,tilde_x)
     z = get_reconstructed_input(da.model,y)
@@ -38,7 +38,7 @@ def make_ml_functions(da,learning_rate=0.1,corruption_level=0.0,
     return train,test,get_image
 
 class AutoEncoder(object):
-    def __init__(self,x,n_visible=3200,n_hidden=800):
+    def __init__(self,x,n_visible=3200,n_hidden=3000):
         self.init_rng()
         self.model=make_ae_model(n_hidden,n_visible,self.numpy_rng)
         self.x = x
@@ -73,7 +73,7 @@ def learning_autoencoder(dataset,training_epochs=100,
         c = []
         for batch_index in xrange(n_batches):
             #if(( batch_index % 100 ==0)):
-            print(batch_index)
+            #print(batch_index)
             c.append(da.train(data[batch_index]))
 
         print 'Training epoch %d, cost ' % epoch, np.mean(c)
@@ -81,3 +81,14 @@ def learning_autoencoder(dataset,training_epochs=100,
     timer.stop()
     timer.show()
     return da
+
+def reconstruct_images(dataset,ae,out_path):
+    utils.make_dir(out_path)
+    data=deep.standarized_images(dataset)
+    for i,img in enumerate(data):
+        rec_image=ae.get_image(img)
+        img2D=np.reshape(rec_image,(80,40))
+        img_path=out_path+dataset.get_name(i)
+        print(img_path)
+        scipy.misc.imsave(img_path,img2D)
+    

@@ -16,15 +16,9 @@ def read_action(action_path):
     instances=[]
     for full_path in all_files:
         img=image.imread(full_path)
+        print(img.shape)
         img=img.flatten()
         img=img.astype(float)
         img/=sum(img)
         instances.append(Instance(full_path,img))
     return instances
-
-def get_number_of_batches(batch_size,dataset):
-    n_images=len(dataset)
-    n_batches=n_images / batch_size
-    if(n_images % batch_size != 0):
-        n_batches+=1
-    return n_batches
