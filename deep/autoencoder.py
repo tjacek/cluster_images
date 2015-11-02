@@ -4,7 +4,7 @@ import theano
 import theano.tensor as T
 import scipy.misc
 import imp
-utils =imp.load_source("utils","/home/user/df/deep_frames/utils.py")
+utils =imp.load_source("utils","/home/user/cls/cluster_images/utils.py")
 
 class AutoencoderModel(object):
     def __init__(self,W,b,b_prime):
@@ -38,7 +38,7 @@ def make_ml_functions(da,learning_rate=0.1,corruption_level=0.0):
     return train,test,get_image
 
 class AutoEncoder(object):
-    def __init__(self,x,n_visible=3200,n_hidden=3000):
+    def __init__(self,x,n_visible=3200,n_hidden=800):
         self.init_rng()
         self.model=make_ae_model(n_hidden,n_visible,self.numpy_rng)
         self.x = x
@@ -57,7 +57,7 @@ def get_hidden_values(model, x):
 def get_reconstructed_input(model,hidden):
     return deep.get_sigmoid(hidden,model.W_prime,model.b_prime)
 
-def learning_autoencoder(dataset,training_epochs=100,
+def learning_autoencoder(dataset,training_epochs=50,
             learning_rate=0.1,batch_size=5):
 
     x = T.matrix('x')  
