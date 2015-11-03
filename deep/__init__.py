@@ -11,6 +11,7 @@ def get_number_of_batches(dataset,batch_size):
 
 def get_batches(dataset,n_batches,batch_size):
     data=dataset.get_data()
+    data=[img.flatten() for img in data]
     indexes= range(n_batches)
     batchs=[get_batch(i,batch_size,data) for i in indexes]
     return batchs

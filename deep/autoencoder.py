@@ -38,10 +38,13 @@ def make_ml_functions(da,learning_rate=0.1,corruption_level=0.0):
     return train,test,get_image
 
 class AutoEncoder(object):
-    def __init__(self,x,n_visible=3200,n_hidden=800):
+    def __init__(self,model=None,n_visible=3200,n_hidden=800):
         self.init_rng()
-        self.model=make_ae_model(n_hidden,n_visible,self.numpy_rng)
-        self.x = x
+        if(model==None):
+            self.model=make_ae_model(n_hidden,n_visible,self.numpy_rng)
+        else:
+            self.model=model
+        self.x = T.matrix('x')  
         self.train,self.test,self.get_image=make_ml_functions(self)
 
     def init_rng(self,theano_rng=None):
@@ -61,9 +64,7 @@ def learning_autoencoder(dataset,training_epochs=50,
             learning_rate=0.1,batch_size=5):
 
     x = T.matrix('x')  
-    da = AutoEncoder(x)
-
-    #train_da=make_ml_functions(da,learning_rate)
+    da = AutoEncoder()
 
     timer = utils.Timer()
     n_batches=deep.get_number_of_batches(dataset,batch_size)
@@ -72,8 +73,8 @@ def learning_autoencoder(dataset,training_epochs=50,
     for epoch in xrange(training_epochs):
         c = []
         for batch_index in xrange(n_batches):
-            #if(( batch_index % 100 ==0)):
-            #print(batch_index)
+            if(( batch_index % 10 ==0)):
+                print(batch_index)
             c.append(da.train(data[batch_index]))
 
         print 'Training epoch %d, cost ' % epoch, np.mean(c)
