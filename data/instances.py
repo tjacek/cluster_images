@@ -1,4 +1,3 @@
-import utils
 import numpy as np
 
 class Dataset(object):
@@ -27,8 +26,15 @@ class Dataset(object):
     def get_name(self,i):
         return self.instances[i].file_id()
 
+    def get_number_of_clusters(self):
+        cls=self.get_clusters()
+        return max(cls)+1
+ 
     def __len__(self):
         return len(self.instances)
+
+    def __str__(self):
+        return "Dataset: " + str(len(self))
 
 class Instance(object):
     def __init__(self,name,data):
@@ -42,12 +48,3 @@ class Instance(object):
 
     def file_id(self):
         return self.name.split("/")[-1]
-
-def save_clusters(out_path,dataset):
-    data=dataset.get_reduced_data()
-    cls=dataset.get_clusters()
-    utils.to_labeled_file(out_path,data,cls)
-
-def save_reduce(out_path,dataset):
-    data=dataset.get_reduced_data()
-    utils.to_csv_file(out_path,data)

@@ -1,41 +1,45 @@
-import utils,read_frames,reduce_dim,clustering
-import instances as inst
+import utils,data,reduce_dim,clustering,preproc
 import scipy.misc as image
 
-def cluster_images(in_path,out_path,n_clusters=12):
+def cluster_images(in_path,out_path,n_clusters=4):
     images=create_images(in_path,n_clusters)
-    inst.save_reduce("raw.csv",images)
-    inst.save_clusters("cls.lb",images)
+    data.save_reduce("raw.csv",images)
+    data.save_clusters("cls.lb",images)
     split_clusters(out_path,images)
 
 def create_images(in_path,n_clusters):
-    images=read_frames.read_images(in_path)
+    dataset=data.read_images(in_path)
     print("read data")
-    data=inst.get_data(images)
+    preproc.deep_reduce(dataset)
+    print("preproc")
+    images=dataset.get_data()
+    print(images.shape)
+    reduced_data=reduce_dim.spectral_reduction(images)
+    dataset.set_reduced(reduced_data)
     print("reduce data") 
-    reduced_data=reduce_dim.spectral_reduction(data)
-    inst.set_reduced(images,reduced_data)
-    print("cluster data")
     img_cls=clustering.dbscan(reduced_data,n_clusters)
-    inst.set_cluster(images,img_cls)
-    return images
+    print("cluster data")
+    dataset.set_cluster(img_cls)
+    return dataset
 
-def split_clusters(out_path,images):
+def split_clusters(out_path,dataset):
     utils.make_dir(out_path)
-    n_clusters=inst.number_of_clusters(images)
+    n_clusters=dataset.get_number_of_clusters()
     cls_dirs=[out_path +"cls"+str(i)+"/" for i in range(n_clusters)]
     for c_dir in cls_dirs:
         utils.make_dir(c_dir)
-    for img in images:
-        if(img.cls>-1):
-            orginal_img=image.imread(img.name)
-            txt_id=img.file_id()
-            print(img.cls)
-            img_cls=cls_dirs[img.cls]
+    for inst in dataset.instances:
+        print(inst.cls)
+        if(inst.cls>-1):
+            orginal_img=image.imread(inst.name)
+            txt_id=inst.file_id()
+            print(inst.cls)
+            img_cls=cls_dirs[inst.cls]
             full_path=img_cls+txt_id
             image.imsave(full_path,orginal_img)
 
 if __name__ == "__main__":
-    in_path="test_images/"
-    out_path="out/"
+    path="/home/user/cls/"
+    in_path=path+"test/"
+    out_path=path+"out2/"
     cluster_images(in_path,out_path)
