@@ -1,10 +1,10 @@
-import deep
+import utils.files as files
 import numpy as np
 import theano
 import theano.tensor as T
+import deep,utils
 import scipy.misc
-import imp
-utils =imp.load_source("utils","/home/user/cls/cluster_images/utils.py")
+import tools
 
 class AutoencoderModel(object):
     def __init__(self,W,b,b_prime):
@@ -16,80 +16,97 @@ class AutoencoderModel(object):
     def get_params(self):
         return [self.W, self.b, self.b_prime]
 
-def make_ae_model(n_hidden,n_visible,numpy_rng):
-    initial_W =deep.init_random(n_hidden,n_visible,numpy_rng)
-    W = deep.make_var(initial_W,'W')
-    init_b=deep.init_zeros(n_hidden)
-    bhid = deep.make_var(init_b,'b')
-    init_bvis=deep.init_zeros(n_visible)
-    bvis = deep.make_var(init_bvis,"bvis")
-    return AutoencoderModel(W,bhid,bvis)
+class AutoEncoder(object):
+    def __init__(self,free_vars,model,
+    	         train,test,get_image,rand):
+    	self.free_vars=free_vars
+        self.model=model  
+        self.train=train
+        self.test=test
+        self.get_image=get_image
+        self.rand=rand
 
-def make_ml_functions(da,learning_rate=0.1,corruption_level=0.0):
-    tilde_x = da.get_corrupted_input(da.x, corruption_level)
-    y = get_hidden_values(da.model,tilde_x)
-    z = get_reconstructed_input(da.model,y)
-    cost = deep.get_crossentropy_loss(da.x,y,z)
-    params= da.model.get_params()
-    cost,updates=deep.comput_updates(cost, params, learning_rate)
-    train = theano.function([da.x],cost,updates=updates)
-    test = theano.function([da.x],y)
-    get_image = theano.function([da.x],z)
+    def get_numpy(self):
+        W=self.model.W.get_value()
+        b=self.model.b.get_value()
+        return W,b
+
+def built_ae_cls():
+    hyper_params=get_hyper_params()
+    model,rand= create_ae_model(hyper_params)
+    return init_autoencoder(model,rand,hyper_params)
+
+def apply_autoencoder(imgs,ae_path):
+    ae=read_autoencoder(ae_path)
+    return [ae.test(img_i).flatten() for img_i in imgs]
+
+def read_autoencoder(cls_path):
+    hyper_params=get_hyper_params()
+    model=files.read_object(cls_path)
+    rand=deep.RandomNum()
+    return init_autoencoder(model,rand)
+
+def init_autoencoder(model,rand,hyper_params=None):
+    if(hyper_params==None):
+        hyper_params=get_hyper_params()
+    free_vars=deep.LabeledImages()
+    train,test,get_image=create_ae_fun(free_vars,model,rand,hyper_params)
+    return AutoEncoder(free_vars,model,train,test,get_image,rand)
+
+def create_ae_model(hyper_params):
+    n_hidden=hyper_params['n_hidden']
+    n_visible=hyper_params['n_visible']
+    rand=deep.RandomNum()
+    initial_W =rand.random_matrix(n_visible,n_hidden)
+    W = deep.make_var(initial_W,'W')
+    init_b=rand.random_vector(n_hidden)
+    bhid = deep.make_var(init_b,'b')
+    init_bvis=rand.random_vector(n_visible)
+    bvis = deep.make_var(init_bvis,"bvis")
+    return AutoencoderModel(W,bhid,bvis),rand
+
+def create_ae_fun(free_vars,model,rand,hyper_params):
+    learning_rate=hyper_params['learning_rate']
+    corruption_level=hyper_params['corruption_level']
+    tilde_x = get_corrupted_input(free_vars,corruption_level,rand)
+    x=free_vars.X
+    y = get_hidden_values(model,tilde_x)
+    z = get_reconstructed_input(model,y)
+    loss= tools.get_l2_loss(x,z)
+    input_vars=free_vars.get_vars()
+    params=model.get_params()
+    updates=deep.compute_updates(loss, params, learning_rate)
+    train = theano.function([x],loss,updates=updates)
+    test = theano.function([x],y)
+    get_image = theano.function([x],z)
     return train,test,get_image
 
-class AutoEncoder(object):
-    def __init__(self,model=None,n_visible=3200,n_hidden=800):
-        self.init_rng()
-        if(model==None):
-            self.model=make_ae_model(n_hidden,n_visible,self.numpy_rng)
-        else:
-            self.model=model
-        self.x = T.matrix('x')  
-        self.train,self.test,self.get_image=make_ml_functions(self)
+def get_corrupted_input(free_vars,corruption_level,rand):
+    rng=rand.theano_rng
+    x=free_vars.X
+    return rng.binomial(size=x.shape, n=1,p=1 - corruption_level,
+                        dtype=theano.config.floatX) * x
 
-    def init_rng(self,theano_rng=None):
-        self.numpy_rng,self.theano_rng = deep.make_rng(theano_rng)
-
-    def get_corrupted_input(self, x, corruption_level):
-        return self.theano_rng.binomial(size=x.shape, n=1,
-                                        p=1 - corruption_level,
-                                        dtype=theano.config.floatX) * x
 def get_hidden_values(model, x):
     return deep.get_sigmoid(x,model.W,model.b)
 
 def get_reconstructed_input(model,hidden):
     return deep.get_sigmoid(hidden,model.W_prime,model.b_prime)
 
-def learning_autoencoder(dataset,training_epochs=50,
-            learning_rate=0.1,batch_size=5):
+def get_hyper_params(learning_rate=0.1):
+    params={'learning_rate': learning_rate,'corruption_level':0,
+            'n_visible':3600,'n_hidden':600}
+    return params
 
-    x = T.matrix('x')  
-    da = AutoEncoder()
-
-    timer = utils.Timer()
-    n_batches=deep.get_number_of_batches(dataset,batch_size)
-    data=deep.get_batches(dataset,n_batches,batch_size)
-
-    for epoch in xrange(training_epochs):
-        c = []
-        for batch_index in xrange(n_batches):
-            if(( batch_index % 10 ==0)):
-                print(batch_index)
-            c.append(da.train(data[batch_index]))
-
-        print 'Training epoch %d, cost ' % epoch, np.mean(c)
-
-    timer.stop()
-    timer.show()
-    return da
-
-def reconstruct_images(dataset,ae,out_path):
+def reconstruct_images(img_frame,ae,out_path):
     utils.make_dir(out_path)
-    data=deep.standarized_images(dataset)
-    for i,img in enumerate(data):
+    imgs=img_frame['Images']
+    #cats=img_frame['Category']
+    for i,img in enumerate(imgs):
+        img=np.reshape(img,(1,3200))
         rec_image=ae.get_image(img)
+        rec_image*=200
         img2D=np.reshape(rec_image,(80,40))
-        img_path=out_path+dataset.get_name(i)
+        img_path=out_path+"img"+str(i)+".png"
         print(img_path)
         scipy.misc.imsave(img_path,img2D)
-    
