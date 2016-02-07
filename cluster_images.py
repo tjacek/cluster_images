@@ -6,8 +6,8 @@ import cv2
 
 def cluster_images(in_path,out_path,conf_path):
     config=utils.conf.read_config(conf_path)
-    dataset=create_images(in_path,config)
-    split_clusters(out_path,dataset)
+    dataset,n_clusters=create_images(in_path,config)
+    split_clusters(out_path,dataset,n_clusters)
 
 def create_images(in_path,config):
     imgs=utils.imgs.read_img_dir(in_path)
@@ -20,28 +20,25 @@ def create_images(in_path,config):
     print("reduce data") 
     img_cls=clustering.dbscan(mf_data,config)
     print("cluster data")
-    print(img_cls)
-    dataset=[(img_i,cls_i) for img_i,cls_i in zip(imgs,img_cls)] # dataset.set_cluster(img_cls)
-    return dataset
+    n_clusters=max(img_cls)
+    dataset=[(img_i,cls_i) for img_i,cls_i in zip(imgs,img_cls)]
+    return dataset,n_clusters
 
-def split_clusters(out_path,dataset):
+def split_clusters(out_path,dataset,n_clusters):
+    n_clusters+=1
     utils.files.make_dir(out_path)
-    n_clusters= 10#dataset.get_number_of_clusters()
     cls_dirs=[out_path +"/cls"+str(i)+"/" for i in range(n_clusters)]
     for c_dir in cls_dirs:
         utils.files.make_dir(c_dir)
     i=0
-    for img_i,cls_i in dataset:#.instances:
-        cls_i=cls_i[1]
+    for img_i,cls_i in dataset:
+        #cls_i=cls_i[1]
         print(cls_i)
         print(type(img_i))
         if(cls_i>-1):
-            #orginal_img=image.imread(inst.name)
             txt_id="/fr"+str(i)+".jpg" #inst.file_id()
             i+=1
             full_path=out_path
-            #print(inst.cls)
-            #img_cls=cls_dirs[inst.cls]
             full_path=out_path+"/cls"+str(cls_i) +txt_id
             print(full_path)
             utils.imgs.save_img(full_path,img_i)
