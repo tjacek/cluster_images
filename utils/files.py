@@ -54,7 +54,6 @@ def unify_dir(in_path,out_path):
             i+=1
             copyfile(src, dst)
 
-
 def read_file(path):
     file_object = open(path,'r')
     lines=file_object.readlines()  
@@ -71,8 +70,8 @@ def make_dir(path):
 def get_name(path):
     return path.split("/")[-1]
 
-def array_to_txt(array):
-    return "".join(array)
+def array_to_txt(array,sep=""):
+    return sep.join(array)
 
 def save_object(nn,path):
     file_object = open(path,'wb')
@@ -89,6 +88,13 @@ def read_object(path):
     obj=pickle.load(file_object)  
     file_object.close()
     return obj
+
+def vector_string(vec):
+    #print(vec)
+    #print(type(vec))
+    vec=vec.flatten()
+    array=[str(vec_i) for vec_i in vec]
+    return array_to_txt(array,sep=",")
 
 def append_path(path,files):
     paths=[path+"/"+f for f in files]

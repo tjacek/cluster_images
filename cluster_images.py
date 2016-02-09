@@ -22,7 +22,15 @@ def create_images(in_path,config):
     print("cluster data")
     n_clusters=max(img_cls)
     dataset=[(img_i,cls_i) for img_i,cls_i in zip(imgs,img_cls)]
+    save_clustering("clust.lb",mf_data,img_cls)
     return dataset,n_clusters
+
+def save_clustering(out_path, imgs,img_cls):
+    lines=[utils.files.vector_string(img_i) + ",#" + str(cls_i) 
+                             for img_i,cls_i in zip(imgs,img_cls)]
+    #lines=[img_i +"#" + str(cls_i) for img_i,cls_i in dataset]
+    lines=utils.files.array_to_txt(lines,"\n")
+    utils.files.save_string(out_path,lines)
 
 def split_clusters(out_path,dataset,n_clusters):
     n_clusters+=1
@@ -33,14 +41,13 @@ def split_clusters(out_path,dataset,n_clusters):
     i=0
     for img_i,cls_i in dataset:
         #cls_i=cls_i[1]
-        print(cls_i)
-        print(type(img_i))
+        #print(cls_i)
         if(cls_i>-1):
             txt_id="/fr"+str(i)+".jpg" #inst.file_id()
             i+=1
             full_path=out_path
             full_path=out_path+"/cls"+str(cls_i) +txt_id
-            print(full_path)
+            #print(full_path)
             utils.imgs.save_img(full_path,img_i)
 
 if __name__ == "__main__":
