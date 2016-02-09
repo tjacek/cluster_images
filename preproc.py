@@ -6,7 +6,7 @@ import deep.autoencoder as ae
 def create_autoencoder(image_path,obj_path):
     imgs=utils.imgs.read_img_as_array(image_path)
     model=ae.built_ae_cls()
-    da=deep.learning_iter_unsuper(model,imgs)
+    da=deep.learning_iter_unsuper(model,imgs,n_epochs=500)
     utils.files.save_object(da.model,obj_path) 
     print("autoencoder saved as " + obj_path)
 
@@ -19,16 +19,16 @@ def read_autoencoder(obj_path):
     model=utils.read_object(obj_path)
     return ae.AutoEncoder(model)
 
-def deep_reduce(dataset):
-    path="/home/user/cls/dp/ae"
-    da=read_autoencoder(path)
-    print(dataset)
-    for inst in dataset.instances:
-        reduced=da.test(inst.data)
-        inst.data=reduced.flatten()
+def apply_ae(image_path,ae_path):
+    imgs=utils.imgs.read_img_dir(image_path)
+    #ae.read_autoencoder(ae_path)
+    reduced=ae.apply_autoencoder(imgs,ae_path)
+    lines=[utils.files.vector_string(img_i) for img_i in reduced]
+    lines=utils.files.array_to_txt(lines,"\n")
+    utils.files.save_string("auto.csv",lines)
 
 if __name__ == "__main__":
-    in_path="../dataset/imgs"
-    #out_path=path+"out/"
-    obj_path="../dataset/ae" #path+"dp/ae"
-    create_autoencoder(in_path,obj_path)
+    img_path="../dataset/imgs"
+    ae_path="../dataset/ae" #path+"dp/ae"
+    #create_autoencoder(in_path,obj_path)
+    apply_ae(img_path,ae_path)
