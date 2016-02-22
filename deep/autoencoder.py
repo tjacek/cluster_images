@@ -4,11 +4,11 @@ import theano
 import theano.tensor as T
 
 class AutoencoderModel(object):
-    def __init__(self,W,b,b_prime):
+    def __init__(self,W,b,W_prime,b_prime):
         self.W=W
         self.b=b
         self.b_prime=b_prime
-        self.W_prime = W.T
+        self.W_prime = W_prime
 
     def get_params(self):
         return [self.W, self.b, self.b_prime]
@@ -41,16 +41,20 @@ class Autoencoder(object):
         return lasagne.layers.get_all_params(self.l_out, trainable=True)
 
     def get_vars(self):
-    	return self.l_hid.W,self.l_hid.b
+    	return [self.l_hid.W,self.l_hid.b,self.l_rec.W,self.l_rec.b]
 
     def get_updates(self):
     	params=self.get_params()
         return lasagne.updates.nesterov_momentum(
         	     self.loss, params, learning_rate=0.01, momentum=0.9)	
 
+    def get_model(self):
+        np_vars=self.get_numpy()
+        return AutoencoderModel(np_vars[0],np_vars[1],np_vars[2],np_vars[3])
+
     def get_numpy(self):
-    	W,b=self.get_vars()
-        return W.get_value(),b.get_value()
+    	var=self.get_vars()
+        return [ var_i.get_value() for var_i in var]
 
 def default_parametrs():
     return {"num_input":3600,"num_hidden":600}	
@@ -64,13 +68,13 @@ def train_model(imgs,hyper_params,num_iter=50):
     input_dim=(1,hyper_params["num_input"])
     for epoch in range(num_iter):
         #for batch in iterate_minibatches(X_train, y_train, 500, shuffle=True):
+        cost_e = []
         for img_i in imgs:
             img_i=img_i.reshape(input_dim) #.flatten()
-            print(img_i.shape) 
-            #inputs, targets = batch
             loss_i=train_fn(img_i)
-            #print(pred(img_i).shape)
-            print(str(epoch) + " "+str(loss_i))
+            cost_e.append(loss_i)
+        cost_mean=np.mean(cost_e)
+        print(str(epoch) + " "+str(cost_mean))
     return model
 
 def show_dim(layer):

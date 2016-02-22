@@ -5,9 +5,8 @@ import deep.autoencoder as ae
 
 def create_autoencoder(image_path,obj_path):
     imgs=utils.imgs.read_img_as_array(image_path)
-    model=ae.built_ae_cls()
-    da=deep.learning_iter_unsuper(model,imgs,n_epochs=500)
-    utils.files.save_object(da.model,obj_path) 
+    da=ae.train_model(imgs,ae.default_parametrs())
+    utils.files.save_object(da.get_model(),obj_path) 
     print("autoencoder saved as " + obj_path)
 
 def create_images(image_path,out_path):
@@ -28,7 +27,7 @@ def apply_ae(image_path,ae_path):
     utils.files.save_string("auto.csv",lines)
 
 if __name__ == "__main__":
-    img_path="../dataset/imgs"
+    img_path="test"   #"../dataset6/imgs"
     ae_path="../dataset/ae" #path+"dp/ae"
-    #create_autoencoder(in_path,obj_path)
-    apply_ae(img_path,ae_path)
+    create_autoencoder(img_path,ae_path)
+    #apply_ae(img_path,ae_path)
