@@ -16,7 +16,7 @@ class AutoencoderModel(object):
 class Autoencoder(object):
     def __init__(self,hyper_params):
     	num_hidden=hyper_params["num_hidden"]
-    	input_shape = (1,hyper_params["num_input"])
+    	input_shape = (None,hyper_params["num_input"])
         self.l_in =  lasagne.layers.InputLayer(shape=input_shape)#,input_var=self.input_var)
         print(self.l_in.output_shape)
         self.l_hid = lasagne.layers.DenseLayer(self.l_in, num_units=num_hidden)
@@ -57,20 +57,22 @@ class Autoencoder(object):
         return [ var_i.get_value() for var_i in var]
 
 def default_parametrs():
-    return {"num_input":3600,"num_hidden":600}	
+    return {"num_input":3600,"num_hidden":600,"batch_size":10}	
 
-def train_model(imgs,hyper_params,num_iter=50):
+def train_model(imgs,hyper_params,num_iter=500):
+    batch_size=hyper_params["batch_size"]
     model=Autoencoder(hyper_params)
     input_var=model.get_input_var()
     updates=model.get_updates()
     train_fn = theano.function([input_var], model.loss, updates=updates)
-    #pred = theano.function([input_var], model.prediction)
-    input_dim=(1,hyper_params["num_input"])
+    input_dim=(hyper_params["num_input"],)
+    imgs=[img_i.reshape(input_dim) for img_i in imgs]
+    batch,n_batches=get_batch(imgs,batch_size)
+    print("Number of batches " + str(len(batch)))
     for epoch in range(num_iter):
-        #for batch in iterate_minibatches(X_train, y_train, 500, shuffle=True):
         cost_e = []
-        for img_i in imgs:
-            img_i=img_i.reshape(input_dim) #.flatten()
+        for i in range(n_batches):
+            img_i=batch[i]
             loss_i=train_fn(img_i)
             cost_e.append(loss_i)
         cost_mean=np.mean(cost_e)
@@ -82,3 +84,11 @@ def show_dim(layer):
     print(layer.input_shape)
     print("output")
     print(layer.output_shape)
+
+def get_batch(imgs,batch_size=10):
+    n_batches=get_n_batches(imgs,batch_size)
+    batches=[imgs[i*batch_size:(i+1)*batch_size] for i in range(n_batches)]
+    return [np.array(batch_i) for batch_i in batches],n_batches
+
+def get_n_batches(img,batch_size=10):
+    return (len(img)/batch_size)+1
