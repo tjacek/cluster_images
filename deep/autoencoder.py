@@ -17,15 +17,15 @@ class Autoencoder(object):
     def __init__(self,hyper_params):
     	num_hidden=hyper_params["num_hidden"]
     	input_shape = (1,hyper_params["num_input"])
-    	#self.input_var = T.dvector('inputs')
-    	#self.target_var = T.ivector('targets')
         self.l_in =  lasagne.layers.InputLayer(shape=input_shape)#,input_var=self.input_var)
         print(self.l_in.output_shape)
         self.l_hid = lasagne.layers.DenseLayer(self.l_in, num_units=num_hidden)
         show_dim(self.l_hid)
         self.l_rec = lasagne.layers.DenseLayer(self.l_hid, num_units=input_shape[1])
         show_dim(self.l_rec)        
-        self.l_out = self.l_rec#lasagne.layers.InverseLayer(self.l_rec,self.l_hid)  #self.l_in)
+        self.l_out = self.l_rec#
+        #self.l_out =lasagne.layers.InverseLayer(self.l_rec,self.l_hid)  #self.l_in)
+        #print(self.l_out.output_shape()) 
         self.prediction = lasagne.layers.get_output(self.l_out)
         self.get_loss()
 
@@ -59,8 +59,8 @@ def train_model(imgs,hyper_params,num_iter=50):
     model=Autoencoder(hyper_params)
     input_var=model.get_input_var()
     updates=model.get_updates()
-    #train_fn = theano.function([input_var], model.loss, updates=updates)
-    pred = theano.function([input_var], model.prediction)
+    train_fn = theano.function([input_var], model.loss, updates=updates)
+    #pred = theano.function([input_var], model.prediction)
     input_dim=(1,hyper_params["num_input"])
     for epoch in range(num_iter):
         #for batch in iterate_minibatches(X_train, y_train, 500, shuffle=True):
@@ -68,9 +68,9 @@ def train_model(imgs,hyper_params,num_iter=50):
             img_i=img_i.reshape(input_dim) #.flatten()
             print(img_i.shape) 
             #inputs, targets = batch
-            #loss_i=train_fn(img_i)
-            pred(img_i)
-            print(str(epoch) )#+ " "+str(loss_i))
+            loss_i=train_fn(img_i)
+            #print(pred(img_i).shape)
+            print(str(epoch) + " "+str(loss_i))
     return model
 
 def show_dim(layer):
