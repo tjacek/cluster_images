@@ -1,10 +1,7 @@
-import utils.files as files
+import lasagne
 import numpy as np
 import theano
 import theano.tensor as T
-import deep,utils
-import scipy.misc
-import tools
 
 class AutoencoderModel(object):
     def __init__(self,W,b,b_prime):
@@ -16,97 +13,68 @@ class AutoencoderModel(object):
     def get_params(self):
         return [self.W, self.b, self.b_prime]
 
-class AutoEncoder(object):
-    def __init__(self,free_vars,model,
-    	         train,test,get_image,rand):
-    	self.free_vars=free_vars
-        self.model=model  
-        self.train=train
-        self.test=test
-        self.get_image=get_image
-        self.rand=rand
+class Autoencoder(object):
+    def __init__(self,hyper_params):
+    	num_hidden=hyper_params["num_hidden"]
+    	input_shape = (1,hyper_params["num_input"])
+    	#self.input_var = T.dvector('inputs')
+    	#self.target_var = T.ivector('targets')
+        self.l_in =  lasagne.layers.InputLayer(shape=input_shape)#,input_var=self.input_var)
+        print(self.l_in.output_shape)
+        self.l_hid = lasagne.layers.DenseLayer(self.l_in, num_units=num_hidden)
+        show_dim(self.l_hid)
+        self.l_rec = lasagne.layers.DenseLayer(self.l_hid, num_units=input_shape[1])
+        show_dim(self.l_rec)        
+        self.l_out = self.l_rec#lasagne.layers.InverseLayer(self.l_rec,self.l_hid)  #self.l_in)
+        self.prediction = lasagne.layers.get_output(self.l_out)
+        self.get_loss()
+
+    def get_input_var(self):
+        return self.l_in.input_var
+
+    def get_loss(self):
+    	target_var=self.get_input_var()
+    	self.loss = lasagne.objectives.squared_error(self.prediction,target_var)
+        self.loss = self.loss.mean()
+
+    def get_params(self):
+        return lasagne.layers.get_all_params(self.l_out, trainable=True)
+
+    def get_vars(self):
+    	return self.l_hid.W,self.l_hid.b
+
+    def get_updates(self):
+    	params=self.get_params()
+        return lasagne.updates.nesterov_momentum(
+        	     self.loss, params, learning_rate=0.01, momentum=0.9)	
 
     def get_numpy(self):
-        W=self.model.W.get_value()
-        b=self.model.b.get_value()
-        return W,b
+    	W,b=self.get_vars()
+        return W.get_value(),b.get_value()
 
-def built_ae_cls():
-    hyper_params=get_hyper_params()
-    model,rand= create_ae_model(hyper_params)
-    return init_autoencoder(model,rand,hyper_params)
+def default_parametrs():
+    return {"num_input":3600,"num_hidden":600}	
 
-def apply_autoencoder(imgs,ae_path):
-    ae=read_autoencoder(ae_path)
-    return [ae.test(img_i).flatten() for img_i in imgs]
+def train_model(imgs,hyper_params,num_iter=50):
+    model=Autoencoder(hyper_params)
+    input_var=model.get_input_var()
+    updates=model.get_updates()
+    #train_fn = theano.function([input_var], model.loss, updates=updates)
+    pred = theano.function([input_var], model.prediction)
+    input_dim=(1,hyper_params["num_input"])
+    for epoch in range(num_iter):
+        #for batch in iterate_minibatches(X_train, y_train, 500, shuffle=True):
+        for img_i in imgs:
+            img_i=img_i.reshape(input_dim) #.flatten()
+            print(img_i.shape) 
+            #inputs, targets = batch
+            #loss_i=train_fn(img_i)
+            pred(img_i)
+            print(str(epoch) )#+ " "+str(loss_i))
+    return model
 
-def read_autoencoder(cls_path):
-    hyper_params=get_hyper_params()
-    model=files.read_object(cls_path)
-    rand=deep.RandomNum()
-    return init_autoencoder(model,rand)
-
-def init_autoencoder(model,rand,hyper_params=None):
-    if(hyper_params==None):
-        hyper_params=get_hyper_params()
-    free_vars=deep.LabeledImages()
-    train,test,get_image=create_ae_fun(free_vars,model,rand,hyper_params)
-    return AutoEncoder(free_vars,model,train,test,get_image,rand)
-
-def create_ae_model(hyper_params):
-    n_hidden=hyper_params['n_hidden']
-    n_visible=hyper_params['n_visible']
-    rand=deep.RandomNum()
-    initial_W =rand.random_matrix(n_visible,n_hidden)
-    W = deep.make_var(initial_W,'W')
-    init_b=rand.random_vector(n_hidden)
-    bhid = deep.make_var(init_b,'b')
-    init_bvis=rand.random_vector(n_visible)
-    bvis = deep.make_var(init_bvis,"bvis")
-    return AutoencoderModel(W,bhid,bvis),rand
-
-def create_ae_fun(free_vars,model,rand,hyper_params):
-    learning_rate=hyper_params['learning_rate']
-    corruption_level=hyper_params['corruption_level']
-    tilde_x = get_corrupted_input(free_vars,corruption_level,rand)
-    x=free_vars.X
-    y = get_hidden_values(model,tilde_x)
-    z = get_reconstructed_input(model,y)
-    loss= tools.get_l2_loss(x,z)
-    input_vars=free_vars.get_vars()
-    params=model.get_params()
-    updates=deep.compute_updates(loss, params, learning_rate)
-    train = theano.function([x],loss,updates=updates)
-    test = theano.function([x],y)
-    get_image = theano.function([x],z)
-    return train,test,get_image
-
-def get_corrupted_input(free_vars,corruption_level,rand):
-    rng=rand.theano_rng
-    x=free_vars.X
-    return rng.binomial(size=x.shape, n=1,p=1 - corruption_level,
-                        dtype=theano.config.floatX) * x
-
-def get_hidden_values(model, x):
-    return deep.get_sigmoid(x,model.W,model.b)
-
-def get_reconstructed_input(model,hidden):
-    return deep.get_sigmoid(hidden,model.W_prime,model.b_prime)
-
-def get_hyper_params(learning_rate=0.1):
-    params={'learning_rate': learning_rate,'corruption_level':0,
-            'n_visible':3600,'n_hidden':600}
-    return params
-
-def reconstruct_images(img_frame,ae,out_path):
-    utils.make_dir(out_path)
-    imgs=img_frame['Images']
-    #cats=img_frame['Category']
-    for i,img in enumerate(imgs):
-        img=np.reshape(img,(1,3200))
-        rec_image=ae.get_image(img)
-        rec_image*=200
-        img2D=np.reshape(rec_image,(80,40))
-        img_path=out_path+"img"+str(i)+".png"
-        print(img_path)
-        scipy.misc.imsave(img_path,img2D)
+def show_dim(layer):
+    print("input")
+    print(layer.input_shape)
+    print("output")
+    print(layer.output_shape)
