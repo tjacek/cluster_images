@@ -2,6 +2,7 @@ import lasagne
 import numpy as np
 import theano
 import theano.tensor as T
+import utils.files as files
 
 class AutoencoderModel(object):
     def __init__(self,W,b,W_prime,b_prime):
@@ -18,23 +19,27 @@ class Autoencoder(object):
     	num_hidden=hyper_params["num_hidden"]
     	input_shape = (None,hyper_params["num_input"])
         self.l_in =  lasagne.layers.InputLayer(shape=input_shape)#,input_var=self.input_var)
-        print(self.l_in.output_shape)
+        #print(self.l_in.output_shape)
         self.l_hid = lasagne.layers.DenseLayer(self.l_in, num_units=num_hidden)
-        show_dim(self.l_hid)
+        #show_dim(self.l_hid)
         self.l_rec = lasagne.layers.DenseLayer(self.l_hid, num_units=input_shape[1])
-        show_dim(self.l_rec)        
+        #show_dim(self.l_rec)        
         self.l_out = self.l_rec#
+        print(lasagne.layers.get_output_shape(self.l_in))
+        print(lasagne.layers.get_output_shape(self.l_hid))
         #self.l_out =lasagne.layers.InverseLayer(self.l_rec,self.l_hid)  #self.l_in)
         #print(self.l_out.output_shape()) 
-        self.prediction = lasagne.layers.get_output(self.l_out)
+        self.prediction_symb = lasagne.layers.get_output(self.l_out)
         self.get_loss()
+        reduced=lasagne.layers.get_output(self.l_hid)
+        self.prediction=theano.function([self.get_input_var()], reduced)
 
     def get_input_var(self):
         return self.l_in.input_var
 
     def get_loss(self):
     	target_var=self.get_input_var()
-    	self.loss = lasagne.objectives.squared_error(self.prediction,target_var)
+    	self.loss = lasagne.objectives.squared_error(self.prediction_symb,target_var)
         self.loss = self.loss.mean()
 
     def get_params(self):
@@ -52,12 +57,22 @@ class Autoencoder(object):
         np_vars=self.get_numpy()
         return AutoencoderModel(np_vars[0],np_vars[1],np_vars[2],np_vars[3])
 
+    def apply(self,img):
+        img=img.reshape((1,3600)) #flatten()
+        red_img=self.prediction(img)
+        print(red_img.shape)
+        return red_img.flatten()
+
     def get_numpy(self):
     	var=self.get_vars()
         return [ var_i.get_value() for var_i in var]
 
 def default_parametrs():
     return {"num_input":3600,"num_hidden":600,"batch_size":10}	
+
+def apply_autoencoder(imgs,ae_path):
+    ae=files.read_object(ae_path)
+    return [ae.apply(img_i) for img_i in imgs]
 
 def train_model(imgs,hyper_params,num_iter=500):
     batch_size=hyper_params["batch_size"]

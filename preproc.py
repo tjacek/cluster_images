@@ -6,7 +6,7 @@ import deep.autoencoder as ae
 def create_autoencoder(image_path,obj_path):
     imgs=utils.imgs.read_img_as_array(image_path)
     da=ae.train_model(imgs,ae.default_parametrs())
-    utils.files.save_object(da.get_model(),obj_path) 
+    utils.files.save_object(da,obj_path) 
     print("autoencoder saved as " + obj_path)
 
 def create_images(image_path,out_path):
