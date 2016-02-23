@@ -3,6 +3,7 @@ import numpy as np
 import theano
 import theano.tensor as T
 import utils.files as files
+import deep.tools as tools
 
 class AutoencoderModel(object):
     def __init__(self,W,b,W_prime,b_prime):
@@ -18,17 +19,13 @@ class Autoencoder(object):
     def __init__(self,hyper_params):
     	num_hidden=hyper_params["num_hidden"]
     	input_shape = (None,hyper_params["num_input"])
-        self.l_in =  lasagne.layers.InputLayer(shape=input_shape)#,input_var=self.input_var)
+        self.l_in =  lasagne.layers.InputLayer(shape=input_shape)
         #print(self.l_in.output_shape)
         self.l_hid = lasagne.layers.DenseLayer(self.l_in, num_units=num_hidden)
-        #show_dim(self.l_hid)
+        show_dim(self.l_hid)
         self.l_rec = lasagne.layers.DenseLayer(self.l_hid, num_units=input_shape[1])
-        #show_dim(self.l_rec)        
+        show_dim(self.l_rec)        
         self.l_out = self.l_rec#
-        print(lasagne.layers.get_output_shape(self.l_in))
-        print(lasagne.layers.get_output_shape(self.l_hid))
-        #self.l_out =lasagne.layers.InverseLayer(self.l_rec,self.l_hid)  #self.l_in)
-        #print(self.l_out.output_shape()) 
         self.prediction_symb = lasagne.layers.get_output(self.l_out)
         self.get_loss()
         reduced=lasagne.layers.get_output(self.l_hid)
@@ -68,7 +65,7 @@ class Autoencoder(object):
         return [ var_i.get_value() for var_i in var]
 
 def default_parametrs():
-    return {"num_input":3600,"num_hidden":600,"batch_size":10}	
+    return {"num_input":3600,"num_hidden":600,"batch_size":100}	
 
 def apply_autoencoder(imgs,ae_path):
     ae=files.read_object(ae_path)
@@ -82,7 +79,7 @@ def train_model(imgs,hyper_params,num_iter=500):
     train_fn = theano.function([input_var], model.loss, updates=updates)
     input_dim=(hyper_params["num_input"],)
     imgs=[img_i.reshape(input_dim) for img_i in imgs]
-    batch,n_batches=get_batch(imgs,batch_size)
+    batch,n_batches=tools.get_batch(imgs,batch_size)
     print("Number of batches " + str(len(batch)))
     for epoch in range(num_iter):
         cost_e = []
@@ -94,16 +91,3 @@ def train_model(imgs,hyper_params,num_iter=500):
         print(str(epoch) + " "+str(cost_mean))
     return model
 
-def show_dim(layer):
-    print("input")
-    print(layer.input_shape)
-    print("output")
-    print(layer.output_shape)
-
-def get_batch(imgs,batch_size=10):
-    n_batches=get_n_batches(imgs,batch_size)
-    batches=[imgs[i*batch_size:(i+1)*batch_size] for i in range(n_batches)]
-    return [np.array(batch_i) for batch_i in batches],n_batches
-
-def get_n_batches(img,batch_size=10):
-    return (len(img)/batch_size)+1
