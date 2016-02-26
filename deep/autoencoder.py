@@ -70,24 +70,3 @@ def default_parametrs():
 def apply_autoencoder(imgs,ae_path):
     ae=files.read_object(ae_path)
     return [ae.apply(img_i) for img_i in imgs]
-
-def train_model(imgs,hyper_params,num_iter=500):
-    batch_size=hyper_params["batch_size"]
-    model=Autoencoder(hyper_params)
-    input_var=model.get_input_var()
-    updates=model.get_updates()
-    train_fn = theano.function([input_var], model.loss, updates=updates)
-    input_dim=(hyper_params["num_input"],)
-    imgs=[img_i.reshape(input_dim) for img_i in imgs]
-    batch,n_batches=tools.get_batch(imgs,batch_size)
-    print("Number of batches " + str(len(batch)))
-    for epoch in range(num_iter):
-        cost_e = []
-        for i in range(n_batches):
-            img_i=batch[i]
-            loss_i=train_fn(img_i)
-            cost_e.append(loss_i)
-        cost_mean=np.mean(cost_e)
-        print(str(epoch) + " "+str(cost_mean))
-    return model
-
