@@ -1,11 +1,13 @@
 import utils.imgs,utils.files,utils.conf
 import reduce_dim,clustering
-import deep.autoencoder
+import deep.autoencoder as ae
 import numpy as np
 import cv2
 
-def cluster_images(in_path,out_path,conf_path):
+def cluster_images(conf_path):
     config=utils.conf.read_config(conf_path)
+    in_path=config["in_path"]
+    out_path=config["out_path"]
     dataset,n_clusters=create_images(in_path,config)
     split_clusters(out_path,dataset,n_clusters)
 
@@ -13,12 +15,12 @@ def create_images(in_path,config):
     imgs=utils.imgs.read_img_dir(in_path)
     print(len(imgs))
     print("read data")
-    reduced_img=deep.autoencoder.apply_autoencoder(imgs,config['ae_path'])#"../dataset/ae")
+    reduced_img=ae.apply_autoencoder(imgs,config['ae_path'])#"../dataset/ae")
     print(reduced_img[0].shape)
     print("preproc")
     mf_data=reduce_dim.spectral_reduction( reduced_img,config)
     print("reduce data") 
-    img_cls=clustering.dbscan(mf_data,config)
+    img_cls=clustering.dbscan(mf_data,config)#.kmeans(mf_data,config)
     print("cluster data")
     n_clusters=max(img_cls)
     dataset=[(img_i,cls_i) for img_i,cls_i in zip(imgs,img_cls)]
@@ -51,7 +53,5 @@ def split_clusters(out_path,dataset,n_clusters):
             utils.imgs.save_img(full_path,img_i)
 
 if __name__ == "__main__":
-    in_path="../dataset/imgs"
-    conf_path="conf/simple.cfg"
-    out_path="../dataset/out"
-    cluster_images(in_path,out_path,conf_path)
+    conf_path="conf/dataset6.cfg"
+    cluster_images(conf_path)

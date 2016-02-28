@@ -1,11 +1,13 @@
 import deep
 import utils.imgs #as image
 import deep.autoencoder as ae
-#import theano
+import utils.conf
 
-def create_autoencoder(image_path,obj_path):
+def create_autoencoder(conf_dict):
+    image_path=conf_dict["img_path"]
+    obj_path=conf_dict["ae_path"]
     imgs=utils.imgs.read_img_as_array(image_path)
-    da=ae.train_model(imgs,ae.default_parametrs())
+    da=deep.train_model(imgs,ae.default_parametrs())
     utils.files.save_object(da,obj_path) 
     print("autoencoder saved as " + obj_path)
 
@@ -27,7 +29,7 @@ def apply_ae(image_path,ae_path):
     utils.files.save_string("auto.csv",lines)
 
 if __name__ == "__main__":
-    img_path="test"   #"../dataset6/imgs"
-    ae_path="../dataset/ae" #path+"dp/ae"
-    create_autoencoder(img_path,ae_path)
+    conf_path="conf/dataset6.cfg"
+    conf_dict=utils.conf.read_config(conf_path)
+    create_autoencoder(conf_dict)
     #apply_ae(img_path,ae_path)

@@ -5,10 +5,11 @@ import theano
 import theano.tensor as T
 import utils.files as files
 import deep.tools as tools
+import autoencoder as ae
 
 def train_model(imgs,hyper_params,num_iter=500):
     batch_size=hyper_params["batch_size"]
-    model=Autoencoder(hyper_params)
+    model=ae.Autoencoder(hyper_params)
     input_var=model.get_input_var()
     updates=model.get_updates()
     train_fn = theano.function([input_var], model.loss, updates=updates)
