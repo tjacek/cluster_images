@@ -9,6 +9,11 @@ def show_dim(layer):
     print("output")
     print(layer.output_shape)
 
+def to_dist(index,n_cats):
+    dist=np.zeros((1,n_cats),dtype='int32')
+    dist[index]=1
+    return dist	
+
 def get_batch(imgs,batch_size=10):
     n_batches=get_n_batches(imgs,batch_size)
     batches=[imgs[i*batch_size:(i+1)*batch_size] for i in range(n_batches)]
