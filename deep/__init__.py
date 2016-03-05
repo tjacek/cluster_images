@@ -27,7 +27,7 @@ def train_model_unsuper(imgs,hyper_params,num_iter=1000):
         print(str(epoch) + " "+str(cost_mean))
     return model
 
-def train_model_super(X,y,model,batch_size=100 num_iter=1000):
+def train_model_super(X,y,model,batch_size=100, num_iter=1000):
     X=X.reshape((X.shape[0],X.shape[2]))
     input_var=model.get_input_var()
     updates=model.get_updates()
