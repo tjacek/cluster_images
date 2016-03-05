@@ -15,7 +15,12 @@ class StackedAE(object):
         softmax = lasagne.nonlinearities.softmax
         self.network = lasagne.layers.DenseLayer(self.l_hid,n_cats, nonlinearity=softmax)
         self.get_loss()
-   
+        self.prob = theano.function([self.get_input_var()], self.prediction)
+
+    def get_category(self,img):
+        dist=self.prob(img)
+        return tools.dist_to_category(dist)
+
     def get_loss(self):
         self.prediction = lasagne.layers.get_output(self.network)
         loss = lasagne.objectives.categorical_crossentropy(self.prediction, self.target_var)

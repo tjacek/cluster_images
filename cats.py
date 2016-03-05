@@ -4,6 +4,14 @@ import utils.data as data
 import deep.sae as sae
 import utils.conf
 import utils.files as files
+import utils.actions as actions
+
+def apply_sae(action_path,cls_path):
+    model=files.read_object(cls_path)
+    actions=utils.apply_to_dir(action_path)
+    #print(len(actions)
+    for action_i in actions:
+        print(action_i.get_seq(model))
 
 def create_sae(dir_path,conf_path,out_path):
     X,y=data.read_dataset(dir_path)
@@ -13,7 +21,6 @@ def create_sae(dir_path,conf_path,out_path):
     files.save_object(model,out_path)
 
 def get_sae(conf_dict):
-    #image_path=conf_dict["img_path"]
     ae_path=conf_dict["ae_path"] 
     ae=files.read_object(ae_path) 	
     return sae.StackedAE(ae,7)
@@ -21,7 +28,9 @@ def get_sae(conf_dict):
 if __name__ == "__main__":
     path="/home/user/reps/dataset6/"
     final_path=path+"cats"
-    dir_path="/home/user/reps/cluster_images/dataset"
+    data_path="/home/user/reps/cluster_images/dataset"
     conf_path="conf/dataset6.cfg"
-    out_path=path+"sae"
-    create_sae(dir_path,conf_path,out_path)
+    cls_path=path+"sae"
+    action_path=path+"cats"
+    #create_sae(data_path,conf_path,cls_path)
+    apply_sae(action_path,cls_path)

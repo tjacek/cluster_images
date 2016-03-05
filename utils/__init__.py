@@ -5,7 +5,7 @@ def apply_to_dir(in_path):
     all_dirs=files.get_dirs(in_path,True)
     action_i=action.read_action(in_path)
     #print(in_path)
-    if(len(action_i)==0):
+    if( action_i==None or len(action_i)==0):
         actions=[]
     else:
     	actions=[action_i]

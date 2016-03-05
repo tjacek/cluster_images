@@ -3,6 +3,10 @@ import theano
 import theano.tensor as T
 import deep
 
+
+def dist_to_category(dist):
+    return dist.flatten().argmax(axis=0)
+
 def show_dim(layer):
     print("input")
     print(layer.input_shape)
@@ -10,7 +14,7 @@ def show_dim(layer):
     print(layer.output_shape)
 
 def to_dist(index,n_cats):
-    dist=np.zeros((1,n_cats),dtype='int32')
+    dist=np.zeros((1,n_cats),dtype='int64')
     dist[index]=1
     return dist	
 
