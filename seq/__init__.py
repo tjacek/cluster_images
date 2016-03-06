@@ -10,6 +10,9 @@ def action_to_seq(action):
     seq=""
     for cat_i in action.seq:
         seq+=ALPH[cat_i]
-    seq+=str(action.cat)
-    seq+=str(action.name)
+    seq+="#"+str(action.cat)
+    seq+="#"+str(action.name)
     return seq
+
+def get_cat(symbol):
+	return ALPH.index(symbol)

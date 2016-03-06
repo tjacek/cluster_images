@@ -13,3 +13,8 @@ def apply_to_dir(in_path):
     for dir_actions_i in dir_actions:
         actions+=dir_actions_i
     return actions
+
+def get_value(cat,mydict):
+    if(not (cat in mydict)):
+        mydict[cat]=len(mydict.keys())
+    return mydict[cat]

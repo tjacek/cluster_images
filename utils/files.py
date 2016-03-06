@@ -4,18 +4,22 @@ import pickle,re
 from natsort import natsorted
 from shutil import copyfile
 
-def get_files(path):
+def get_files(path,append=False):
     all_in_dir=os.listdir(path)
     files= [f for f in all_in_dir  
               if is_file(f,path)]
-    files=natsorted(files)#files.sort()
+    files=natsorted(files)
+    if(append_path):
+        files=append_path(path,files)
     return files
 
-def get_dirs(path):
+def get_dirs(path,append=False):
     all_in_dir=os.listdir(path)
     files= [f for f in all_in_dir  
               if not is_file(f,path)]
     files=natsorted(files)#files.sort()
+    if(append_path):
+        files=append_path(path,files)
     return files
 
 def conversion(in_path,out_path,conv,dir=True):
@@ -78,6 +82,10 @@ def save_object(nn,path):
     pickle.dump(nn,file_object)
     file_object.close()
 
+def save_array(array,out_path):
+    txt=array_to_txt(array,"\n")
+    save_string(out_path,txt)
+
 def save_string(path,string):
     file_str = open(path,'w')
     file_str.write(string)
@@ -90,8 +98,6 @@ def read_object(path):
     return obj
 
 def vector_string(vec):
-    #print(vec)
-    #print(type(vec))
     vec=vec.flatten()
     array=[str(vec_i) for vec_i in vec]
     return array_to_txt(array,sep=",")
