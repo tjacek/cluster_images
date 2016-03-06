@@ -15,7 +15,8 @@ class Action(object):
         return np.array(self.frames)
 
     def get_seq(self,cls):
-        self.seq=[ cls.get_category(frame_i) for frame_i in self.frames]
+        self.seq=[ cls.get_robust_category(frame_i) 
+                         for frame_i in self.frames]
         return self.seq
 
     def __str__(self):

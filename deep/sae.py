@@ -17,6 +17,12 @@ class StackedAE(object):
         self.get_loss()
         self.prob = theano.function([self.get_input_var()], self.prediction)
 
+    def get_robust_category(self,img,threshold=0.7):
+        dist=self.prob(img)
+        if(np.amax(dist)<threshold):
+            return 0
+        return tools.dist_to_category(dist) + 1
+
     def get_category(self,img):
         dist=self.prob(img)
         return tools.dist_to_category(dist)

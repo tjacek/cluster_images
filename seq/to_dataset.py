@@ -14,10 +14,10 @@ def seq_to_instances(str_seq,cat_names):
     raw_action=str_seq.split("#") 
     hist=get_histogram(raw_action[0])
     cat_index=utils.get_value(raw_action[1],cat_names)
-    instance=files.vector_string(hist)+"#"+str(cat_index)	
+    instance=files.vector_string(hist)+",#"+str(cat_index)	
     return instance
 
-def get_histogram(raw_seq,n_cats=7):
+def get_histogram(raw_seq,n_cats=8):
     hist=np.zeros((n_cats,))
     for frame_cat in raw_seq:
     	index=seq.get_cat(frame_cat)
