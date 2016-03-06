@@ -5,13 +5,15 @@ import deep.sae as sae
 import utils.conf
 import utils.files as files
 import utils.actions as actions
+import seq
 
-def apply_sae(action_path,cls_path):
+def apply_sae(action_path,cls_path,out_path):
     model=files.read_object(cls_path)
     actions=utils.apply_to_dir(action_path)
     #print(len(actions)
     for action_i in actions:
         print(action_i.get_seq(model))
+    seq.create_seqs(actions,out_path)
 
 def create_sae(dir_path,conf_path,out_path):
     X,y=data.read_dataset(dir_path)
@@ -33,4 +35,4 @@ if __name__ == "__main__":
     cls_path=path+"sae"
     action_path=path+"cats"
     #create_sae(data_path,conf_path,cls_path)
-    apply_sae(action_path,cls_path)
+    apply_sae(action_path,cls_path,"dataset6.seq")

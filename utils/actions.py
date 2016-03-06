@@ -9,13 +9,14 @@ class Action(object):
         print(frames[0].shape)
         self.frames=[frame_i.reshape((1,frame_i.shape[0])) for frame_i in frames]
         self.cat=cat
+        self.seq=None
     
     def as_numpy(self):
         return np.array(self.frames)
 
     def get_seq(self,cls):
-        print(self.as_numpy().shape)
-        return [ cls.get_category(frame_i) for frame_i in self.frames]
+        self.seq=[ cls.get_category(frame_i) for frame_i in self.frames]
+        return self.seq
 
     def __str__(self):
     	return self.name
@@ -41,4 +42,3 @@ def read_action(action_path):
     if(len(frames)==0):
         return None
     return Action(name,frames,cat)
-
