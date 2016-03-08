@@ -7,11 +7,8 @@ def get_shape_context(in_path):
     if(len(points)==0):
         return None	
     extr_points=extrem_points(points)
-    center=center_of_image(img)#center_of_mass(points)
-    vectors=get_vectors(center,points)
-    dists=get_distances(vectors)
-    dists,vectors=normalize_dist(dists,vectors)
-    hist=get_histogram(dists,vectors)
+    #center=center_of_image(img)#center_of_mass(points)
+    hist=get_multiple_histograms(extr_points,points)
     return hist.flatten()
 
 def read_points(in_path):
@@ -51,6 +48,20 @@ def normalize_dist(dists,vectors):
         vector_i/=avg_dist
     return dists,vectors
 
+def get_multiple_histograms(key_points,points):
+    hists=[get_single_histogram(key_point_i,points)  
+                 for key_point_i in key_points]
+    mult_hist=[]
+    for hist_i in hists:
+        mult_hist+=list(hist_i)
+    return np.array(mult_hist)
+
+def get_single_histogram(center,points):
+    vectors=get_vectors(center,points)
+    dists=get_distances(vectors)
+    dists,vectors=normalize_dist(dists,vectors)
+    return get_histogram(dists,vectors)
+
 def get_histogram(dists,vectors,dist_bins=6,theta_bins=18):
     thetas=[ vec_i[0]/dist_i for vec_i,dist_i in zip(vectors,dists)]
     hist=np.zeros((dist_bins+1,theta_bins+1))
@@ -65,8 +76,6 @@ def get_histogram(dists,vectors,dist_bins=6,theta_bins=18):
         if(0<=x_i and 0<=y_i):
             hist[x_i][y_i]+=1.0
     hist/=float(len(dists))
-    #for hist_i in hist:
-    #    print([str(hist_j) for hist_j in hist_i])
     return hist
 
 def compute_log_bin(dist_i,dist_bins):
