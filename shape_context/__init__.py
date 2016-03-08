@@ -6,6 +6,7 @@ def get_shape_context(in_path):
     points,img=read_points(in_path)
     if(len(points)==0):
         return None	
+    extr_points=extrem_points(points)
     center=center_of_image(img)#center_of_mass(points)
     vectors=get_vectors(center,points)
     dists=get_distances(vectors)
@@ -20,6 +21,15 @@ def read_points(in_path):
       if(value!=0):
           points.append(make_point(x,y))
     return points,img
+
+def extrem_points(points):
+    points=np.array(points)
+    max_id=[np.argmax(points[:,0]),np.argmax(points[:,1])]
+    min_id=[np.argmin(points[:,0]),np.argmin(points[:,1])]
+    indices=max_id+min_id
+    extrem_points=[points[p_id] for p_id in indices ]
+    print(extrem_points)
+    return extrem_points
 
 def center_of_mass(points):
     np_points=np.array(points)
@@ -41,7 +51,7 @@ def normalize_dist(dists,vectors):
         vector_i/=avg_dist
     return dists,vectors
 
-def get_histogram(dists,vectors,dist_bins=10,theta_bins=36):
+def get_histogram(dists,vectors,dist_bins=6,theta_bins=18):
     thetas=[ vec_i[0]/dist_i for vec_i,dist_i in zip(vectors,dists)]
     hist=np.zeros((dist_bins+1,theta_bins+1))
     for dist_i,theta_i in zip(dists,thetas):
@@ -55,7 +65,8 @@ def get_histogram(dists,vectors,dist_bins=10,theta_bins=36):
         if(0<=x_i and 0<=y_i):
             hist[x_i][y_i]+=1.0
     hist/=float(len(dists))
-    print(hist)
+    #for hist_i in hist:
+    #    print([str(hist_j) for hist_j in hist_i])
     return hist
 
 def compute_log_bin(dist_i,dist_bins):
@@ -63,7 +74,9 @@ def compute_log_bin(dist_i,dist_bins):
     return np.floor(dist_bins*x_i)
 
 def compute_tan_bin(dist_i,dist_bins):
+    x_i=np.log(dist_i)
     x_i=np.tan(dist_i)/(np.pi/2.0)
+    x_i=(x_i+1.0)/2.0
     return np.floor(dist_bins*x_i)
 
 def get_vectors(key_point,points):
@@ -77,5 +90,11 @@ def get_distances(vectors):
 def make_point(x,y):
     return np.array([x,y],dtype=float) 
 
+def compare(img1,img2):
+    hist1=get_shape_context(img1)
+    hist2=get_shape_context(img2)
+    print(np.linalg.norm(hist1-hist2))
+
 if __name__ == "__main__":
-    get_shape_context("in.jpg")
+    #get_shape_context("img2.jpg")
+    compare("img1.jpg","img2.jpg")
