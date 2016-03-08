@@ -41,21 +41,30 @@ def normalize_dist(dists,vectors):
         vector_i/=avg_dist
     return dists,vectors
 
-def get_histogram(dists,vectors,log_bins=8,theta_bins=24):
+def get_histogram(dists,vectors,dist_bins=10,theta_bins=36):
     thetas=[ vec_i[0]/dist_i for vec_i,dist_i in zip(vectors,dists)]
-    hist=np.zeros((log_bins+1,theta_bins+1))
+    hist=np.zeros((dist_bins+1,theta_bins+1))
     for dist_i,theta_i in zip(dists,thetas):
         y_i=(theta_i+1.0)/2.0
         y_i=np.floor(theta_bins*y_i)
-        x_i=(np.log(dist_i)+2.0)/3.0
-        x_i=np.floor(log_bins*x_i)
-        if(x_i>=log_bins):
+        x_i=compute_tan_bin(dist_i,dist_bins)
+        if(x_i>=dist_bins):
             x_i= -1#log_bins
         if(y_i>=theta_bins):
             y_i= -1#theta_bins	
         if(0<=x_i and 0<=y_i):
             hist[x_i][y_i]+=1.0
+    hist/=float(len(dists))
+    print(hist)
     return hist
+
+def compute_log_bin(dist_i,dist_bins):
+    x_i=(np.log(dist_i)+2.0)/3.0
+    return np.floor(dist_bins*x_i)
+
+def compute_tan_bin(dist_i,dist_bins):
+    x_i=np.tan(dist_i)/(np.pi/2.0)
+    return np.floor(dist_bins*x_i)
 
 def get_vectors(key_point,points):
     return [ point_i-key_point
