@@ -1,5 +1,7 @@
 from sklearn import manifold
 
+ALGS={"spectral_reduction":spectral_reduction,"hessian_reduction":hessian_reduction}
+
 def spectral_reduction(data,config):
     dim=int(config.get('dim',30))
     neighbors=int(config.get('neighbors',40))
