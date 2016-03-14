@@ -2,8 +2,8 @@ import numpy as np
 
 class Pcloud(object):
     def __init__(self,points):
-        self.points=items
-        self.dims=items[0].shape[0]
+        self.points=points
+        self.dims=points[0].shape[0]
        
     def __getitem__(self,index):
         return self.seq[index]
@@ -12,15 +12,15 @@ class Pcloud(object):
         return str(len(self.seq))+" "+str(self.cat)
 
     def __len__(self):
-        return len(self.seq) 
+        return len(self.points) 
 
     def get_numpy(self):
         return np.array(self.points)
 
 
-def make_point_cloud(img,3D=True):
-	points=[]
-	if(3D):
+def make_point_cloud(img,dim3D=True):
+    points=[]
+    if(dim3D):
         for (x, y), element in np.ndenumerate(img):
             z=img[x][y]
             points.append(make_point3D(x,y,z))
