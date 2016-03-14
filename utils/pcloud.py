@@ -23,10 +23,13 @@ def make_point_cloud(img,dim3D=True):
     if(dim3D):
         for (x, y), element in np.ndenumerate(img):
             z=img[x][y]
-            points.append(make_point3D(x,y,z))
+            if(z!=0):
+                points.append(make_point3D(x,y,z))
     else:
         for (x, y), element in np.ndenumerate(img):
             points.append(make_point2D(x,y))
+    if(len(points)==0):
+        return None
     return Pcloud(points)
 
 def make_point3D(x,y,z):

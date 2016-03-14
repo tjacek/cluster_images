@@ -25,6 +25,8 @@ def create_images(in_path,config):
 def use_init_features(in_path,config):
     alg=INIT_FEATURES[config['init_features']]
     reduced_data=alg(in_path)
+    reduced_data=[img_i for img_i in reduced_data
+                        if img_i!=None]
     print("init features")
     return reduced_data
 
