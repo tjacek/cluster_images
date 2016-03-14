@@ -1,23 +1,40 @@
 import numpy as np
 import utils.pcloud as pcloud
 import scipy.stats
+import scipy.stats.stats as st
 from sklearn.decomposition import PCA
 
 def get_features(img):
     points=pcloud.make_point_cloud(img)
     if(points==None):
     	return None
-    cloud_extractors=[corl_features]
+    cloud_extractors=[height_feat,std_features,skewness_features]
     all_feats=[]
     for extr_i in cloud_extractors:
-        all_feats+=extr_i(points)
-    img_extractors=[height_feat]
-    for extr_i in img_extractors:
-        all_feats+=extr_i(img)
+        all_feats+=extr_i(img,points)
     print(all_feats)      	
     return np.array(all_feats)
 
-def pca_features(pcloud):
+def std_features(img,pcloud):
+    points=pcloud.get_numpy()
+    feat=np.std(points,axis=0)
+    feat[0]/=float(img.shape[0])
+    feat[1]/=float(img.shape[0])
+    feat[2]/=250.0
+    return list(feat)
+
+def skewness_features(img,pcloud):
+    feats=[]
+    points=pcloud.get_numpy()
+    dim=pcloud.dims
+    for x_i in range(dim):    
+        print(points[:,x_i].shape)
+        corr_xy=st.kurtosis(points[:,x_i])
+        feats.append(corr_xy)    
+    #print(feats)
+    return feats
+
+def pca_features(img,pcloud):
     feats=[]
     pca = PCA(n_components=3)
     pca.fit(pcloud.get_numpy())
@@ -26,19 +43,17 @@ def pca_features(pcloud):
         feats+=list(comp_i)	
     return feats
 
-def corl_features(pcloud):
+def corl_features(img,pcloud):
     feats=[]
     points=pcloud.get_numpy()
     dim=pcloud.dims
-    print(dim)
     for x_i in range(dim):
         for y_i in range(dim):
             if(x_i!=y_i):
                 corr_xy=scipy.stats.pearsonr(points[x_i,:],points[y_i,:])
                 feats.append(corr_xy[0])    
-    print(feats)
     return feats
 
-def height_feat(img):
+def height_feat(img,pcloud):
     x,y=img.shape
     return [float(x)/float(y)]
