@@ -15,5 +15,3 @@ def hessian_reduction(data,config):
                                       method='hessian',eigen_solver="dense")
     X_prim=lle.fit_transform(data)
     return X_prim
-
-ALGS={"spectral_reduction":spectral_reduction,"hessian_reduction":hessian_reduction}

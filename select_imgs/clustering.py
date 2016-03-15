@@ -22,5 +22,3 @@ def agglomer(data,config):
                                linkage='ward')
     cls.fit(data)
     return cls.labels_
-
-ALGS={'kmeans':kmeans,'dbscan':dbscan,'agglomer':agglomer}
