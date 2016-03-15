@@ -28,7 +28,7 @@ def train_model_unsuper(imgs,hyper_params,num_iter=1000):
     return model
 
 def train_model_super(X,y,model,batch_size=100, num_iter=1000):
-    X=X.reshape((X.shape[0],X.shape[2]))
+    X=X.reshape((X.shape[0],X.shape[1]*X.shape[2]))
     input_var=model.get_input_var()
     updates=model.get_updates()
     train_fn = theano.function([input_var,model.target_var], model.loss, updates=updates,allow_input_downcast=True)
