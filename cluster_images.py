@@ -22,7 +22,7 @@ def create_images(in_path,config):
 
 def use_init_features(in_path,config):
     alg=select_imgs.INIT_FEATURES[config['init_features']]
-    reduced_data=alg(in_path)
+    reduced_data=alg(in_path,config)
     reduced_data=[img_i for img_i in reduced_data
                         if img_i!=None]
     print("init features")
@@ -69,5 +69,5 @@ def split_clusters(out_path,dataset,n_clusters):
             utils.imgs.save_img(full_path,img_i,None)
 
 if __name__ == "__main__":
-    conf_path="conf/basic.cfg"
+    conf_path="conf/ae.cfg"
     cluster_images(conf_path)
