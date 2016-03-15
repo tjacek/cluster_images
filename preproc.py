@@ -6,8 +6,9 @@ import utils.conf
 def create_autoencoder(conf_dict):
     image_path=conf_dict["img_path"]
     obj_path=conf_dict["ae_path"]
-    imgs=utils.imgs.read_img_as_array(image_path)
-    da=deep.train_model(imgs,ae.default_parametrs())
+    print("read images from "+ image_path)
+    imgs=utils.imgs.read_img_dir(image_path)
+    da=deep.train_model_unsuper(imgs,ae.default_parametrs())
     utils.files.save_object(da,obj_path) 
     print("autoencoder saved as " + obj_path)
 
