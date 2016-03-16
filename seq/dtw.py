@@ -4,9 +4,13 @@ import seq
 from collections import Counter
 from sklearn.metrics import classification_report
 
-def wrap(in_path): 
+def wrap_seq(in_path): 
     str_seqs=files.read_file(in_path)
     instances=seq.get_seqs(str_seqs)
+    wrap(instances)
+
+def wrap(instances): 
+    print(len(instances))
     test,train=select_dataset(instances)
     correct=[test_i.cat for test_i in test]
     pred=[knn(test_i,train) for test_i in test]
