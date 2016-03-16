@@ -7,6 +7,7 @@ import utils.files as files
 import utils.actions as actions
 import numpy as np
 import seq
+import seq.feats
 import seq.dtw
 from seq.to_dataset import to_dataset
 
@@ -34,13 +35,16 @@ def get_init(y):
     return np.amax(y)+1
     
 if __name__ == "__main__":
-    path="/home/user/reps/dataset6/"
+    path="/home/user/reps/dataset7/"
     final_path=path+"cats"
     data_path="/home/user/reps/cluster_images/dataset"
-    conf_path="conf/dataset6.cfg"
+    conf_path="conf/dataset7.cfg"
     cls_path=path+"sae"
     action_path=path+"cats"
+    conf_dict=utils.conf.read_config(conf_path)
+    inst=seq.feats.to_vec_seq(conf_dict)
+    seq.dtw.wrap(inst)
     #create_sae(data_path,conf_path,cls_path)
-    apply_sae(action_path,cls_path,"dataset6.seq")
+    #apply_sae(action_path,cls_path,"dataset6.seq")
     #seq.to_dataset.to_dataset("dataset6.seq","dataset6.lb")
     #seq.dtw.wrap("dataset6.seq")
