@@ -20,12 +20,14 @@ def basic_feat(img):
 	img=img.reshape((60,60))
 	return basic.get_features(img)
 
-def int_cats(action_i):
+def int_cats(cats):
     cat_to_int={}	
-    for action_i in actions:
-        cat_id=cat_to_int.get(action_i.cat,None)
+    #for action_i in actions:
+    for cat_i in cats:
+        cat_id=cat_to_int.get(cat_i,None)
         if(cat_id==None):
-            cat_to_int[cat_id]=len(cat_to_int.keys())
+            cat_to_int[cat_i]=len(cat_to_int.keys())
+    return cat_to_int
 
 def auto_extractor(conf_dir):
     ae_path=conf_dir["ae_path"]
@@ -54,6 +56,6 @@ def cat_extractor(conf_dir):
     return clos_extractor
 
 def get_vector_cat(cat_i):
-    vec=np.zeros((10,))
+    vec=np.zeros((12,))
     vec[cat_i]=1
     return vec

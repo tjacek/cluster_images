@@ -3,6 +3,8 @@ import numpy as np
 import seq
 from collections import Counter
 from sklearn.metrics import classification_report
+from sklearn.metrics import confusion_matrix
+import feats
 
 def wrap_seq(in_path): 
     str_seqs=files.read_file(in_path)
@@ -14,8 +16,11 @@ def wrap(instances):
     test,train=select_dataset(instances)
     correct=[test_i.cat for test_i in test]
     pred=[knn(test_i,train) for test_i in test]
+    cat_to_int=feats.int_cats(correct)
     print(classification_report(correct, pred))
-
+    correct=[cat_to_int[cat_i] for cat_i in correct]
+    pred=[cat_to_int[cat_i] for cat_i in pred]
+    print(confusion_matrix(correct,pred))
 
 def knn(inst,instances,k=6):
     dists=[dwt_metric(inst,inst_i) for inst_i in instances]
