@@ -7,7 +7,7 @@ import numpy as np
 def to_vec_seq(conf_dir):
     action_path=conf_dir['action_path']
     actions=utils.apply_to_dir(action_path)
-    extr=cat_extractor(conf_dir)#auto_extractor(conf_dir)
+    extr=cat_extractor(conf_dir,False)#auto_extractor(conf_dir)
     vec_seqs=[ action_to_vecs(action_i,extr) for action_i in actions]
     return vec_seqs
 
@@ -46,13 +46,18 @@ def sae_extractor(conf_dir):
     sae=files.read_object(sae_path)
     return lambda img:sae.features(img)  
 
-def cat_extractor(conf_dir):
+def cat_extractor(conf_dir,vector=True):
     print(conf_dir.keys())
     sae_path=conf_dir['sae_path']
     sae=files.read_object(sae_path)
-    def clos_extractor(img):
-        cat_i=sae.get_category(img)
-        return get_vector_cat(cat_i)
+    if(vector):
+        def clos_extractor(img):
+            cat_i=sae.get_category(img)
+            return get_vector_cat(cat_i)
+    #    return clos_extractor
+    else:
+         def clos_extractor(img):
+            return sae.get_category(img)
     return clos_extractor
 
 def get_vector_cat(cat_i):
