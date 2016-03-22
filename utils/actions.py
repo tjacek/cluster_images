@@ -32,14 +32,24 @@ def read_action(action_path):
     #print(action_path)
     frame_paths=files.get_files(action_path,True)
     frames= imgs.read_normalized_images(frame_paths)
-    #[ cv2.imread(frame_path_i) for frame_path_i in frame_paths]
-    name=files.get_name(action_path)
-    cat=action_path.split("/")[-2]
-    print(name)
-    print(cat)
-    print(len(frames))
     if(frames==None):
         return None
     if(len(frames)==0):
         return None
+    #[ cv2.imread(frame_path_i) for frame_path_i in frame_paths]
+    name=files.get_name(action_path)
+    cat=name_cat(action_path,name)
+    print("name: "+name)
+    print("category:" + str(cat))
+    print(len(frames))
+
     return Action(name,frames,cat)
+
+def dir_cat(action_path,name):
+    return action_path.split("/")[-2]
+
+def name_cat(action_path,name):
+    print(name)
+    raw_cat=name.split("_")[0]
+    raw_cat=raw_cat.replace("a","")
+    return int(raw_cat)
