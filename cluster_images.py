@@ -6,9 +6,8 @@ import cv2
 def cluster_images(conf_path):
     config=utils.conf.read_config(conf_path)
     in_path=config["in_path"]
-    out_path=config["out_path"]
     dataset,n_clusters=create_images(in_path,config)
-    split_clusters(out_path,dataset,n_clusters)
+    split_clusters(config,dataset,n_clusters)
 
 def create_images(in_path,config):
     imgs_=utils.imgs.read_img_dir(in_path)
@@ -50,24 +49,29 @@ def save_clustering(out_path, imgs,img_cls):
     lines=utils.files.array_to_txt(lines,"\n")
     utils.files.save_string(out_path,lines)
 
-def split_clusters(out_path,dataset,n_clusters):
-    n_clusters+=1
-    utils.files.make_dir(out_path)
-    cls_dirs=[out_path +"/cls"+str(i)+"/" for i in range(n_clusters)]
-    for c_dir in cls_dirs:
-        utils.files.make_dir(c_dir)
+def split_clusters(config,dataset,n_clusters):
+    out_path=create_dir_struct(config,n_clusters)
     i=0
     for img_i,cls_i in dataset:
-        #cls_i=cls_i[1]
-        #print(cls_i)
         if(cls_i>-1):
-            txt_id="/fr"+str(i)+".jpg" #inst.file_id()
+            txt_id="/fr"+str(i)+".jpg"
             i+=1
             full_path=out_path
             full_path=out_path+"/cls"+str(cls_i) +txt_id
-            #print(full_path)
+            print(full_path)
             utils.imgs.save_img(full_path,img_i,None)
 
+def create_dir_struct(config,n_clusters):
+    out_path=config["out_path"]
+    utils.files.make_dir(out_path)
+    out_path+="/"+config["cls_alg"]
+    utils.files.make_dir(out_path)
+    n_clusters+=1
+    cls_dirs=[out_path +"/cls"+str(i)+"/" for i in range(n_clusters)]
+    for c_dir in cls_dirs:
+        utils.files.make_dir(c_dir)
+    return out_path
+
 if __name__ == "__main__":
-    conf_path="conf/ae.cfg"
+    conf_path="conf/dataset8.cfg"
     cluster_images(conf_path)
