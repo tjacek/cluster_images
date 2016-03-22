@@ -22,9 +22,9 @@ class Autoencoder(object):
         self.l_in =  lasagne.layers.InputLayer(shape=input_shape)
         #print(self.l_in.output_shape)
         self.l_hid = lasagne.layers.DenseLayer(self.l_in, num_units=num_hidden)
-        show_dim(self.l_hid)
+        tools.show_dim(self.l_hid)
         self.l_rec = lasagne.layers.DenseLayer(self.l_hid, num_units=input_shape[1])
-        show_dim(self.l_rec)        
+        tools.show_dim(self.l_rec)        
         self.l_out = self.l_rec#
         self.prediction_symb = lasagne.layers.get_output(self.l_out)
         self.get_loss()
@@ -48,14 +48,15 @@ class Autoencoder(object):
     def get_updates(self):
     	params=self.get_params()
         return lasagne.updates.nesterov_momentum(
-        	     self.loss, params, learning_rate=0.01, momentum=0.9)	
+        	     self.loss, params, learning_rate=0.01, momentum=0.8)	
 
     def get_model(self):
         np_vars=self.get_numpy()
         return AutoencoderModel(np_vars[0],np_vars[1],np_vars[2],np_vars[3])
 
     def apply(self,img):
-        img=img.reshape((1,3600)) #flatten()
+        img_size=np.product(img)
+        img=img.reshape((1,img_size)) #flatten()
         red_img=self.prediction(img)
         print(red_img.shape)
         return red_img.flatten()
