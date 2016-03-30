@@ -1,6 +1,7 @@
 import utils
 import utils.files as files
 import basic
+import basic.external
 import seq
 import numpy as np
 
@@ -62,7 +63,19 @@ def cat_extractor(conf_dir,vector=True):
             return sae.get_category(img)
     return clos_extractor
 
-EXTRACTORS={'auto':auto_extractor ,'sae':sae_extractor,'cat':cat_extractor}
+def cloud_extractor(conf_dir,vector=True):
+    cloud_path=conf_dir['cloud_path']
+    cloud_dir=basic.external.read_external(cloud_path)
+    print("EXTR")
+    print(cloud_dir[cloud_dir.keys()[0] ].shape)
+    #print(cloud_dir.keys()[1::100])
+    def extactor(img):
+        #print(cl.shape)
+        return cloud_dir.get(img.name,np.zeros((308,)))
+    return extactor
+
+EXTRACTORS={'auto':auto_extractor ,'sae':sae_extractor,'cat':cat_extractor,
+            'cloud':cloud_extractor}
 
 def get_vector_cat(cat_i):
     vec=np.zeros((12,))
