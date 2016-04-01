@@ -2,6 +2,7 @@ import files
 #import cv2
 import numpy as np
 import utils.imgs as imgs
+import utils.data
 
 class Action(object):
     def __init__(self,name,frames,cat=None):
@@ -18,6 +19,9 @@ class Action(object):
         self.seq=[ cls.get_robust_category(frame_i) 
                          for frame_i in self.frames]
         return self.seq
+
+    def cat_labels(self):
+        return [(frame_i,self.name) for frame_i in self.frames]
 
     def __str__(self):
     	return self.name
@@ -36,9 +40,8 @@ def read_action(action_path):
         return None
     if(len(frames)==0):
         return None
-    #[ cv2.imread(frame_path_i) for frame_path_i in frame_paths]
     name=files.get_name(action_path)
-    cat=name_cat(action_path,name)
+    cat=dir_cat(action_path,name)
     print("name: "+name)
     print("category:" + str(cat))
     print(len(frames))
@@ -53,3 +56,13 @@ def name_cat(action_path,name):
     raw_cat=name.split("_")[0]
     raw_cat=raw_cat.replace("a","")
     return int(raw_cat)
+
+def get_action_dataset(action_path):
+    actions=utils.apply_to_dir(action_path)
+    action_pairs=[action_i.cat_labels() for action_i in actions]
+    all_pairs=[]
+    for action_i in action_pairs:
+        all_pairs+=action_i
+    X,y=utils.data.pairs_to_dataset(all_pairs)
+    print("y"+str(len(y)))
+    return X,y

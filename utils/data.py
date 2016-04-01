@@ -13,3 +13,25 @@ def read_dataset(dir_path):
             all_images.append(img_j)
             y.append(i)
     return np.array(all_images),np.array(y)
+
+def pairs_to_dataset(pairs):
+    X=[pair_i[0] for pair_i in pairs]
+    y=[pair_i[1] for pair_i in pairs]
+    print(y)
+    X=np.array(X,dtype=float)
+    y=np.array(to_ints(y),dtype=float)
+    return X,y
+
+def to_ints(y):
+    k=0
+    index_dir={}
+    for y_i in y:
+        if(not (y_i in index_dir)):
+            index_dir[y_i]=k
+            k+=1
+    print(index_dir.keys())
+    int_labels=[index_dir[y_i] for y_i in y]
+    return int_labels
+
+def get_init(y):
+    return np.amax(y)+1
