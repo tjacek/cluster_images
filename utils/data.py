@@ -17,7 +17,6 @@ def read_dataset(dir_path):
 def pairs_to_dataset(pairs):
     X=[pair_i[0] for pair_i in pairs]
     y=[pair_i[1] for pair_i in pairs]
-    print(y)
     X=np.array(X,dtype=float)
     y=np.array(to_ints(y),dtype=float)
     return X,y
@@ -33,5 +32,12 @@ def to_ints(y):
     int_labels=[index_dir[y_i] for y_i in y]
     return int_labels
 
-def get_init(y):
+def to_vectors(y):
+    n_cats=get_n_cats(y)
+    y_vec=np.zeros((len(y),n_cats),dtype=float)   
+    for i,y_i in enumerate(y):
+        y_vec[i][y_i]=1
+    return y_vec
+
+def get_n_cats(y):
     return np.amax(y)+1
