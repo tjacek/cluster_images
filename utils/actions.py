@@ -21,7 +21,7 @@ class Action(object):
         return self.seq
 
     def cat_labels(self):
-        return [(frame_i,self.name) for frame_i in self.frames]
+        return [(frame_i,self.cat) for frame_i in self.frames]
 
     def __str__(self):
     	return self.name
@@ -64,5 +64,4 @@ def get_action_dataset(action_path):
     for action_i in action_pairs:
         all_pairs+=action_i
     X,y=utils.data.pairs_to_dataset(all_pairs)
-    print("y"+str(len(y)))
     return X,y
