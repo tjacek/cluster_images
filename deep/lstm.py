@@ -29,7 +29,9 @@ class RNN(object):
         self.target_values = T.vector('target_output')
         network_output = lasagne.layers.get_output(self.l_out)
         self.predicted_values = network_output.flatten()
-        self.cost = T.mean((self.predicted_values - self.target_values)**2)
+        #self.cost = T.mean((self.predicted_values - self.target_values)**2)
+        self.cost = T.mean(lasagne.objectives.binary_crossentropy(self.predicted_values,self.target_values))
+        self.apply=theano.function([self.get_input_var(),self.l_mask.input_var],self.predicted_values)
 
     def get_input_var(self):
         return self.l_in.input_var
@@ -43,7 +45,7 @@ class RNN(object):
         return lasagne.updates.adagrad(self.cost, all_params, LEARNING_RATE)
 
 
-def train_seq(X,y,mask,model,iters=100):
+def train_seq(X,y,mask,model,iters=1000):
     input_var=model.get_input_var()
     updates=model.get_updates()
     train = theano.function([input_var, model.target_values, 
@@ -65,11 +67,13 @@ def train_seq(X,y,mask,model,iters=100):
             loss_i=train(x_i,y_i,mask_i)
             cost_e.append(loss_i)
             cost_mean=np.mean(cost_e)
+            #print(model.apply(x_i,mask_i))
         print(str(epoch) + " "+str(cost_mean))
     return model
 
 if __name__ == "__main__":
-    words,y,mask=gen.ABC_lang(199)
+    words,y,mask=gen.ABC_lang(299)
+    print(y)
     print(words.shape)
     rnn=RNN(10,150)
     train_seq(words,y,mask,rnn) 
