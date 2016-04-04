@@ -7,8 +7,8 @@ def ABC_lang(numb=100,max_size=50):
     for i,y_i in enumerate(y):
         if(y_i==0):
             words[i]=spoil_word(words[i])
-    #X=np.array(words)
-    return words,y
+    mask=get_mask(words,numb,3*max_size)
+    return words,y,mask
 
 def gen_word(max_size):
     word=[]
@@ -26,6 +26,13 @@ def spoil_word(word,err=10):
 def gen_homo(value,size):
     return [value for i in range(size)] 
 
+def get_mask(words,size,max_dim):
+    mask=np.zeros((size,max_dim))
+    for i,word_i in enumerate(words):
+        length=word_i.shape[0]
+        mask[i, :length]=1
+    return mask
+
 if __name__ == "__main__":
     words,y=ABC_lang(200)
-    print(words)	
+    #print(words)	
