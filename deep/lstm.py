@@ -3,36 +3,74 @@ import theano.tensor as T
 import lasagne
 import numpy as np
 import tools
+import gen
 
-class LSTM(object):
-    def __init__(self,N_HIDDEN=10,input_dim=1):
-        self.l_in=lasagne.layers.InputLayer(shape=(None,None,input_dim))
-        l_mask=lasagne.layers.InputLayer(shape=(None,None))
-        gate_parameters=lasagne.layers.recurrent.Gate(W_in=lasagne.init.Orthogonal(),
-                                            W_hid=lasagne.init.Orthogonal(),b=lasagne.init.Constant(0.))
-        cell_parameters=lasagne.layers.recurrent.Gate(W_in=lasagne.init.Orthogonal(),
-                                              W_hid=lasagne.init.Orthogonal(),W_cell=None,b=lasagne.init.Constant(0.),
-                                              nonlinearity=lasagne.nonlinearities.tanh)
-        self.l_lstm=lasagne.layers.recurrent.LSTMLayer(self.l_in,N_HIDDEN,mask_input=l_mask,
-                                        ingate=gate_parameters,forgetgate=gate_parameters,
-                                          cell=cell_parameters,outgate=gate_parameters,
-                                          learn_init=True,grad_clipping=100.)
-        self.prediction_symb = lasagne.layers.get_output(self.l_lstm)
-        self.get_loss()
-        self.prediction=theano.function([self.get_input_var()], self.prediction_symb)
+class RNN(object):
+    def __init__(self,N_BATCH, MAX_LENGTH,N_HIDDEN=1,GRAD_CLIP = 100):
+        DIM_OF_VECTOR=1
+        self.l_in = lasagne.layers.InputLayer(shape=(N_BATCH, MAX_LENGTH, DIM_OF_VECTOR))
+        self.l_mask = lasagne.layers.InputLayer(shape=(N_BATCH, MAX_LENGTH))
+        self.l_forward = lasagne.layers.RecurrentLayer(
+            self.l_in, N_HIDDEN, mask_input=self.l_mask, 
+            grad_clipping=GRAD_CLIP,
+            W_in_to_hid=lasagne.init.HeUniform(),
+            W_hid_to_hid=lasagne.init.HeUniform(),
+            nonlinearity=lasagne.nonlinearities.tanh, only_return_final=True)
+        self.l_backward = lasagne.layers.RecurrentLayer(
+            self.l_in, N_HIDDEN, mask_input=self.l_mask, grad_clipping=GRAD_CLIP,
+            W_in_to_hid=lasagne.init.HeUniform(),
+            W_hid_to_hid=lasagne.init.HeUniform(),
+            nonlinearity=lasagne.nonlinearities.tanh,
+            only_return_final=True, backwards=True)
+        self.l_concat = lasagne.layers.ConcatLayer([self.l_forward, self.l_backward])
+        self.l_out = lasagne.layers.DenseLayer(
+               self.l_concat, num_units=1, nonlinearity=lasagne.nonlinearities.tanh)
+
+        self.target_values = T.vector('target_output')
+        network_output = lasagne.layers.get_output(self.l_out)
+        self.predicted_values = network_output.flatten()
+        self.cost = T.mean((self.predicted_values - self.target_values)**2)
 
     def get_input_var(self):
         return self.l_in.input_var
 
-    def get_loss(self):
-        target_var=self.get_input_var()
-        self.loss = lasagne.objectives.squared_error(self.prediction_symb,target_var)
-        self.loss = self.loss.mean()
+    def get_params(self):
+        return lasagne.layers.get_all_params(self.l_out, trainable=True)
+
+    def get_updates(self):
+        all_params=self.get_params()
+        LEARNING_RATE= .001
+        return lasagne.updates.adagrad(self.cost, all_params, LEARNING_RATE)
 
 
+def train_seq(X,y,mask,model,iters=100):
+    input_var=model.get_input_var()
+    updates=model.get_updates()
+    train = theano.function([input_var, model.target_values, 
+                            model.l_mask.input_var],
+                            model.cost, updates=updates)
+    x_batch,n_batch=tools.get_batch(X)
+    y_batch,n_batch=tools.get_batch(y)
+    mask_batch,n_batch=tools.get_batch(mask)
+    print(n_batch)
+    for epoch in range(iters):
+        cost_e = []
+        for i in range(n_batch):
+            x_i=x_batch[i]
+            y_i=y_batch[i]
+            mask_i=mask_batch[i]
+            #print(x_i.shape)
+            #print(y_i.shape)
+            #print(mask_i.shape)
+            loss_i=train(x_i,y_i,mask_i)
+            cost_e.append(loss_i)
+            cost_mean=np.mean(cost_e)
+        print(str(epoch) + " "+str(cost_mean))
+    return model
 
 if __name__ == "__main__":
-    #words,y=ABC_lang(200)
-    #print(words)
-    #LSTM() 
-    tools.make_simple_layer(100,20,postfix="f") 
+    words,y,mask=gen.ABC_lang(199)
+    print(words.shape)
+    rnn=RNN(10,150)
+    train_seq(words,y,mask,rnn) 
+    #tools.make_simple_layer(100,20,postfix="f") 
