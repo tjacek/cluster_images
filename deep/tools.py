@@ -1,8 +1,27 @@
 import numpy as np
 import theano
 import theano.tensor as T
-import deep
+import lasagne
 
+class SimpleLayer(object):
+    def __init__(self,W,b):
+        self.W=W
+        self.b=b
+
+    def get_params(self):
+        return [self.W, self.b] 
+
+def make_simple_layer(in_size,out_size,postfix="f"):
+    ort_init=lasagne.init.Orthogonal()
+    cons_init=lasagne.init.Constant(0.)
+    W_value=ort_init.sample((in_size,out_size))
+    b_value=cons_init.sample((out_size,))
+    W=make_var(W_value,"W_"+postfix)
+    b=make_var(b_value,"b_"+postfix)
+    return SimpleLayer(W,b)
+
+def make_var(value,name):
+    return theano.shared(value=value,name=name,borrow=True)
 
 def dist_to_category(dist):
     return dist.flatten().argmax(axis=0)
