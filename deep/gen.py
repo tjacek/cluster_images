@@ -1,17 +1,19 @@
 import numpy as np 
 import numpy.random as rnd
 
-def bool_fun(size=100,max_size=50):
+def bool_fun(size=100,max_dim=50):
     data=[]
     y=[]
     for i in range(size):
         cat=i%2
-        data.append(bool_seq(max_size,cat))
-        y.append(int(cat))
-    return data,y
+        data.append(bool_seq(max_dim,cat))
+        y.append(float(int(cat)))
+    mask=get_mask(data,size,max_dim)
+    X=to_numpy(data,max_dim)
+    return X,y,mask
 
-def bool_seq(max_size,cat):
-    length=rnd.randint(1,max_size)
+def bool_seq(max_dim,cat):
+    length=rnd.randint(1,max_dim)
     seq=np.zeros((length,3))
     for i in range(length):
         seq[i][0]=rnd.randint(2)
@@ -31,7 +33,6 @@ def ABC_lang(numb=100,max_size=50):
     max_dim=3*max_size
     mask=get_mask(words,numb,max_dim)
     words=to_numpy(words,max_dim)
-    print(words.shape)
     return words,y,mask
 
 def gen_word(max_size):
@@ -62,11 +63,13 @@ def to_numpy(X,max_dim):
     X_full=[]
     for x_i in X:
         z_size=max_dim-x_i.shape[0]
-        z_i=np.zeros((z_size))
+        #print(x_i.shape)
+        z_i=np.zeros((z_size,x_i.shape[1]))
         f_i=np.concatenate([x_i,z_i])
         X_full.append(f_i)
     X_full=np.array(X_full)
-    X_full=np.reshape(X_full,(size,max_dim,1))
+    #X_full=np.reshape(X_full,(size,max_dim,1))
+    print(X_full.shape)
     return X_full
 
 if __name__ == "__main__":

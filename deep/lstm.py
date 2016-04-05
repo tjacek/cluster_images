@@ -6,9 +6,9 @@ import tools
 import gen
 
 class RNN(object):
-    def __init__(self,N_BATCH, MAX_LENGTH,N_HIDDEN=1,GRAD_CLIP = 100):
-        DIM_OF_VECTOR=1
-        self.l_in = lasagne.layers.InputLayer(shape=(N_BATCH, MAX_LENGTH, DIM_OF_VECTOR))
+    def __init__(self,N_BATCH, MAX_LENGTH,dim_of_vector=1,N_HIDDEN=1,GRAD_CLIP = 100):
+        
+        self.l_in = lasagne.layers.InputLayer(shape=(N_BATCH, MAX_LENGTH, dim_of_vector))
         self.l_mask = lasagne.layers.InputLayer(shape=(N_BATCH, MAX_LENGTH))
         self.l_forward = lasagne.layers.RecurrentLayer(
             self.l_in, N_HIDDEN, mask_input=self.l_mask, 
@@ -45,7 +45,7 @@ class RNN(object):
         return lasagne.updates.adagrad(self.cost, all_params, LEARNING_RATE)
 
 
-def train_seq(X,y,mask,model,iters=1000):
+def train_seq(X,y,mask,model,iters=100):
     input_var=model.get_input_var()
     updates=model.get_updates()
     train = theano.function([input_var, model.target_values, 
@@ -72,9 +72,9 @@ def train_seq(X,y,mask,model,iters=1000):
     return model
 
 if __name__ == "__main__":
-    words,y,mask=gen.ABC_lang(299)
+    X,y,mask=gen.bool_fun(size=199)#gen.ABC_lang(299)
     print(y)
-    print(words.shape)
-    rnn=RNN(10,150)
-    train_seq(words,y,mask,rnn) 
+    print(X.shape)
+    rnn=RNN(10,X.shape[1],dim_of_vector=X.shape[2])
+    train_seq(X,y,mask,rnn) 
     #tools.make_simple_layer(100,20,postfix="f") 
