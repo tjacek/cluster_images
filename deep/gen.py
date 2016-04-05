@@ -1,13 +1,37 @@
 import numpy as np 
 import numpy.random as rnd
 
+def bool_fun(size=100,max_size=50):
+    data=[]
+    y=[]
+    for i in range(size):
+        cat=i%2
+        data.append(bool_seq(max_size,cat))
+        y.append(int(cat))
+    return data,y
+
+def bool_seq(max_size,cat):
+    length=rnd.randint(1,max_size)
+    seq=np.zeros((length,3))
+    for i in range(length):
+        seq[i][0]=rnd.randint(2)
+        seq[i][1]=rnd.randint(2)
+        if(cat):
+            seq[i][2]=seq[i][0]*seq[i][1]
+        else:
+            seq[i][2]=(seq[i][0]+seq[i][1])%2
+    return seq
+
 def ABC_lang(numb=100,max_size=50):
     words=[gen_word(max_size) for i in range(numb)]
     y=[i%2 for i in range(numb) ]
     for i,y_i in enumerate(y):
         if(y_i==0):
             words[i]=spoil_word(words[i])
-    mask=get_mask(words,numb,3*max_size)
+    max_dim=3*max_size
+    mask=get_mask(words,numb,max_dim)
+    words=to_numpy(words,max_dim)
+    print(words.shape)
     return words,y,mask
 
 def gen_word(max_size):
@@ -33,6 +57,19 @@ def get_mask(words,size,max_dim):
         mask[i, :length]=1
     return mask
 
+def to_numpy(X,max_dim):
+    size=len(X)
+    X_full=[]
+    for x_i in X:
+        z_size=max_dim-x_i.shape[0]
+        z_i=np.zeros((z_size))
+        f_i=np.concatenate([x_i,z_i])
+        X_full.append(f_i)
+    X_full=np.array(X_full)
+    X_full=np.reshape(X_full,(size,max_dim,1))
+    return X_full
+
 if __name__ == "__main__":
-    words,y=ABC_lang(200)
-    #print(words)	
+    #words,y=ABC_lang(200)
+    X,y=bool_fun(100,50)
+    print(y)	
