@@ -26,12 +26,13 @@ class RNN(object):
         self.l_out = lasagne.layers.DenseLayer(
                self.l_concat, num_units=1, nonlinearity=lasagne.nonlinearities.tanh)
 
-        self.target_values = T.vector('target_output')
+        self.target_values = T.ivector('target_output')
         network_output = lasagne.layers.get_output(self.l_out)
         self.predicted_values = network_output.flatten()
         #self.cost = T.mean((self.predicted_values - self.target_values)**2)
-        self.cost = T.mean(lasagne.objectives.binary_crossentropy(self.predicted_values,self.target_values))
-        self.apply=theano.function([self.get_input_var(),self.l_mask.input_var],self.predicted_values)
+        self.cost = T.nnet.categorical_crossentropy(self.predicted_values,self.target_values).mean()
+        #T.mean(lasagne.objectives.binary_crossentropy(self.predicted_values,self.target_values))
+        self.apply=theano.function([self.get_input_var(),self.l_mask.input_var],self.predicted_values,allow_input_downcast=True)
 
     def get_input_var(self):
         return self.l_in.input_var
@@ -42,15 +43,17 @@ class RNN(object):
     def get_updates(self):
         all_params=self.get_params()
         LEARNING_RATE= .001
-        return lasagne.updates.adagrad(self.cost, all_params, LEARNING_RATE)
+        return lasagne.updates.nesterov_momentum(
+                 self.cost, all_params, learning_rate=0.01, momentum=0.8)   
+        #lasagne.updates.adagrad(self.cost, all_params, LEARNING_RATE)
 
 
-def train_seq(X,y,mask,model,iters=100):
+def train_seq(X,y,mask,model,iters=1000    ):
     input_var=model.get_input_var()
     updates=model.get_updates()
     train = theano.function([input_var, model.target_values, 
                             model.l_mask.input_var],
-                            model.cost, updates=updates)
+                            model.cost, updates=updates,allow_input_downcast=True)
     x_batch,n_batch=tools.get_batch(X)
     y_batch,n_batch=tools.get_batch(y)
     mask_batch,n_batch=tools.get_batch(mask)

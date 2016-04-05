@@ -7,9 +7,10 @@ def bool_fun(size=100,max_dim=50):
     for i in range(size):
         cat=i%2
         data.append(bool_seq(max_dim,cat))
-        y.append(float(int(cat)))
+        y.append(int(cat))
     mask=get_mask(data,size,max_dim)
     X=to_numpy(data,max_dim)
+    y=np.array(y,dtype='int64')
     return X,y,mask
 
 def bool_seq(max_dim,cat):
@@ -64,7 +65,12 @@ def to_numpy(X,max_dim):
     for x_i in X:
         z_size=max_dim-x_i.shape[0]
         #print(x_i.shape)
+        if(len(x_i.shape)==1):
+            x_i=np.reshape(x_i,(x_i.shape[0],1))
         z_i=np.zeros((z_size,x_i.shape[1]))
+        #else:
+        #    print("OK")
+        #    z_i=np.zeros((z_size,1))
         f_i=np.concatenate([x_i,z_i])
         X_full.append(f_i)
     X_full=np.array(X_full)
