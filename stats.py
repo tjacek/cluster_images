@@ -18,11 +18,14 @@ def show_stats(actions_len):
     print("Min " + str(min_act))
 
 def dim_stats(actions):
-    act_x=utils.action.apply_to_actions(actions,lambda act_i:act_i.shape[0])
-    act_y=utils.actions.apply_to_actions(actions,lambda act_i:act_i.shape[1])
+    act_x=utils.action.apply_to_actions(actions,lambda act_i:act_i.org_dim[0])
+    act_y=utils.actions.apply_to_actions(actions,lambda act_i:act_i.org_dim[1])
     act_size=utils.actions.apply_to_actions(actions,lambda act_i:np.product(act_i.shape))
+    print("dim x")
     show_stats(act_x)
+    print("dim y")
     show_stats(act_y)
+    print("x*y")
     show_stats(act_size)
 
 def extract_data(actions,fun=len):

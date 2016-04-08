@@ -6,15 +6,19 @@ import basic
 
 class Image(np.ndarray):
     def __new__(cls,name,input_array):
-        #subtype, shape, dtype=float, buffer=None, offset=0,strides=None, order=None):
+        print(input_array.shape)
+        org_dim=[input_array.shape[0],input_array.shape[1]]
+        input_array=input_array.flatten()
         obj = np.asarray(input_array).view(cls) #np.ndarray.__new__(subtype, shape, dtype, buffer, offset, strides,
               #           order)
         obj.name=name
+        obj.org_dim=org_dim
         return obj
 
     def __array_finalize__(self, obj):
         if obj is None: return
         self.name = getattr(obj,'name', None)
+        self.org_dim = getattr(obj,'org_dim', None)
 
 def read_img_as_array(action_path):
     print(action_path)
@@ -24,19 +28,26 @@ def read_img_as_array(action_path):
     return np.asarray(imgs)
 
 def read_images(paths,norm_z=True):
-    imgs=[cv2.imread(f,cv2.IMREAD_GRAYSCALE) for f in paths]#[image.imread(f) for f in files]
+    imgs=[cv2.imread(f,cv2.IMREAD_GRAYSCALE) for f in paths]
     names=[files.get_name(path_i) for path_i in paths]
+    #print(names)
     imgs=[Image(name_i,img_i) for img_i,name_i in zip(imgs,names)
                    if img_i!=None]
     #imgs=[img_i.reshape((1,3600)) for img_i in imgs]
     imgs=[img_i.astype(float) for img_i in imgs]
     if(norm_z):
         imgs=[img_i/255.0 for img_i in imgs]
+    print("IMG:" +imgs[0].name)
     return imgs
 
-def read_normalized_images(files):
-    imgs=[cv2.imread(f,cv2.IMREAD_GRAYSCALE) for f in files]#[image.imread(f) for f in files]
-    imgs=[img_i.flatten() for img_i in imgs
+def read_normalized_images(paths):
+    imgs=[cv2.imread(f,cv2.IMREAD_GRAYSCALE) for f in paths]
+    if(len(imgs)==0):
+        return imgs
+    print("OK"+ str(imgs[0].shape))
+    
+    names=[files.get_name(path_i) for path_i in paths]
+    imgs=[Image(name_i,img_i) for img_i,name_i in zip(imgs,names)
                              if img_i!=None]
     imgs=[img_i.astype(float) for img_i in imgs]
     imgs=[img_i/255.0 for img_i in imgs]
