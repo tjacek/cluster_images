@@ -20,6 +20,9 @@ class Image(np.ndarray):
         self.name = getattr(obj,'name', None)
         self.org_dim = getattr(obj,'org_dim', None)
 
+    def get_orginal(self):
+        return np.reshape(self,self.org_dim)
+
 def read_img_as_array(action_path):
     print(action_path)
     all_files=files.get_files(action_path)
