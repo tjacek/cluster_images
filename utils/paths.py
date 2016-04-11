@@ -1,5 +1,7 @@
 class Path(object):
     def __init__(self, text):
+        if(type(text)==Path):
+            text=str(Path)
         text=text.replace("//","/")
         self.items=str(text).split("/")
 
@@ -16,7 +18,7 @@ class Path(object):
         if(type(other)==Path):
             copy.append(other.items)
         return copy
-        
+
     def __str__(self):
         return "/".join(self.items)	
 
