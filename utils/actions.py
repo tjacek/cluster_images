@@ -1,4 +1,4 @@
-import files
+import files,dirs
 #import cv2
 import numpy as np
 import utils.imgs as imgs
@@ -32,15 +32,17 @@ class Action(object):
     def __len__(self):
         return len(self.frames)
 
+    def apply(self,fun):
+        return [ fun(frame_i) for frame_i in self.frames]
+
 def read_action(action_path):
-    #print(action_path)
-    frame_paths=files.get_files(action_path,True)
-    frames= imgs.read_normalized_images(frame_paths)
+    print(action_path)
+    frames= imgs.read_images(action_path)
     if(frames==None):
         return None
     if(len(frames)==0):
         return None
-    name=files.get_name(action_path)
+    name=action_path.get_name()
     cat=dir_cat(action_path,name)
     print("name: "+name)
     print("category:" + str(cat))
@@ -49,7 +51,7 @@ def read_action(action_path):
     return Action(name,frames,cat)
 
 def dir_cat(action_path,name):
-    return action_path.split("/")[-2]
+    return action_path.items[-2]
 
 def name_cat(action_path,name):
     print(name)
@@ -65,3 +67,9 @@ def get_action_dataset(action_path):
         all_pairs+=action_i
     X,y=utils.data.pairs_to_dataset(all_pairs)
     return X,y
+
+def apply_to_actions(actions,fun):
+    all_actions=[]
+    for action_i in actions:
+        all_actions+=action_i.apply(fun)
+    return all_actions
