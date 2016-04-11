@@ -1,4 +1,5 @@
 import utils.files as files
+from utils.timer import clock 
 import numpy as np 
 import seq
 from collections import Counter
@@ -11,8 +12,9 @@ def wrap_seq(in_path):
     instances=seq.get_seqs(str_seqs)
     wrap(instances)
 
+
+@clock
 def wrap(instances): 
-    print(len(instances))
     test,train=select_dataset(instances)
     correct=[test_i.cat for test_i in test]
     pred=[knn(test_i,train) for test_i in test]

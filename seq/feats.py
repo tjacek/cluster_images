@@ -2,9 +2,12 @@ import utils
 import utils.files as files
 import basic
 import basic.external
+import basic.transform as trans_feat
 import seq
 import numpy as np
+from utils.timer import clock
 
+@clock
 def to_vec_seq(conf_dir):
     action_path=conf_dir['action_path']
     actions=utils.apply_to_dir(action_path)
@@ -33,9 +36,9 @@ def int_cats(cats):
     return cat_to_int
 
 def auto_extractor(conf_dir):
-    ae_path=conf_dir["ae_path"]
+    ae_path=conf_dir["auto_path"]
     ae=files.read_object(ae_path)
-    size=int(conf_dir['img_dim_x'])*int(conf_dir['img_dim_y'])
+    size=int(conf_dir['dim_x'])*int(conf_dir['dim_y'])
     return lambda img:apply_dec(img,ae,size)
 
 def apply_dec(img,model,size):
@@ -66,6 +69,7 @@ def cat_extractor(conf_dir,vector=True):
 def cloud_extractor(conf_dir,vector=True):
     cloud_path=conf_dir['cloud_path']
     cloud_dir=basic.external.read_external(cloud_path)
+    cloud_dir=trans_feat.scale_features(cloud_dir)
     print("EXTR")
     print(cloud_dir[cloud_dir.keys()[0] ].shape)
     #print(cloud_dir.keys()[1::100])
@@ -78,6 +82,6 @@ EXTRACTORS={'auto':auto_extractor ,'sae':sae_extractor,'cat':cat_extractor,
             'cloud':cloud_extractor}
 
 def get_vector_cat(cat_i):
-    vec=np.zeros((12,))
+    vec=np.zeros((10,))
     vec[cat_i]=1
     return vec
