@@ -15,6 +15,8 @@ def cluster_images(conf_path):
         new_config=config.copy()
         new_config["in_path"]=str(in_cat)
         new_config["out_path"]=str(out_cat)
+        if(config['init_features']=='autoencoder'):
+            new_config["ae_path"]=config["ae_path"]+"/"+in_cat.get_name()
         imgs=utils.imgs.read_images(in_cat)
         print("Number of images %i",len(imgs))
         dataset,n_clusters=select_imgs.create_images(in_cat,new_config,imgs)
