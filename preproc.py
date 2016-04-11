@@ -7,8 +7,10 @@ def create_autoencoder(conf_dict):
     image_path=conf_dict["img_path"]
     obj_path=conf_dict["ae_path"]
     print("read images from "+ image_path)
-    imgs=utils.imgs.read_img_dir(image_path)
-    da=deep.train_model_unsuper(imgs,ae.default_parametrs())
+    imgs=utils.imgs.read_images(image_path)
+    dim_x=int(conf_dict['dim_x'])
+    dim_y=int(conf_dict['dim_y'])
+    da=deep.train_model_unsuper(imgs,ae.default_parametrs(),input_dim=(dim_x,dim_y))
     utils.files.save_object(da,obj_path) 
     print("autoencoder saved as " + obj_path)
 
@@ -30,7 +32,7 @@ def apply_ae(image_path,ae_path):
     utils.files.save_string("auto.csv",lines)
 
 if __name__ == "__main__":
-    conf_path="conf/dataset6.cfg"
+    conf_path="conf/dataset9.cfg"
     conf_dict=utils.conf.read_config(conf_path)
     create_autoencoder(conf_dict)
     #apply_ae(img_path,ae_path)

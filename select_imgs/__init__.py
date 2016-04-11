@@ -13,6 +13,14 @@ CLUSTER={'kmeans':clustering.kmeans,
          'dbscan':clustering.dbscan,
          'agglomer':clustering.agglomer}
 
+def create_images(in_path,config,org_imgs): 
+    init_imgs=use_init_features(in_path,config)
+    reduced_imgs=use_reduction(init_imgs,config)
+    img_cls=use_clustering(reduced_imgs,config)
+    n_clusters=max(img_cls)
+    dataset=[(img_i,cls_i) for img_i,cls_i in zip(org_imgs,img_cls)]
+    #save_clustering("clust.lb",reduced_imgs,img_cls)
+    return dataset,n_clusters
 
 def use_init_features(in_path,config):
     alg=INIT_FEATURES[config['init_features']]
@@ -26,7 +34,7 @@ def use_reduction(mf_data,config):
     alg_name=config.get('reduce_alg',None)
     if(alg_name==None):
         return mf_data
-    reduce_alg=ALGS[alg_name]
+    reduce_alg=REDUCTION[alg_name]
     reduced_data=reduce_alg( mf_data,config)
     print("reduce data")
     return reduced_data

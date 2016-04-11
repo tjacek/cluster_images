@@ -1,16 +1,15 @@
 import numpy as np
-import utils
 import cv2
-import files
-import basic
+import paths
+from dirs import dir_arg, ApplyToFiles
+#from paths import str_arg
 
 class Image(np.ndarray):
     def __new__(cls,name,input_array):
-        print(input_array.shape)
         org_dim=[input_array.shape[0],input_array.shape[1]]
+        input_array=input_array.astype(float) 
         input_array=input_array.flatten()
-        obj = np.asarray(input_array).view(cls) #np.ndarray.__new__(subtype, shape, dtype, buffer, offset, strides,
-              #           order)
+        obj = np.asarray(input_array).view(cls) 
         obj.name=name
         obj.org_dim=org_dim
         return obj
@@ -23,47 +22,26 @@ class Image(np.ndarray):
     def get_orginal(self):
         return np.reshape(self,self.org_dim)
 
-def read_img_as_array(action_path):
-    print(action_path)
-    all_files=files.get_files(action_path)
-    all_files=files.append_path(action_path+"/",all_files)
-    imgs=read_normalized_images(all_files)
-    return np.asarray(imgs)
-
-def read_images(paths,norm_z=True):
-    imgs=[cv2.imread(f,cv2.IMREAD_GRAYSCALE) for f in paths]
-    names=[files.get_name(path_i) for path_i in paths]
-    #print(names)
-    imgs=[Image(name_i,img_i) for img_i,name_i in zip(imgs,names)
+@dir_arg
+def read_images(paths,nomalized=True):
+    #print([str(path_i) for path_i in paths])
+    imgs=[cv2.imread(str(p),cv2.IMREAD_GRAYSCALE) 
+            for p in paths]
+    imgs=[Image(path_i.get_name(),img_i) for img_i,path_i in zip(imgs,paths)
                    if img_i!=None]
-    #imgs=[img_i.reshape((1,3600)) for img_i in imgs]
-    imgs=[img_i.astype(float) for img_i in imgs]
-    if(norm_z):
+    if(nomalized):
         imgs=[img_i/255.0 for img_i in imgs]
-    print("IMG:" +imgs[0].name)
     return imgs
 
-def read_normalized_images(paths):
-    imgs=[cv2.imread(f,cv2.IMREAD_GRAYSCALE) for f in paths]
-    if(len(imgs)==0):
-        return imgs
-    print("OK"+ str(imgs[0].shape))
-    
-    names=[files.get_name(path_i) for path_i in paths]
-    imgs=[Image(name_i,img_i) for img_i,name_i in zip(imgs,names)
-                             if img_i!=None]
-    imgs=[img_i.astype(float) for img_i in imgs]
-    imgs=[img_i/255.0 for img_i in imgs]
-    return imgs
-
-def read_img_dir(action_path,norm_z=True):
-    print(action_path)
-    all_files=files.get_files(action_path)
-    return read_images(all_files,norm_z) 
-
-def save_img(full_path,img,dim=(60,60) ):
-    if(dim!=None):
-        img=img.reshape(dim[0],dim[1])
+def save_img(full_path,img):
+    img=img.get_orginal()
     img*=250.0
     img.astype(int)
-    cv2.imwrite(full_path,img)
+    cv2.imwrite(str(full_path),img)
+
+@ApplyToFiles(True)
+@ApplyToFiles(False)
+def rescale(in_path,out_path,new_dim=(60,60)):    
+    img=cv2.imread(str(in_path))
+    new_img=cv2.resize(img,new_dim)
+    cv2.imwrite(str(out_path),new_img)
