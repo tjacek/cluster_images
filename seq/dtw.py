@@ -6,12 +6,12 @@ from collections import Counter
 from sklearn.metrics import classification_report
 from sklearn.metrics import confusion_matrix
 import feats
+from sklearn.manifold import MDS
 
 def wrap_seq(in_path): 
     str_seqs=files.read_file(in_path)
     instances=seq.get_seqs(str_seqs)
     wrap(instances)
-
 
 @clock
 def wrap(instances): 
@@ -63,3 +63,20 @@ def select_dataset(instances):
         else:
             test.append(inst_i)	
     return train,test
+
+def visualize_dwt(instances):
+    n_samples=len(instances)
+    similarities=np.zeros((n_samples,n_samples))
+    for i,inst_i in enumerate(instances):
+        print(i)
+        for j,inst_j in enumerate(instances):
+            similarities[i][j]=dwt_metric(inst_i,inst_j)        
+    print("OK")
+    seed = np.random.RandomState(seed=3)
+    nmds = MDS(n_components=2, metric=False, max_iter=3000, eps=1e-12,
+                    dissimilarity="precomputed", random_state=seed, n_jobs=1,
+                    n_init=1)
+    pos = nmds.fit(similarities).embedding_
+    print(pos)
+    print(type(pos))
+    #npos = nmds.fit_transform(similarities, init=pos)
