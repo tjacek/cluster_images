@@ -1,4 +1,4 @@
-import utils.files as files
+import utils.files #as files
 import utils.imgs as images
 import numpy as np
 
@@ -13,6 +13,15 @@ def read_dataset(dir_path):
             all_images.append(img_j)
             y.append(i)
     return np.array(all_images),np.array(y)
+
+def agum_dataset(pairs):
+    new_pairs=[]
+    for pair_i in pairs:
+        org_img=pair_i[0].get_orginal()
+        org_img=org_img[::-1]
+        new_pairs.append((org_img,pair_i[1]))
+    pairs+=new_pairs
+    return pairs
 
 def pairs_to_dataset(pairs):
     X=[pair_i[0] for pair_i in pairs]
@@ -41,3 +50,17 @@ def to_vectors(y):
 
 def get_n_cats(y):
     return np.amax(y)+1
+
+def extract_cat(X,y,cat):
+    print(X.shape)
+    X_cat=[X[i] for i,y_i in enumerate(y)
+             if y_i==cat]
+    return X_cat
+
+def dataset_to_labels(out_path,X,y):
+    text=""
+    for i,y_i in enumerate(y):
+        vector=utils.files.vector_string(X[i])
+        print(type(vector))
+        text+=vector+"#"+str(y_i)+"\n"
+    utils.files.save_string(out_path,text)
