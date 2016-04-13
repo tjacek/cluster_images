@@ -10,12 +10,14 @@ def action_stats(actions):
     dim_stats(actions)
 
 def show_stats(actions_len):
-    avg_act=float(sum(actions_len))/float(len(actions_len))
+    avg_act=np.average(actions_len)#float(sum(actions_len))/float(len(actions_len))
     max_act=max(actions_len)
     min_act=min(actions_len)
+    med_act=np.median(actions_len)
     print("Avg "+ str(avg_act))
     print("Max " + str(max_act))
     print("Min " + str(min_act))
+    print("Mediana " + str(med_act))
 
 def dim_stats(actions):
     act_x=utils.action.apply_to_actions(actions,lambda act_i:act_i.org_dim[0])
