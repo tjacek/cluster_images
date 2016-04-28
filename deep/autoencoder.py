@@ -30,6 +30,8 @@ class Autoencoder(object):
         self.get_loss()
         reduced=lasagne.layers.get_output(self.l_hid)
         self.prediction=theano.function([self.get_input_var()], reduced)
+        self.reconstructed=theano.function([self.get_input_var()], 
+                                            self.prediction_symb)
 
     def get_input_var(self):
         return self.l_in.input_var
@@ -57,6 +59,12 @@ class Autoencoder(object):
     def apply(self,img):
         img_size=np.product(img.shape)
         img=img.reshape((1,img_size)) #flatten()
+        red_img=self.reconstructed(img)
+        return red_img.flatten()
+
+    def recon(self,img):
+        img_size=np.product(img.shape)
+        img=img.reshape((1,img_size)) #flatten()
         red_img=self.prediction(img)
         return red_img.flatten()
 
@@ -66,6 +74,11 @@ class Autoencoder(object):
 
 def default_parametrs():
     return {"num_input":3600,"num_hidden":600,"batch_size":100}	
+
+def apply(img_i,ae):
+    imgae.apply(img_i)
+
+
 
 def apply_autoencoder(imgs,ae_path):
     ae=files.read_object(ae_path)
