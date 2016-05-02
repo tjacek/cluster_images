@@ -6,11 +6,12 @@ import tools
 
 class Convet(object):
     def __init__(self,l_in,l_out,in_var,target_var,
-                     pred,loss,updates):
+                     features_pred,pred,loss,updates):
         self.l_in=l_in
         self.l_out=l_out
         self.in_var=in_var
         self.target_var=target_var
+        self.features=theano.function([in_var],features_pred)
         self.pred=theano.function([in_var], pred,allow_input_downcast=True)        
         self.loss=theano.function([in_var,target_var], loss,allow_input_downcast=True)
         self.updates=theano.function([in_var, target_var], loss, 
@@ -25,12 +26,14 @@ class Convet(object):
         return self.updates
 
 def build_convnet(params,n_cats):
-    in_layer,out_layer,all_layers=build_model(params,n_cats)
+    in_layer,out_layer,hid_layer,all_layers=build_model(params,n_cats)
     target_var = T.ivector('targets')
+    features_pred = lasagne.layers.get_output(hid_layer)
     pred,in_var=get_prediction(in_layer,out_layer)
     loss=get_loss(pred,in_var,target_var)
     updates=get_updates(loss,out_layer)
-    return Convet(in_layer,out_layer,in_var,target_var,pred,loss,updates)
+    return Convet(in_layer,out_layer,in_var,target_var,
+                  features_pred,pred,loss,updates)
 
 def build_model(params,n_cats):
     input_shape=(None, 1, params["dimX"], params["dimY"])
@@ -60,7 +63,7 @@ def build_model(params,n_cats):
             nonlinearity=lasagne.nonlinearities.softmax)
     all_layers=[in_layer,conv_layer1,pool_layer1,
                 conv_layer2,pool_layer2,dropout,out_layer ]
-    return in_layer,out_layer,all_layers
+    return in_layer,out_layer,dropout,all_layers
 
 def get_prediction(in_layer,out_layer):
     in_var=in_layer.input_var
