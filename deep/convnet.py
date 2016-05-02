@@ -18,13 +18,20 @@ class Convet(object):
         return self.updates
 
 def build_convnet(params,n_cats):
+    in_layer,out_layer,all_layers=build_model(params,n_cats)
+    target_var = T.ivector('targets')
+    loss_fun,loss,pred=get_loss(in_layer,out_layer,target_var)
+    updates=get_updates(loss,in_layer,out_layer,target_var)
+    return Convet(in_layer,out_layer,loss_fun,updates)
+
+def build_model(params,n_cats):
     input_shape=(None, 1, params["dimX"], params["dimY"])
     n_filters=params["num_filters"]
     filter_size2D=(params["filter_size"],params["filter_size"])
     pool_size2D=(params["pool_size"],params["pool_size"])
     p_drop=params["p"]
     in_layer = lasagne.layers.InputLayer(
-		       shape=input_shape)
+               shape=input_shape)
                #input_var=input_var)
     conv_layer1 = lasagne.layers.Conv2DLayer(
             in_layer, num_filters=n_filters, filter_size=filter_size2D,
@@ -45,25 +52,26 @@ def build_convnet(params,n_cats):
             nonlinearity=lasagne.nonlinearities.softmax)
     all_layers=[in_layer,conv_layer1,pool_layer1,
                 conv_layer2,pool_layer2,dropout,out_layer ]
-    loss,pred=get_loss(in_layer,out_layer)
-    updates=None#get_updates(loss,out_layer)
-    return Convet(in_layer,out_layer,loss,updates)
+    return in_layer,out_layer,all_layers
 
-def get_loss(in_layer,out_layer):
+def get_loss(in_layer,out_layer,target_var):
     in_var=in_layer.input_var
     prediction = lasagne.layers.get_output(out_layer)
     print(in_var.type)
-    #loss = lasagne.objectives.categorical_crossentropy(prediction, target_var)
-    #loss = loss.mean()
-    loss=theano.function([in_var], prediction)
-    return loss,prediction
+    loss = lasagne.objectives.categorical_crossentropy(prediction, target_var)
+    loss = loss.mean()
+    loss_fun=theano.function([in_var,target_var], loss,allow_input_downcast=True)
+    return loss_fun,loss,prediction
 
-def get_updates(loss,out_layer):
+def get_updates(loss,in_layer,out_layer,target_var):
+    in_var=in_layer.input_var
     params = lasagne.layers.get_all_params(out_layer, trainable=True)
     updates = lasagne.updates.nesterov_momentum(
-            loss, params, learning_rate=0.01, momentum=0.9)
-    return updates
+            loss, params, learning_rate=0.001, momentum=0.9)
+    updates_fun=theano.function([in_var, target_var], loss, 
+                               updates=updates,allow_input_downcast=True)
+    return updates_fun
 
 def default_params():
-    return {"dimX":60,"dimY":60,"num_filters":32,
+    return {"dimX":60,"dimY":60,"num_filters":16,
               "filter_size":5,"pool_size":2,"p":0.5}
