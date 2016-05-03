@@ -3,6 +3,7 @@ import theano
 import theano.tensor as T
 import lasagne
 import tools
+import pickle
 
 class Convet(object):
     def __init__(self,l_in,l_out,in_var,target_var,
@@ -80,6 +81,20 @@ def get_updates(loss,out_layer):
     updates = lasagne.updates.nesterov_momentum(
             loss, params, learning_rate=0.001, momentum=0.9)
     return updates
+
+
+def save_covnet(conv_net,path):
+    data = lasagne.layers.get_all_param_values(conv_net.l_out)
+    with open(path, 'w') as f:
+        pickle.dump(data, f)
+
+def read_covnet(path):
+    with open(path, 'r') as f:
+        data = pickle.load(f)
+    #nn.layers.set_all_param_values(model, data)
+    conv_net=build_convnet(default_params(),n_cats=10)
+    lasagne.layers.set_all_param_values(conv_net.l_out, data)
+    return conv_net
 
 def default_params():
     return {"dimX":60,"dimY":60,"num_filters":16,
