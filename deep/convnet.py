@@ -6,8 +6,9 @@ import tools
 import pickle
 
 class Convet(object):
-    def __init__(self,l_in,l_out,in_var,target_var,
+    def __init__(self,params,l_in,l_out,in_var,target_var,
                      features_pred,pred,loss,updates):
+        self.params=params
         self.l_in=l_in
         self.l_out=l_out
         self.in_var=in_var
@@ -26,6 +27,9 @@ class Convet(object):
     def get_updates(self):
         return self.updates
 
+    def __str__(self):
+        return str(self.params)
+
 def build_convnet(params,n_cats):
     in_layer,out_layer,hid_layer,all_layers=build_model(params,n_cats)
     target_var = T.ivector('targets')
@@ -33,7 +37,7 @@ def build_convnet(params,n_cats):
     pred,in_var=get_prediction(in_layer,out_layer)
     loss=get_loss(pred,in_var,target_var)
     updates=get_updates(loss,out_layer)
-    return Convet(in_layer,out_layer,in_var,target_var,
+    return Convet(params,in_layer,out_layer,in_var,target_var,
                   features_pred,pred,loss,updates)
 
 def build_model(params,n_cats):
