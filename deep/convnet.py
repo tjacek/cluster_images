@@ -93,7 +93,7 @@ def get_updates(loss,out_layer):
     return updates
 
 def save_covnet(conv_net,path):
-    data = lasagne.layers.get_all_param_values(conv_net.l_out)
+    data = conv_net.get_model()#lasagne.layers.get_all_param_values(conv_net.l_out)
     with open(path, 'w') as f:
         pickle.dump(data, f)
 
@@ -106,5 +106,5 @@ def read_covnet(path):
     return conv_net
 
 def default_params():
-    return {"input_shape":(None,1,60,60),"num_filters":16,
+    return {"input_shape":(None,2,60,60),"num_filters":16,
               "filter_size":(5,5),"pool_size":(2,2),"p":0.5}
