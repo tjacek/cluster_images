@@ -5,10 +5,15 @@ import lasagne
 import tools
 import pickle
 
+class Model(object):
+    def __init__(self,hyperparams,params):
+        self.params=params
+        self.hyperparams=hyperparams
+
 class Convet(object):
     def __init__(self,params,l_in,l_out,in_var,target_var,
                      features_pred,pred,loss,updates):
-        self.params=params
+        self.hyperparams=params
         self.l_in=l_in
         self.l_out=l_out
         self.in_var=in_var
@@ -24,9 +29,10 @@ class Convet(object):
         return [tools.dist_to_category(dist_i) 
                     for dist_i in dist]
 
-    def get_updates(self):
-        return self.updates
-
+    def get_model(self):
+        data = lasagne.layers.get_all_param_values(self.l_out)
+        return Model(self.hyperparams,data)
+    
     def __str__(self):
         return str(self.params)
 
@@ -41,10 +47,10 @@ def build_convnet(params,n_cats):
                   features_pred,pred,loss,updates)
 
 def build_model(params,n_cats):
-    input_shape=(None, 1, params["dimX"], params["dimY"])
+    input_shape=params["input_shape"]
     n_filters=params["num_filters"]
-    filter_size2D=(params["filter_size"],params["filter_size"])
-    pool_size2D=(params["pool_size"],params["pool_size"])
+    filter_size2D=params["filter_size"]
+    pool_size2D=params["pool_size"]
     p_drop=params["p"]
     in_layer = lasagne.layers.InputLayer(
                shape=input_shape)
@@ -86,7 +92,6 @@ def get_updates(loss,out_layer):
             loss, params, learning_rate=0.001, momentum=0.9)
     return updates
 
-
 def save_covnet(conv_net,path):
     data = lasagne.layers.get_all_param_values(conv_net.l_out)
     with open(path, 'w') as f:
@@ -101,5 +106,5 @@ def read_covnet(path):
     return conv_net
 
 def default_params():
-    return {"dimX":60,"dimY":60,"num_filters":16,
-              "filter_size":5,"pool_size":2,"p":0.5}
+    return {"input_shape":(None,1,60,60),"num_filters":16,
+              "filter_size":(5,5),"pool_size":(2,2),"p":0.5}
