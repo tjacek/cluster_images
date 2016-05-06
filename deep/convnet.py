@@ -25,6 +25,8 @@ class Convet(object):
                                updates=updates,allow_input_downcast=True)
 
     def get_category(self,img):
+        #img2D=img.get_orginal()
+        #img2D=np.reshape(img2D,(1,1,60,60)) 
         dist=self.pred(img)
         return [tools.dist_to_category(dist_i) 
                     for dist_i in dist]
@@ -33,8 +35,16 @@ class Convet(object):
         data = lasagne.layers.get_all_param_values(self.l_out)
         return Model(self.hyperparams,data)
     
+    def set_model(self,model):
+        lasagne.layers.set_all_param_values(self.l_out,model.params)
+
+    def get_dim(self):
+        dim=self.hyperparams["input_shape"]
+        dim=(1,dim[1],dim[2],dim[3])
+        return dim
+
     def __str__(self):
-        return str(self.params)
+        return str(self.hyperparams)
 
 def build_convnet(params,n_cats):
     in_layer,out_layer,hid_layer,all_layers=build_model(params,n_cats)
@@ -66,7 +76,7 @@ def build_model(params,n_cats):
     pool_layer2 = lasagne.layers.MaxPool2DLayer(conv_layer2, pool_size=pool_size2D)
     dropout = lasagne.layers.DenseLayer(
             lasagne.layers.dropout(pool_layer2, p=p_drop),
-            num_units=256,
+            num_units=300,
             nonlinearity=lasagne.nonlinearities.rectify)
     out_layer = lasagne.layers.DenseLayer(
             lasagne.layers.dropout(dropout, p=p_drop),
@@ -99,12 +109,13 @@ def save_covnet(conv_net,path):
 
 def read_covnet(path):
     with open(path, 'r') as f:
-        data = pickle.load(f)
+        model = pickle.load(f)
+    model.hyperparams["p"]=0.0    
     #nn.layers.set_all_param_values(model, data)
-    conv_net=build_convnet(default_params(),n_cats=10)
-    lasagne.layers.set_all_param_values(conv_net.l_out, data)
+    conv_net=build_convnet(model.hyperparams,n_cats=10)
+    conv_net.set_model(model)
     return conv_net
 
 def default_params():
-    return {"input_shape":(None,2,60,60),"num_filters":16,
+    return {"input_shape":(None,2,60,60),"num_filters":4,
               "filter_size":(5,5),"pool_size":(2,2),"p":0.5}

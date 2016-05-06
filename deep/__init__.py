@@ -53,11 +53,20 @@ def train_model_super(X,y,model,batch_size=100, num_iter=5):
         print(str(epoch) + " "+str(cost_mean))
     return model
 
-def test_super_model(X,y,model,transform,
+
+def show_cats(X,y,model,transform,
                       batch_size=100,num_iter=5):
-    print(X.shape)
     X=transform(X,dim=60)
-    print(X.shape)
+    x_batch,n_batches=tools.get_batch(X,1)
+    for i,y_i in enumerate(y):
+        cat_i=model.get_category(x_batch[i])
+        print(cat_i)
+        print(y_i)
+
+def test_super_model(X,y,model,transform,
+                      batch_size=100,num_iter=300):
+    print("Num iters " + str(num_iter))
+    X=transform(X,dim=60)
     x_batch,n_batches=tools.get_batch(X,batch_size)
     y_batch,n_batches=tools.get_batch(y,batch_size)
     for epoch in range(num_iter):
@@ -96,7 +105,7 @@ def to_vol(X,dim=60):
     def reshape_img(img_i):
         #print(img_i.shape)
         x_i=np.reshape(img_i,(2*dim,dim))
-        print(x_i.shape)
+        #print(x_i.shape)
         img1,img2=split_img(x_i)
         
         x_i=np.array([img1,img2])

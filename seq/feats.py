@@ -5,7 +5,10 @@ import basic.external
 import basic.transform as trans_feat
 import seq
 import numpy as np
+import deep
+import deep.convnet
 from utils.timer import clock
+import deep
 
 @clock
 def to_vec_seq(conf_dir):
@@ -52,6 +55,24 @@ def sae_extractor(conf_dir):
     sae=files.read_object(sae_path)
     return lambda img:sae.features(img)  
 
+def conv_extractor(conf_dir):
+    sae_path=conf_dir['sae_path']
+    print(sae_path)
+    conv_net=deep.convnet.read_covnet(sae_path)
+    dim=conv_net.get_dim()
+    #def extr(img):
+    #    img2D=img.get_orginal()
+    #    img2D=np.reshape(img2D,(1,1,60,60))
+    #    return conv_net.features(img2D)  
+    def extr(img_i):
+        img2D=img_i.get_orginal()
+        img1,img2=deep.split_img(img2D)
+        final_img=np.array([img1,img2])
+        final_img=np.reshape(final_img,dim)
+        print(final_img.shape)
+        return conv_net.features(final_img)
+    return extr  
+
 def cat_extractor(conf_dir,vector=True):
     print(conf_dir.keys())
     sae_path=conf_dir['sae_path']
@@ -78,7 +99,7 @@ def cloud_extractor(conf_dir,vector=True):
         return cloud_dir.get(img.name,np.zeros((308,)))
     return extactor
 
-EXTRACTORS={'auto':auto_extractor ,'sae':sae_extractor,'cat':cat_extractor,
+EXTRACTORS={'auto':auto_extractor ,'conv':conv_extractor,'sae':sae_extractor,'cat':cat_extractor,
             'cloud':cloud_extractor}
 
 def get_vector_cat(cat_i):
