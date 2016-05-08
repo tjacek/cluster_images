@@ -4,6 +4,7 @@ import theano.tensor as T
 import lasagne
 import tools
 import pickle
+from lasagne.regularization import regularize_layer_params_weighted, l2, l1
 
 class Model(object):
     def __init__(self,hyperparams,params):
@@ -82,8 +83,9 @@ def build_model(params,n_cats):
             lasagne.layers.dropout(dropout, p=p_drop),
             num_units=n_cats,
             nonlinearity=lasagne.nonlinearities.softmax)
-    all_layers=[in_layer,conv_layer1,pool_layer1,
-                conv_layer2,pool_layer2,dropout,out_layer ]
+    all_layers={"in":in_layer, "conv1":conv_layer1,"pool":pool_layer1,
+                "conv2":conv_layer2,"pool2":pool_layer2,
+                "hidden",dropout,"out":out_layer ]
     return in_layer,out_layer,dropout,all_layers
 
 def get_prediction(in_layer,out_layer):
@@ -91,10 +93,12 @@ def get_prediction(in_layer,out_layer):
     prediction = lasagne.layers.get_output(out_layer)
     return prediction,in_var
 
-def get_loss(prediction,in_var,target_var):    
+def get_loss(prediction,in_var,target_var,all_layers):    
     loss = lasagne.objectives.categorical_crossentropy(prediction, target_var)
     loss = loss.mean()
-    return loss
+    l_hid=all_layers["hidden"]
+    l1_penalty = regularize_layer_params(l_hid, l1) * 1e-4
+    return loss + l1_penalty
 
 def get_updates(loss,out_layer):
     params = lasagne.layers.get_all_params(out_layer, trainable=True)
@@ -117,5 +121,5 @@ def read_covnet(path):
     return conv_net
 
 def default_params():
-    return {"input_shape":(None,2,60,60),"num_filters":4,
-              "filter_size":(5,5),"pool_size":(2,2),"p":0.5}
+    return {"input_shape":(None,2,60,60),"num_filters":16,
+              "filter_size":(5,5),"pool_size":(4,4),"p":0.5}
