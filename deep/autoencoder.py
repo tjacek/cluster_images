@@ -4,82 +4,53 @@ import theano
 import theano.tensor as T
 import utils.files as files
 import deep.tools as tools
-
-class AutoencoderModel(object):
-    def __init__(self,W,b,W_prime,b_prime):
-        self.W=W
-        self.b=b
-        self.b_prime=b_prime
-        self.W_prime = W_prime
-
-    def get_params(self):
-        return [self.W, self.b, self.b_prime]
+import convnet
 
 class Autoencoder(object):
-    def __init__(self,hyper_params):
-    	num_hidden=hyper_params["num_hidden"]
-    	input_shape = (None,hyper_params["num_input"])
-        self.l_in =  lasagne.layers.InputLayer(shape=input_shape)
-        #print(self.l_in.output_shape)
-        self.l_hid = lasagne.layers.DenseLayer(self.l_in, num_units=num_hidden)
-        #tools.show_dim(self.l_hid)
-        self.l_rec = lasagne.layers.DenseLayer(self.l_hid, num_units=input_shape[1])
-        #tools.show_dim(self.l_rec)        
-        self.l_out = self.l_rec#
-        self.prediction_symb = lasagne.layers.get_output(self.l_out)
-        self.get_loss()
-        reduced=lasagne.layers.get_output(self.l_hid)
-        self.prediction=theano.function([self.get_input_var()], reduced)
-        self.reconstructed=theano.function([self.get_input_var()], 
-                                            self.prediction_symb)
-
-    def get_input_var(self):
-        return self.l_in.input_var
-
-    def get_loss(self):
-    	target_var=self.get_input_var()
-    	self.loss = lasagne.objectives.squared_error(self.prediction_symb,target_var)
-        self.loss = self.loss.mean()
-
-    def get_params(self):
-        return lasagne.layers.get_all_params(self.l_out, trainable=True)
-
-    def get_vars(self):
-    	return [self.l_hid.W,self.l_hid.b,self.l_rec.W,self.l_rec.b]
-
-    def get_updates(self):
-    	params=self.get_params()
-        return lasagne.updates.nesterov_momentum(
-        	     self.loss, params, learning_rate=0.01, momentum=0.8)	
+    def __init__(self,hyper_params,in_var,target_var,
+                     reduction,reconstruction,loss,updates):
+        self.hyper_params=hyper_params
+        self.in_var=in_var
+    	self.prediction=theano.function([self.in_var], reduction,allow_input_downcast=True)
+        self.reconstructed=theano.function([self.in_var], 
+                                           reconstruction,allow_input_downcast=True)
+        self.loss=theano.function([in_var,target_var], loss,allow_input_downcast=True)
+        self.updates=theano.function([in_var, target_var], loss, 
+                               updates=updates,allow_input_downcast=True)
 
     def get_model(self):
-        np_vars=self.get_numpy()
-        return AutoencoderModel(np_vars[0],np_vars[1],np_vars[2],np_vars[3])
-
-    def apply(self,img):
-        img_size=np.product(img.shape)
-        img=img.reshape((1,img_size)) #flatten()
-        red_img=self.reconstructed(img)
-        return red_img.flatten()
-
-    def recon(self,img):
-        img_size=np.product(img.shape)
-        img=img.reshape((1,img_size)) #flatten()
-        red_img=self.prediction(img)
-        return red_img.flatten()
-
-    def get_numpy(self):
-    	var=self.get_vars()
-        return [ var_i.get_value() for var_i in var]
+        data = lasagne.layers.get_all_param_values(self.l_out)
+        return convnet.Model(self.hyperparams,data)
+    
+    def set_model(self,model):
+        lasagne.layers.set_all_param_values(self.l_out,model.params)
 
 def default_parametrs():
-    return {"num_input":3600,"num_hidden":600,"batch_size":100}	
+    return {"num_input":(None,3600),"num_hidden":600}	
 
-def apply(img_i,ae):
-    imgae.apply(img_i)
+def build_autoencoder(params):
+    num_hidden=hyper_params["num_hidden"]
+    input_shape = hyper_params["num_input"]
+    l_in =  lasagne.layers.InputLayer(shape=input_shape)
+    l_hid = lasagne.layers.DenseLayer(self.l_in, num_units=num_hidden)
+    l_out = lasagne.layers.DenseLayer(self.l_hid, num_units=input_shape[1])
+    reconstruction = lasagne.layers.get_output(l_out)
+    reduction=lasagne.layers.get_output(l_hid)
+    in_var=in_layer.input_var
+    target_var = T.ivector('targets')
+    loss=get_loss(reconstruction,in_var,target_var)
+    updates=get_updates(loss,l_out)
+    return   Autoencoder(hyper_params,in_var,target_var,
+                         reduction,reconstruction,loss,updates)
 
+def get_loss(reconstruction,in_var,target_var):    
+    loss = lasagne.objectives.categorical_crossentropy(prediction, target_var)
+    loss = loss.mean()
+    #l_hid=all_layers["out"]
+    #l1_penalty = regularize_layer_params(l_hid, l1) * 0.001
+    return loss #+ l1_penalty    
 
-
-def apply_autoencoder(imgs,ae_path):
-    ae=files.read_object(ae_path)
-    return [ae.apply(img_i) for img_i in imgs]
+def get_updates(loss,out_layer):
+    params = lasagne.layers.get_all_params(out_layer, trainable=True)
+    return lasagne.updates.nesterov_momentum(
+                 self.loss, params, learning_rate=0.01, momentum=0.8)   
