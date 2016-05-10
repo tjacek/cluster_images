@@ -64,7 +64,7 @@ def show_cats(X,y,model,transform,
         print(y_i)
 
 def test_super_model(X,y,model,transform,
-                      batch_size=100,num_iter=300):
+                      batch_size=100,num_iter=500):
     print("Num iters " + str(num_iter))
     X=transform(X,dim=60)
     x_batch,n_batches=tools.get_batch(X,batch_size)
@@ -89,10 +89,14 @@ def test_unsuper_model(X,model,transform,
     print(X.shape)
     x_batch,n_batches=tools.get_batch(X,batch_size)
     for epoch in range(num_iter):
+        cost_e = []
         for i in range(n_batches):
             x_i=x_batch[i]
-            print(x_i.dtype)
-            print(model.loss(x_i))
+            loss_i=model.updates(x_i,x_i)
+            cost_e.append(loss_i)
+        cost_mean=np.mean(cost_e)
+        print(str(epoch) + " "+str(cost_mean))
+    return model
 
 def to_conv(X,dim=60):
     n_img=X.shape[0]
