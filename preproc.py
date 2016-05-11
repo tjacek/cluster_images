@@ -1,5 +1,6 @@
 import deep
 import utils.imgs ,utils.dirs,utils.files
+import utils.data as data
 import deep.autoencoder as ae
 import utils.conf
 from utils.dirs import dir_arg, ApplyToFiles
@@ -17,10 +18,13 @@ def create_autoencoder(conf_dict):
     def inner_func(in_path,out_path):
         print(str(in_path))
         print(str(out_path))
-        imgs=utils.imgs.read_images(str(in_path))
-        print("Number of images %i",len(imgs))
-        da=deep.train_model_unsuper(imgs,ae.default_parametrs(),num_iter=500,input_dim=(dim_x,dim_y))
-        utils.files.save_object(da,str(out_path)) 
+        #imgs=utils.imgs.read_images(str(in_path))
+        #da=deep.train_model_unsuper(imgs,ae.default_parametrs(),num_iter=500,input_dim=(dim_x,dim_y))
+        X,y=data.read_dataset(in_path)
+        print("Number of images %i",len(y))
+        model=deep.autoencoder.build_autoencoder()
+        da=deep.test_unsuper_model(X,model,transform=deep.to_vol)
+        #utils.files.save_object(da,str(out_path)) 
         print("autoencoder saved as " + str(out_path))
     inner_func(image_path,obj_path)
 
@@ -48,7 +52,7 @@ def apply_ae(in_path,out_path,ae_path):
    
 
 if __name__ == "__main__":
-    conf_path="conf/dataset1.cfg"
+    conf_path="conf/dataset4.cfg"
     conf_dict=utils.conf.read_config(conf_path)
-    #create_autoencoder(conf_dict)
-    apply_ae(conf_dict["action_path"],"recon1",conf_dict["ae_path"])
+    create_autoencoder(conf_dict)
+    #apply_ae(conf_dict["action_path"],"recon1",conf_dict["ae_path"])
