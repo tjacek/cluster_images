@@ -92,11 +92,19 @@ def test_unsuper_model(X,model,transform,
         cost_e = []
         for i in range(n_batches):
             x_i=x_batch[i]
-            loss_i=model.updates(x_i,x_i)
+            loss_i=model.updates(x_i)
             cost_e.append(loss_i)
         cost_mean=np.mean(cost_e)
         print(str(epoch) + " "+str(cost_mean))
     return model
+
+def to_1D(X,dim=7200):
+    n_img=X.shape[0]
+    print(X[0].shape)
+    X_conv=[X[i].flatten() for i in range(n_img)]
+    X_conv=np.array(X_conv)
+    
+    return X_conv
 
 def to_conv(X,dim=60):
     n_img=X.shape[0]
