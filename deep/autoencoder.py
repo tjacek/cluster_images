@@ -5,17 +5,20 @@ import theano.tensor as T
 import utils.files as files
 import deep.tools as tools
 import convnet
+import pickle
 
 class Autoencoder(object):
-    def __init__(self,hyper_params,in_var,target_var,
+    def __init__(self,hyperparams,in_var,l_hid,l_out,
                      reduction,reconstruction,loss,updates):
-        self.hyper_params=hyper_params
+        self.hyperparams=hyperparams
         self.in_var=in_var
+        self.l_hid=l_hid
+        self.l_out=l_out
     	self.prediction=theano.function([self.in_var], reduction,allow_input_downcast=True)
         self.reconstructed=theano.function([self.in_var], 
                                            reconstruction,allow_input_downcast=True)
-        self.loss=theano.function([in_var,target_var], loss,allow_input_downcast=True)
-        self.updates=theano.function([in_var, target_var], loss, 
+        self.loss=theano.function([in_var], loss,allow_input_downcast=True,name="Train")
+        self.updates=theano.function([in_var], loss, 
                                updates=updates,allow_input_downcast=True)
 
     def get_model(self):
@@ -25,8 +28,14 @@ class Autoencoder(object):
     def set_model(self,model):
         lasagne.layers.set_all_param_values(self.l_out,model.params)
 
+    def get_numpy(self):
+        return [self.l_hid.W.get_value(),self.l_hid.b.get_value()]
+
+    def __str__(self):
+        return str(self.hyperparams)
+
 def default_parametrs():
-    return {"num_input":(None,3600),"num_hidden":600,"batch_size":100}	
+    return {"num_input":(None,7200),"num_hidden":600,"batch_size":100}	
 
 def build_autoencoder(hyper_params=None):
     if(hyper_params==None):
@@ -39,14 +48,14 @@ def build_autoencoder(hyper_params=None):
     reconstruction = lasagne.layers.get_output(l_out)
     reduction=lasagne.layers.get_output(l_hid)
     in_var=l_in.input_var
-    target_var = T.ivector('targets')
-    loss=get_loss(reconstruction,in_var,target_var)
+    # target_var = T.ivector('targets')
+    loss=get_loss(reconstruction,in_var)
     updates=get_updates(loss,l_out)
-    return   Autoencoder(hyper_params,in_var,target_var,
+    return   Autoencoder(hyper_params,in_var,l_hid,l_out,
                          reduction,reconstruction,loss,updates)
 
-def get_loss(reconstruction,in_var,target_var):    
-    loss = lasagne.objectives.squared_error(reconstruction, target_var)
+def get_loss(reconstruction,in_var):    
+    loss = lasagne.objectives.squared_error(reconstruction, in_var)
     loss = loss.mean()
     #l_hid=all_layers["out"]
     #l1_penalty = regularize_layer_params(l_hid, l1) * 0.001
@@ -55,4 +64,12 @@ def get_loss(reconstruction,in_var,target_var):
 def get_updates(loss,out_layer):
     params = lasagne.layers.get_all_params(out_layer, trainable=True)
     return lasagne.updates.nesterov_momentum(
-                 loss, params, learning_rate=0.01, momentum=0.8)   
+                 loss, params, learning_rate=0.01, momentum=0.8) 
+
+def read_ae(path):
+    with open(path, 'r') as f:
+        model = pickle.load(f)
+    #nn.layers.set_all_param_values(model, data)
+    conv_net=build_autoencoder(model.hyperparams)
+    conv_net.set_model(model)
+    return conv_net  

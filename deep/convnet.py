@@ -4,7 +4,7 @@ import theano.tensor as T
 import lasagne
 import tools
 import pickle
-from lasagne.regularization import regularize_layer_params_weighted, l2, l1
+from lasagne.regularization import regularize_layer_params, l2, l1
 
 class Model(object):
     def __init__(self,hyperparams,params):
@@ -26,8 +26,6 @@ class Convet(object):
                                updates=updates,allow_input_downcast=True)
 
     def get_category(self,img):
-        #img2D=img.get_orginal()
-        #img2D=np.reshape(img2D,(1,1,60,60)) 
         dist=self.pred(img)
         return [tools.dist_to_category(dist_i) 
                     for dist_i in dist]
@@ -52,7 +50,7 @@ def build_convnet(params,n_cats):
     target_var = T.ivector('targets')
     features_pred = lasagne.layers.get_output(hid_layer)
     pred,in_var=get_prediction(in_layer,out_layer)
-    loss=get_loss(pred,in_var,target_var)
+    loss=get_loss(pred,in_var,target_var,all_layers)
     updates=get_updates(loss,out_layer)
     return Convet(params,in_layer,out_layer,in_var,target_var,
                   features_pred,pred,loss,updates)
@@ -85,7 +83,7 @@ def build_model(params,n_cats):
             nonlinearity=lasagne.nonlinearities.softmax)
     all_layers={"in":in_layer, "conv1":conv_layer1,"pool":pool_layer1,
                 "conv2":conv_layer2,"pool2":pool_layer2,
-                "hidden",dropout,"out":out_layer ]
+                "hidden":dropout,"out":out_layer }
     return in_layer,out_layer,dropout,all_layers
 
 def get_prediction(in_layer,out_layer):
@@ -96,8 +94,8 @@ def get_prediction(in_layer,out_layer):
 def get_loss(prediction,in_var,target_var,all_layers):    
     loss = lasagne.objectives.categorical_crossentropy(prediction, target_var)
     loss = loss.mean()
-    l_hid=all_layers["hidden"]
-    l1_penalty = regularize_layer_params(l_hid, l1) * 1e-4
+    l_hid=all_layers["out"]
+    l1_penalty = regularize_layer_params(l_hid, l1) * 0.001
     return loss + l1_penalty
 
 def get_updates(loss,out_layer):
