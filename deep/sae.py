@@ -43,10 +43,10 @@ class StackedAE(object):
         return str(self.hyperparams)
 
 def build_sae(params,n_cats):
-    l_in,l_hid,l_out=build_model(params,n_cats)
+    l_in,l_hid,l_hid2,l_out=build_model(params,n_cats)
     target_var = T.ivector('targets')
     prediction,in_var=get_prediction(l_in,l_out)
-    features_pred=get_features(l_hid)
+    features_pred=get_features(l_hid2)
     loss=get_loss(prediction,target_var)
     updates=get_updates(loss,l_out)
     return StackedAE(params,l_in,l_out,in_var,target_var,
@@ -58,12 +58,13 @@ def build_model(params,n_cats):
     W_hid,b_hid=ae_model.get_numpy()
     input_size,hidden_size=W_hid.shape
     print(type(W_hid))
-    #print(hidden_size)
+    print(hidden_size)
     l_in =  lasagne.layers.InputLayer(shape=(None,input_size),W=W_hid,b=b_hid)#,input_var=self.input_var)
     l_hid = lasagne.layers.DenseLayer(l_in, num_units=hidden_size)
+    l_hid2 = lasagne.layers.DenseLayer(l_hid, num_units=300)
     softmax = lasagne.nonlinearities.softmax
-    l_out = lasagne.layers.DenseLayer(l_hid,n_cats, nonlinearity=softmax)
-    return l_in,l_hid,l_out
+    l_out = lasagne.layers.DenseLayer(l_hid2,n_cats, nonlinearity=softmax)
+    return l_in,l_hid,l_hid2,l_out
 
 def get_prediction(in_layer,out_layer):
     in_var=in_layer.input_var
@@ -88,8 +89,6 @@ def get_features(l_hid):
 def read_sae(path):
     with open(path, 'r') as f:
         model = pickle.load(f)
-    #model.hyperparams["p"]=0.0    
-    #nn.layers.set_all_param_values(model, data)
-    sae=build_convnet(model.hyperparams,n_cats=10)
+    sae_net=build_sae(model.hyperparams,n_cats=10)
     sae_net.set_model(model)
     return sae_net
