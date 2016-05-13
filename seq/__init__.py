@@ -3,18 +3,20 @@ import utils.files as files
 import numpy as np
 import to_dataset
 
+
 ALPH="?ABCDEFGHIJKLMN"
 
 class Seq(object):
-    def __init__(self,items,cat):
+    def __init__(self,items,cat,name):
         self.seq=items
         self.cat=cat
+        self.name=name
         
     def __getitem__(self,index):
         return self.seq[index]
 
     def __str__(self): 
-        return str(len(self.seq))+" "+str(self.cat)
+        return self.name +" "+ str(len(self.seq))+" "+str(self.cat)
 
     def __len__(self):
         return len(self.seq)

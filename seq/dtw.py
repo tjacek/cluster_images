@@ -1,5 +1,6 @@
 import utils.files as files
 from utils.timer import clock 
+import split
 import numpy as np 
 import seq
 from collections import Counter
@@ -15,7 +16,7 @@ def wrap_seq(in_path):
 
 @clock
 def wrap(instances): 
-    test,train=select_dataset(instances)
+    test,train=split.person_dataset(instances)
     correct=[test_i.cat for test_i in test]
     pred=[knn(test_i,train) for test_i in test]
     cat_to_int=feats.int_cats(correct)
@@ -24,7 +25,7 @@ def wrap(instances):
     pred=[cat_to_int[cat_i] for cat_i in pred]
     print(confusion_matrix(correct,pred))
 
-def knn(inst,instances,k=6):
+def knn(inst,instances,k=1):
     dists=[dwt_metric(inst,inst_i) for inst_i in instances]
     dists=np.array(dists)
     dist_inds=dists.argsort()[0:k]
@@ -53,17 +54,6 @@ def dwt_metric(s,t):
 def d(v,d):
     return np.linalg.norm(v-d)
 
-
-def select_dataset(instances):
-    train=[]
-    test=[]	
-    for i,inst_i in enumerate(instances):
-        if((i % 2) ==0):
-            train.append(inst_i)
-        else:
-            test.append(inst_i)	
-    return train,test
-
 def visualize_dwt(instances):
     n_samples=len(instances)
     similarities=np.zeros((n_samples,n_samples))
@@ -71,12 +61,14 @@ def visualize_dwt(instances):
         print(i)
         for j,inst_j in enumerate(instances):
             similarities[i][j]=dwt_metric(inst_i,inst_j)        
-    print("OK")
     seed = np.random.RandomState(seed=3)
     nmds = MDS(n_components=2, metric=False, max_iter=3000, eps=1e-12,
                     dissimilarity="precomputed", random_state=seed, n_jobs=1,
                     n_init=1)
     pos = nmds.fit(similarities).embedding_
-    print(pos)
+    X=np.array(pos)
+    y=[ seq_i.cat for seq_i in instances]
+    print(type(instances[0]))
     print(type(pos))
+    return X,y
     #npos = nmds.fit_transform(similarities, init=pos)
