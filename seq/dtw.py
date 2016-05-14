@@ -7,7 +7,6 @@ from collections import Counter
 from sklearn.metrics import classification_report
 from sklearn.metrics import confusion_matrix
 import feats
-from sklearn.manifold import MDS
 
 def wrap_seq(in_path): 
     str_seqs=files.read_file(in_path)
@@ -25,7 +24,7 @@ def wrap(instances):
     pred=[cat_to_int[cat_i] for cat_i in pred]
     print(confusion_matrix(correct,pred))
 
-def knn(inst,instances,k=1):
+def knn(inst,instances,k=6):
     dists=[dwt_metric(inst,inst_i) for inst_i in instances]
     dists=np.array(dists)
     dist_inds=dists.argsort()[0:k]
@@ -36,7 +35,7 @@ def knn(inst,instances,k=1):
     new_cat=count.most_common()[0][0]
     return new_cat
 
-def dwt_metric(s,t):
+def dtw_metric(s,t):
     n=len(s)
     m=len(t)
     dwt=np.zeros((n+1,m+1),dtype=float)
@@ -53,22 +52,3 @@ def dwt_metric(s,t):
 
 def d(v,d):
     return np.linalg.norm(v-d)
-
-def visualize_dwt(instances):
-    n_samples=len(instances)
-    similarities=np.zeros((n_samples,n_samples))
-    for i,inst_i in enumerate(instances):
-        print(i)
-        for j,inst_j in enumerate(instances):
-            similarities[i][j]=dwt_metric(inst_i,inst_j)        
-    seed = np.random.RandomState(seed=3)
-    nmds = MDS(n_components=2, metric=False, max_iter=3000, eps=1e-12,
-                    dissimilarity="precomputed", random_state=seed, n_jobs=1,
-                    n_init=1)
-    pos = nmds.fit(similarities).embedding_
-    X=np.array(pos)
-    y=[ seq_i.cat for seq_i in instances]
-    print(type(instances[0]))
-    print(type(pos))
-    return X,y
-    #npos = nmds.fit_transform(similarities, init=pos)

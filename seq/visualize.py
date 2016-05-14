@@ -1,0 +1,63 @@
+import dtw
+import numpy as np
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
+from sklearn.manifold import MDS
+import utils.data
+
+def visualize_dtw(instances):
+    X,y=visualize_metric(instances,dtw.dtw_metric)
+    labeled_plot(X,y)
+    labeled_plot(X,y)
+    print(X.shape)    
+
+def visualize_metric(instances,dwt_metric):
+    n_samples=len(instances)
+    similarities=get_similarity_matrix(n_samples,instances,dwt_metric)       
+    X=get_cords(similarities)
+    y=[ seq_i.cat for seq_i in instances]
+    return X,y
+
+def get_similarity_matrix(n_samples,instances,dwt_metric):
+    similarities=np.zeros((n_samples,n_samples))
+    for i,inst_i in enumerate(instances):
+        print(i)
+        for j,inst_j in enumerate(instances):
+            similarities[i][j]=dwt_metric(inst_i,inst_j)
+    return similarities
+
+def get_cords(similarities):
+    seed = np.random.RandomState(seed=3)
+    nmds = MDS(n_components=2, metric=False, max_iter=3000, eps=1e-12,
+                    dissimilarity="precomputed", random_state=seed, n_jobs=1,
+                    n_init=1)
+    pos = nmds.fit(similarities).embedding_
+    X=np.array(pos)
+    return X
+
+def labeled_plot(X,y):
+    X=norm_x(X)
+    y=np.array(utils.data.to_ints(y),dtype=int)
+    COLORS="bgrcmykw"
+    SHAPE='ovs^p'
+    def get_shape(index):
+        j=index % len(COLORS)
+        s_i=index/len(COLORS)
+        s_i=s_i%len(SHAPE)
+        return COLORS[j],SHAPE[s_i]
+    fig, ax = plt.subplots()
+    x_0=X[:,0]
+    x_1=X[:,1]
+    n_cats=np.amax(y)+1
+    for i in range(n_cats):
+        cat_i_0=x_0[y==i]
+        cat_i_1=x_1[y==i]
+        color_i,shape_i=get_shape(i)
+        ax.scatter(cat_i_0,cat_i_1,c=color_i,marker=shape_i,label=str(i))
+    plt.legend()
+    plt.show()   
+
+def norm_x(X):
+    x_max=np.max(X)
+    X/=x_max
+    return X
