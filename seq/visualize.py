@@ -3,18 +3,18 @@ import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from sklearn.manifold import MDS
+import sklearn.manifold as manifold
 import utils.data
 
 def visualize_dtw(instances):
     X,y=visualize_metric(instances,dtw.dtw_metric)
-    labeled_plot(X,y)
     labeled_plot(X,y)
     print(X.shape)    
 
 def visualize_metric(instances,dwt_metric):
     n_samples=len(instances)
     similarities=get_similarity_matrix(n_samples,instances,dwt_metric)       
-    X=get_cords(similarities)
+    X=get_spectral(similarities)
     y=[ seq_i.cat for seq_i in instances]
     return X,y
 
@@ -24,10 +24,14 @@ def get_similarity_matrix(n_samples,instances,dwt_metric):
         print(i)
         for j,inst_j in enumerate(instances):
             similarities[i][j]=dwt_metric(inst_i,inst_j)
+    similarities=norm_x(similarities)
+    #similarities=1.0-similarities  
     return similarities
 
-def get_cords(similarities):
+def get_mds(similarities):
     seed = np.random.RandomState(seed=3)
+    print(np.amax(similarities))
+    print(np.amin(similarities))
     nmds = MDS(n_components=2, metric=False, max_iter=3000, eps=1e-12,
                     dissimilarity="precomputed", random_state=seed, n_jobs=1,
                     n_init=1)
@@ -35,8 +39,15 @@ def get_cords(similarities):
     X=np.array(pos)
     return X
 
+def get_spectral(similarities):
+    seed = np.random.RandomState(seed=3)
+    se = manifold.SpectralEmbedding(n_components=2,
+                                n_neighbors=5,affinity="precomputed")
+    pos = se.fit(similarities).embedding_
+    X=np.array(pos)
+    return X
+
 def labeled_plot(X,y):
-    X=norm_x(X)
     y=np.array(utils.data.to_ints(y),dtype=int)
     COLORS="bgrcmykw"
     SHAPE='ovs^p'
