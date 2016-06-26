@@ -1,8 +1,11 @@
+import re
+
 class Path(object):
     def __init__(self, text):
         if(type(text)==Path):
             text=str(Path)
-        text=text.replace("//","/")
+        else:
+            text=re.sub(r'(//)+','/',text)
         self.items=str(text).split("/")
 
     def __getitem__(self,i):
@@ -20,7 +23,9 @@ class Path(object):
         return copy
 
     def __str__(self):
-        return "/".join(self.items)	
+        s="/".join(self.items)	
+        s=re.sub(r'(//)+','/',s)
+        return s
 
     def replace(self,other_path):
         new_path=self.copy()
@@ -32,7 +37,9 @@ class Path(object):
         return self.items[-1]
 
     def set_name(self,name):
+        #name=name.replace('/','')
         self.items[-1]=name
+        return self
 
     def add(self,str_path):
         strs=str_path.split("/")
@@ -65,7 +72,7 @@ def get_paths(path,filename):
 
 def path_args(func):
     def path_fun(*args): 
-        path_args=[ Path(arg_i) for arg_i in args]
+        path_args=[ str_to_path(arg_i) for arg_i in args]
         return func(*path_args)
     return path_fun        
 
@@ -74,6 +81,11 @@ def str_arg(func):
         in_strs=[str(arg_i) for arg_i in args]
         return func(*in_strs)
     return inner_fun
+
+def str_to_path(obj):
+    if(type(obj)==str):
+        return Path(obj)
+    return obj
 
 def to_paths(files):
     return [Path(file_i) for file_i in files]
