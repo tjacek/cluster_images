@@ -64,16 +64,15 @@ def get_paths(path,filename):
     return path
 
 def path_args(func):
-    def path_fun(in_str,out_str): 
-        in_path=Path(in_str)
-        out_path=Path(out_str)
-        return func(in_path,out_path)
+    def path_fun(*args): 
+        path_args=[ Path(arg_i) for arg_i in args]
+        return func(*path_args)
     return path_fun        
 
 def str_arg(func):
-    def inner_fun(in_path):
-        in_str=str(in_path)
-        return func(in_str)
+    def inner_fun(*args):
+        in_strs=[str(arg_i) for arg_i in args]
+        return func(*in_strs)
     return inner_fun
 
 def to_paths(files):
