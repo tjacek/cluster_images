@@ -4,59 +4,12 @@ import pickle,re
 from natsort import natsorted
 from shutil import copyfile
 
-def get_files(path,append=False):
-    all_in_dir=os.listdir(path)
-    files= [f for f in all_in_dir  
-              if is_file(f,path)]
-    files=natsorted(files)
-    if(append_path):
-        files=append_path(path,files)
-    return files
-
-def get_dirs(path,append=False):
-    all_in_dir=os.listdir(path)
-    files= [f for f in all_in_dir  
-              if not is_file(f,path)]
-    files=natsorted(files)#files.sort()
-    if(append_path):
-        files=append_path(path,files)
-    return files
-
-def conversion(in_path,out_path,conv,dir=True):
-    make_dir(out_path)
-    if(dir):
-        paths=get_files(in_path)
-    else:
-        paths=get_dirs(in_path)
-    print(in_path)
-    print(paths)
-    in_paths=append_path(in_path,paths)
-    out_paths=append_path(out_path,paths)
-    for in_i,out_i in zip(in_paths,out_paths):
-        print(in_i)
-        conv(in_i,out_i)
-
 def dir_to_txt(in_path,out_path):
     dir_content=get_files(in_path)
     dir_content=append_path(in_path,dir_content)
     text="\n".join(dir_content)
     save_string(out_path,text)
 
-def unify_dir(in_path,out_path):
-    make_dir(out_path)
-    paths=get_dirs(in_path)
-    in_paths=append_path(in_path,paths)
-    i=0
-    for in_i in in_paths:
-        img_names=get_files(in_i)
-        for img_i in img_names:
-            src=in_i+"/"+img_i
-            dst=out_path+"/"+img_i
-            dst=dst.replace(".jpg","_"+str(i)+".jpg")
-            print(src)
-            print(dst)
-            i+=1
-            copyfile(src, dst)
 
 def read_file(path):
     file_object = open(path,'r')
@@ -97,18 +50,18 @@ def read_object(path):
     file_object.close()
     return obj
 
-def vector_string(vec):
+def seq_to_string(seq):
+    array=[str(elem_i) for elem_i in seq]
+    return '\n'.join(array)
+
+def vector_to_string(vec):
     vec=vec.flatten()
     array=[str(vec_i) for vec_i in vec]
-    return array_to_txt(array,sep=",")
-
-def append_path(path,files):
-    paths=[path+"/"+f for f in files]
-    paths=[path.replace("//","/") for path in paths]
-    return paths
+    return ','.join(array)
 
 def replace_sufix(sufix,files):
-    return map(lambda s:s.replace(sufix,""),files)
+    return map(lambda s:s.replace(
+        sufix,""),files)
 
 def extract_prefix(filename):
-    return filename.split(".")[-1]	
+    return filename.split(".")[-1]
