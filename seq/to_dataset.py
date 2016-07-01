@@ -1,57 +1,48 @@
+import sys,os
+sys.path.append(os.path.abspath('../cluster_images'))
 import utils
+import utils.dirs as dirs
 import utils.files as files
 import seq
 import numpy as np 
-import feats
 
-ALPH="?ABCDEFGHIJKLMN"
+class IntCat(object):
+    def __init__(self):
+        self.names2int={}
 
-def to_string(conf_dir):
-    action_path=conf_dir['action_path']
-    sae_path=conf_dir['sae_path']
-    sae=files.read_object(sae_path)
-    actions=utils.apply_to_dir(action_path)
-    actions_z=[action_i.get_seq(sae) for action_i in actions]
-    str_actions=[action_to_seq(action_i) for action_i in actions] 
-    for str_i in str_actions:
-        print(str_i)
+    def __call__(self,cat_name):
+        if(not cat_name in self.names2int):
+            self.names2int[cat_name]=len(self.names2int)
+        return self.names2int[cat_name] 
 
-def action_to_seq(action):
-    print(type(action))
-    seq=""
-    for cat_i in action.seq:
-        seq+=ALPH[cat_i]
-    seq+="#"+str(action.cat)
-    seq+="#"+str(action.name)
-    return seq
+def seq_dataset(in_path):
+    all_paths=dirs.all_files(in_path)
+    seqs=[ parse_seq(path_i)
+           for path_i in all_paths]
+    get_cat=IntCat()
+    y=[ get_cat(seq_i[0]) 
+        for seq_i in seqs]
+    x=[ parse_text(seq_i[1]).shape 
+        for seq_i in seqs]    
+    return x,y
 
-def to_dataset(instances,out_path):
-    cats=[inst_i.cat for inst_i in instances]    
-    cat_to_int=feats.int_cats(cats)
-    cats=[cat_to_int[cat_i] for cat_i in cats]
-    seqs=[inst_i.seq for inst_i in instances]
-   #n_cats=len(cat_to_int.keys())+1
-    instances=[]
-    for cat_i,seq_i in zip(cats,seqs):
-        print(seq_i)
-        hist=get_histogram(seq_i,12)
-        instances.append(hist_to_string(hist,cat_i))
-    files.save_array(instances,out_path)
+def parse_seq(path_i):
+    name=path_i[-2]
+    lines=files.read_file(str(path_i))
+    return name,lines
 
-def hist_to_string(hist,cat_i):
-    return files.vector_string(hist)+",#"+str(cat_i)
+def parse_text(lines):
+    x_i=[line_to_vector(line_i) 
+           for line_i in lines]
+    return np.array(x_i)
 
-def seq_to_instances(str_seq,cat_names):
-    raw_action=str_seq.split("#") 
-    hist=get_histogram(raw_action[0])
-    cat_index=utils.get_value(raw_action[1],cat_names)
-    instance=files.vector_string(hist)+",#"+str(cat_index)	
-    return instance
+def line_to_vector(line):
+    dims=line.split(',')
+    vec_i=np.zeros((len(dims),))
+    for j,dim_j in enumerate(dims):
+        vec_i[j]=float(dim_j)
+    return vec_i
 
-def get_histogram(raw_seq,n_cats=8):
-    hist=np.zeros((n_cats,))
-    for cat_index in raw_seq:
-        print(cat_index)
-    	hist[cat_index]+=1.0
-    hist/=np.amax(hist)
-    return hist    
+if __name__ == "__main__":
+    path='../dataset0/seq/'
+    seq_dataset(path)

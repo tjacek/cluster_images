@@ -86,6 +86,14 @@ def make_dir(path):
     if(not os.path.isdir(path)):
         os.system("mkdir "+path)
 
+def all_files(in_path):
+    dirs_i=get_files(in_path,dirs=True)
+    files_i=get_files(in_path,dirs=False)
+    if(dirs_i):
+        for dirs_ij in dirs_i:
+            files_i+=all_files(dirs_ij)
+    return files_i
+
 def bottom_dirs(in_path):
     dirs_i=get_files(in_path,dirs=True)
     bottom=[]
