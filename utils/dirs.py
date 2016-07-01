@@ -3,6 +3,7 @@ import os.path as io
 import paths 
 from natsort import natsorted
 from shutil import copyfile
+from sets import Set
 
 class ApplyToFiles(object):
     def __init__(self,dir_arg=False):
@@ -11,6 +12,7 @@ class ApplyToFiles(object):
     def __call__(self, func):    
         @paths.path_args
         def inner_func(in_dir,out_dir):
+            print(str(in_dir))
             in_paths=get_files(in_dir,dirs=self.dir_arg)
             make_dir(out_dir)
             out_paths=[ out_dir.replace(in_i)  for in_i in in_paths]
@@ -24,6 +26,21 @@ def dir_arg(func):
         return func(dirs)
     return inner_func
 
+
+def apply_to_dirs( func):    
+    @paths.path_args
+    def inner_func(in_dir,out_dir):
+        old_path=str(in_dir)
+        new_path=str(out_dir)
+        in_paths=bottom_dirs(in_dir)
+        out_paths=[path_i.exchange(old_path,new_path) 
+                      for path_i in in_paths]
+        print(make_dirs(new_path,out_paths))              
+        #for in_i,out_i in zip(in_paths,out_paths):
+        #    func(in_i,out_i)
+    return inner_func
+    
+
 @paths.path_args
 def copy_dir(in_path,out_path):
     in_files=get_files(in_path,dirs=True)
@@ -34,6 +51,40 @@ def copy_dir(in_path,out_path):
         print(str(in_file_i))
         print(str(out_file_i))#out_file=out_path.
         unify_dirs(str(in_file_i),str(out_file_i))
+
+def bottom_dirs(in_path):
+    dirs_i=get_files(in_path,dirs=True)
+    bottom=[]
+    if(dirs_i):
+        for dirs_ij in dirs_i:
+            bottom+=bottom_dirs(dirs_ij)
+    else:
+        bottom.append(in_path)
+    return bottom
+
+def make_dirs(out_path,dirs):
+    all_dirs=Set()
+    bottom_dirs=Set([str(dir_i) for dir_i in dirs])
+    for dir_i in dirs:
+        postfix=str(dir_i).replace(out_path,'')
+        postfix=postfix.split('/')
+        paths_i=sub_paths(out_path,dir_i)
+        all_dirs.update(paths_i)
+    make_dir(out_path)
+    for dir_i in all_dirs:
+        if(not dir_i in bottom_dirs):
+            make_dir(dir_i)
+
+def sub_paths(out_path,dirs):
+    dir_path='/' #out_path
+    sub_paths=[]
+    for dir_i in dirs:
+        sub_path_i=dir_path +'/'+ dir_i
+        sub_paths.append(sub_path_i)
+        dir_path=sub_path_i
+    sub_paths=[dir_path_i.replace('//','')
+                for dir_path_i in sub_paths]
+    return sub_paths    
 
 @paths.path_args
 def unify_dirs(in_path,out_path):
