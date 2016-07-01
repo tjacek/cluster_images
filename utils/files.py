@@ -10,22 +10,11 @@ def dir_to_txt(in_path,out_path):
     text="\n".join(dir_content)
     save_string(out_path,text)
 
-
 def read_file(path):
     file_object = open(path,'r')
     lines=file_object.readlines()  
     file_object.close()
     return lines
-
-def is_file(f,path):
-        return io.isfile(io.join(path,f))
-
-def make_dir(path):
-    if(not os.path.isdir(path)):
-        os.system("mkdir "+path)
-
-def get_name(path):
-    return path.split("/")[-1]
 
 def array_to_txt(array,sep=""):
     return sep.join(array)
@@ -51,11 +40,11 @@ def read_object(path):
     return obj
 
 def seq_to_string(seq):
-    array=[str(elem_i) for elem_i in seq]
+    array=[vector_to_string(elem_i) 
+            for elem_i in seq]
     return '\n'.join(array)
 
 def vector_to_string(vec):
-    vec=vec.flatten()
     array=[str(vec_i) for vec_i in vec]
     return ','.join(array)
 
