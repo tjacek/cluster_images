@@ -11,23 +11,21 @@ def extract_features(in_path):
     print(str(out_path)) 
     transform_seq(in_path,out_path)
 
-@dirs.ApplyToFiles(dir_arg=True)
-@dirs.ApplyToFiles(dir_arg=True)
+@dirs.apply_to_dirs
 def transform_seq(in_path,out_path):
     imgs_seq=imgs.read_images(in_path)
     seq=[extr_feat(img_i) 
                 for img_i in imgs_seq]
     txt=files.seq_to_string(seq)
-    print(txt)
     print(str(in_path))
     print(str(out_path))
-    return 'ok'#extr
+    files.save_string(str(out_path)+'.txt',txt)
 
 def extr_feat(img_i):
     return img_i[10],img_i[20]
 
 if __name__ == "__main__":
     path='../dataset1/cats/'
-    #print(os.path.abspath(path))
+    #print([ str(path_i) for path_i in dirs.bottom_dirs(path)])
     extract_features(path)
     #extract_features(sys.argv[1])
