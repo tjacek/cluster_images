@@ -24,7 +24,7 @@ def seq_dataset(in_path):
         for seq_i in seqs]
     x=[ parse_text(seq_i[1]).shape 
         for seq_i in seqs]    
-    return x,y
+    return make_dataset(x,y)
 
 def parse_seq(path_i):
     name=path_i[-2]
@@ -42,6 +42,9 @@ def line_to_vector(line):
     for j,dim_j in enumerate(dims):
         vec_i[j]=float(dim_j)
     return vec_i
+
+def make_dataset(x,y):
+    return {'x':x,'y':y}
 
 if __name__ == "__main__":
     path='../dataset0/seq/'

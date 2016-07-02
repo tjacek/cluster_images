@@ -12,14 +12,14 @@ class Timer(object):
         print("Training time %d ",self.total_time)
 
     def show(self,info):
-    	print(info)
+    	print("Timer %s",info)
         print("Training time %d ",self.total_time)
 
 def clock(func):
-    def inner_func(arg):
+    def inner_func(*arg):
         func_timer=Timer()
-        result=func(arg)
+        result=func(*arg)
         func_timer.stop()
-        func_timer.show("Timer "+func.__name__)
+        func_timer.show(func.__name__)
         return result
     return inner_func

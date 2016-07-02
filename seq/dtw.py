@@ -1,38 +1,41 @@
-import utils.files as files
-from utils.timer import clock 
-import split
+import sys,os
+sys.path.append(os.path.abspath('../cluster_images'))
 import numpy as np 
-import seq
 from collections import Counter
 from sklearn.metrics import classification_report
 from sklearn.metrics import confusion_matrix
-import feats
+from seq.to_dataset import seq_dataset
+import split
+import utils.paths as paths
+from utils.timer import clock 
 
-def wrap_seq(in_path): 
-    str_seqs=files.read_file(in_path)
-    instances=seq.get_seqs(str_seqs)
-    wrap(instances)
+@paths.path_args
+def use_dtw(dataset_path):
+    dataset=seq_dataset(path)
+    train,test=split.simple_dataset(dataset)
+    y_pred=wrap(train,test)
+    check_prediction(y_pred,test['y'])
 
 @clock
-def wrap(instances): 
-    test,train=split.person_dataset(instances)
-    correct=[test_i.cat for test_i in test]
-    pred=[knn(test_i,train) for test_i in test]
-    cat_to_int=feats.int_cats(correct)
-    print(classification_report(correct, pred))
-    correct=[cat_to_int[cat_i] for cat_i in correct]
-    pred=[cat_to_int[cat_i] for cat_i in pred]
-    print(confusion_matrix(correct,pred))
+def wrap(train,test): 
+    return [knn(test_i,train) 
+              for test_i in test['x']]
 
-def knn(inst,instances,k=6):
-    dists=[dwt_metric(inst,inst_i) for inst_i in instances]
-    dists=np.array(dists)
-    dist_inds=dists.argsort()[0:k]
-	#nearest=[dists[i] for i in dist_inds]
-    nearest=[instances[i].cat for i in dist_inds]
+def check_prediction(y_pred,y_true):
+    print(classification_report(y_true, y_pred))
+    print(confusion_matrix(y_true,y_pred))
+
+def knn(new_x,train_dataset,k=10):
+    distance=[dtw_metric(new_x,x_i) 
+              for x_i in train_dataset['x']]
+    distance=np.array(distance)
+    dist_inds=distance.argsort()[0:k]
+    y=   train_dataset['y']
+    nearest=[y[i] for i in dist_inds]
     print(nearest)
     count =Counter(nearest)
     new_cat=count.most_common()[0][0]
+    print(new_cat)
     return new_cat
 
 def dtw_metric(s,t):
@@ -52,3 +55,7 @@ def dtw_metric(s,t):
 
 def d(v,d):
     return np.linalg.norm(v-d)
+
+if __name__ == "__main__":
+    path='../dataset0/seq/'
+    use_dtw(path)
