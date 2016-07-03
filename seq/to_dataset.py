@@ -22,7 +22,7 @@ def seq_dataset(in_path):
     get_cat=IntCat()
     y=[ get_cat(seq_i[0]) 
         for seq_i in seqs]
-    x=[ parse_text(seq_i[1]).shape 
+    x=[ parse_text(seq_i[1])
         for seq_i in seqs]    
     return make_dataset(x,y)
 
@@ -45,6 +45,40 @@ def line_to_vector(line):
 
 def make_dataset(x,y):
     return {'x':x,'y':y}
+
+def masked_dataset(dataset):
+    x=dataset['x']
+    max_seq = max_length(x)
+    n_batch = len(x)
+    seq_dim=x[0].shape[1]
+    params={'n_batch':n_batch,'max_seq':max_seq,'seq_dim':seq_dim}
+    mask=make_mask(x,n_batch,max_seq)
+    x_masked=make_masked_seq(x,max_seq,seq_dim)
+    new_dataset={'x':x_masked,'y':dataset['y'],'mask':mask,'params':params}
+    return new_dataset
+
+def max_length(x):
+    max_len=[ seq_len(x_i) for x_i in x]
+    return max(max_len)
+
+def make_mask(x,n_batch,max_seq):
+    mask = np.zeros((n_batch, max_seq),dtype=float)
+    for i,seq_i in enumerate(x):
+        seq_i_len=seq_len(seq_i)
+        mask[i][:seq_i_len]=1.0
+    return mask
+
+def make_masked_seq(x,max_seq,seq_dim):
+    def masked_seq(seq_i):
+        seq_i_len=seq_len(seq_i)
+        new_seq_i=np.zeros((max_seq,seq_dim))
+        new_seq_i[:seq_i_len]=seq_i[:seq_i_len]
+        return new_seq_i
+    return [masked_seq(seq_i) for seq_i in x]
+       
+
+def seq_len(seq_i):
+    return seq_i.shape[0]
 
 if __name__ == "__main__":
     path='../dataset0/seq/'
