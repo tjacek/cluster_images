@@ -1,10 +1,11 @@
 import sys,os
 sys.path.append(os.path.abspath('../cluster_images'))
+import numpy as np 
+from sets import Set
+import seq
 import utils
 import utils.dirs as dirs
 import utils.files as files
-import seq
-import numpy as np 
 
 class IntCat(object):
     def __init__(self):
@@ -51,7 +52,8 @@ def masked_dataset(dataset):
     max_seq = max_length(x)
     n_batch = len(x)
     seq_dim=x[0].shape[1]
-    params={'n_batch':n_batch,'max_seq':max_seq,'seq_dim':seq_dim}
+    n_cats=get_n_cats(dataset)
+    params={'n_batch':n_batch,'max_seq':max_seq,'seq_dim':seq_dim,'n_cats':n_cats}
     mask=make_mask(x,n_batch,max_seq)
     x_masked=make_masked_seq(x,max_seq,seq_dim)
     new_dataset={'x':x_masked,'y':dataset['y'],'mask':mask,'params':params}
@@ -76,9 +78,13 @@ def make_masked_seq(x,max_seq,seq_dim):
         return new_seq_i
     return [masked_seq(seq_i) for seq_i in x]
        
-
 def seq_len(seq_i):
     return seq_i.shape[0]
+
+def get_n_cats(dataset):
+    cats=Set()
+    cats.update(dataset['y'])
+    return len(cats)
 
 if __name__ == "__main__":
     path='../dataset0/seq/'
