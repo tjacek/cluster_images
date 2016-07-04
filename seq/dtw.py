@@ -2,10 +2,8 @@ import sys,os
 sys.path.append(os.path.abspath('../cluster_images'))
 import numpy as np 
 from collections import Counter
-from sklearn.metrics import classification_report
-from sklearn.metrics import confusion_matrix
 from seq.to_dataset import seq_dataset
-import split
+import seq,split
 import utils.paths as paths
 from utils.timer import clock 
 
@@ -14,16 +12,12 @@ def use_dtw(dataset_path):
     dataset=seq_dataset(path)
     train,test=split.simple_dataset(dataset)
     y_pred=wrap(train,test)
-    check_prediction(y_pred,test['y'])
+    seq.check_prediction(y_pred,test['y'])
 
 @clock
 def wrap(train,test): 
     return [knn(test_i,train) 
               for test_i in test['x']]
-
-def check_prediction(y_pred,y_true):
-    print(classification_report(y_true, y_pred))
-    print(confusion_matrix(y_true,y_pred))
 
 def knn(new_x,train_dataset,k=10):
     distance=[dtw_metric(new_x,x_i) 

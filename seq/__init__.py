@@ -3,19 +3,42 @@ sys.path.append(os.path.abspath('../cluster_images'))
 import utils
 import utils.files as files
 import numpy as np
-import to_dataset
+import split,to_dataset
 import deep.lstm
+from sklearn.metrics import classification_report,confusion_matrix
 
-def train(model,dataset,epochs=10):
+def make_model(train_dataset):
+    hyper_params=deep.lstm.get_hyper_params(train_dataset)
+    lstm_equ,input_vars=deep.lstm.make_LSTM(hyper_params)
+    model=deep.lstm.compile_lstm(lstm_equ,input_vars,hyper_params)
+    return train_model(model,train_dataset)
+
+def check_model(model,test_dataset):
+    x=test_dataset['x']
+    y_true=test_dataset['y']
+    mask=test_dataset['mask']
+    y_pred=[model.get_category(x_i,mask[i])
+              for i,x_i in enumerate(x)]
+    check_prediction(y_pred,y_true)
+
+def train_model(model,dataset,epochs=10000):
     x=get_batches(dataset['x'])
     y=get_batches(dataset['y'])
     mask=get_batches(dataset['mask'])
     for j in range(epochs):
+        cost=[]
         for i,x_i in enumerate(x):
             y_i=y[i]
             mask_i=mask[i]
-            #print(len(x))
-            print(model.train(x_i,y_i,mask_i))
+            loss_i=model.train(x_i,y_i,mask_i)
+            cost.append(loss_i)
+        sum_j=sum(cost)/float(len(cost))
+        print(str(j) + ' ' + str(sum_j))
+    return model
+
+def check_prediction(y_pred,y_true):
+    print(classification_report(y_true, y_pred))
+    print(confusion_matrix(y_true,y_pred))
 
 def get_batches(x,batch_size=5):
     n_batches=len(x)/batch_size
@@ -28,7 +51,7 @@ if __name__ == "__main__":
     path='../dataset0/seq/'
     dataset=to_dataset.seq_dataset(path)
     new_dataset=to_dataset.masked_dataset(dataset)
-    hyper_params=deep.lstm.get_hyper_params(new_dataset)
-    lstm_equ,input_vars=deep.lstm.make_LSTM(hyper_params)
-    model=deep.lstm.compile_lstm(lstm_equ,input_vars,hyper_params)
-    train(model,new_dataset)
+    
+    train,test=split.simple_dataset(new_dataset)
+    model=make_model(train)
+    check_model(model,test)

@@ -1,12 +1,21 @@
+import numpy as np
 import utils.text
 from to_dataset import make_dataset
 
 def simple_dataset(dataset):
-    x_train=select(dataset['x'],n=0)
-    x_test=select(dataset['x'],n=1)
-    y_train=select(dataset['y'],n=0)
-    y_test=select(dataset['y'],n=1) 
-    return make_dataset(x_train,y_train),make_dataset(x_test,y_test)
+    train={}
+    test={}
+    for key_i,value_i in dataset.items():
+        if(type(value_i)!=dict):
+            print(key_i)        
+            train[key_i]=select(dataset[key_i],n=0)
+            test[key_i]=select(dataset[key_i],n=1)
+        else:
+            train[key_i]=dataset[key_i].copy()
+            test[key_i]=dataset[key_i].copy()
+    train['params']['n_batch']=len(train['y'])
+    test['params']['n_batch']=len(test['y'])
+    return train,test
 
 def select(instances,n=0,k=2):
     return [inst_i for i,inst_i in enumerate(instances)

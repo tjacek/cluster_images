@@ -4,6 +4,8 @@ import utils.paths as paths
 import utils.dirs as dirs
 import utils.imgs as imgs
 import utils.files as files
+import utils.pcloud as pcloud
+import basic
 
 @paths.path_args
 def extract_features(in_path):
@@ -22,10 +24,12 @@ def transform_seq(in_path,out_path):
     files.save_string(str(out_path)+'.txt',txt)
 
 def extr_feat(img_i):
-    return img_i[10],img_i[20]
+    #org_img=img_i.get_orginal()
+    cloud_i=pcloud.make_point_cloud(img_i)
+    cloud_i=pcloud.normalized_cloud(cloud_i)
+    return cloud_i.center_of_mass()
+    #basic.get_features(half_img)
 
 if __name__ == "__main__":
-    path='../dataset1/cats/'
-    #print([ str(path_i) for path_i in dirs.bottom_dirs(path)])
+    path='../dataset0/cats/'
     extract_features(path)
-    #extract_features(sys.argv[1])
