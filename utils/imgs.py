@@ -1,6 +1,7 @@
 import numpy as np
 import cv2
 import paths
+import dirs
 from dirs import dir_arg, ApplyToFiles
 #from paths import str_arg
 
@@ -32,6 +33,12 @@ def read_images(paths,nomalized=True):
     if(nomalized):
         imgs=[img_i/255.0 for img_i in imgs]
     return imgs
+
+@paths.path_args
+def read_img(dir_path):
+    raw_img=cv2.imread(str(dir_path),cv2.IMREAD_GRAYSCALE) 
+    img_i=Image(dir_path.get_name(),raw_img)
+    return img_i
 
 def save_img(full_path,img):
     img=img.get_orginal()

@@ -1,7 +1,16 @@
+import sys,os
+sys.path.append(os.path.abspath('../cluster_images'))
 import numpy as np
 import utils
-import utils.files
+import utils.dirs as dirs
+import utils.imgs as imgs
 
+def make_imgs(in_path):
+    img_dirs=dirs.all_files(in_path)
+    imgs=[imgs.read_img(path_i)
+          for path_i in img_dirs]
+    return imgs
+    
 def read_external(in_path):
     seq_files=utils.files.get_files(in_path,True)
     feat_dir={}
@@ -26,5 +35,5 @@ def parse_line(line):
     return (name,num_vector)
 
 if __name__ == "__main__": 
-   path_dir="../dataset9/cloud"
-   read_external(path_dir)
+   path_dir="../dataset0/cats"
+   print(type(make_imgs(path_dir)[0] ))
