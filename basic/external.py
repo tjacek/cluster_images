@@ -4,13 +4,29 @@ import numpy as np
 import utils
 import utils.dirs as dirs
 import utils.imgs as imgs
+from sklearn import manifold
 
 def make_imgs(in_path):
     img_dirs=dirs.all_files(in_path)
-    imgs=[imgs.read_img(path_i)
+    imgset=[imgs.read_img(path_i)
           for path_i in img_dirs]
-    return imgs
-    
+    return imgset
+
+def transform_dim(data,dim=30):
+    X=np.array(data)
+    embedder = manifold.SpectralEmbedding(n_components=dim, random_state=0,
+        eigen_solver="arpack",n_neighbors=20)#neighbors)
+    X_prim=embedder.fit_transform(X)
+    return X_prim
+
+def reduced_imgs(data,transform=transform_dim):
+    names=dict([ (data_i.name,i) 
+                  for i,data_i in enumerate(data)])
+    data_prim=transform(data)
+    feat_dict=dict([(name_i,data_prim[i])
+                      for name_i,i in names.items()])
+    return feat_dict
+
 def read_external(in_path):
     seq_files=utils.files.get_files(in_path,True)
     feat_dir={}
@@ -35,5 +51,9 @@ def parse_line(line):
     return (name,num_vector)
 
 if __name__ == "__main__": 
-   path_dir="../dataset0/cats"
-   print(type(make_imgs(path_dir)[0] ))
+    path_dir="../dataset0a/cats"
+    data=make_imgs(path_dir)[0:100]
+    print(len(data))
+    print(reduced_imgs(data))
+    #X_prim=transform_dim(data)
+    #print(X_prim.shape)
