@@ -2,14 +2,16 @@ import lasagne
 import numpy as np
 import theano
 import theano.tensor as T
+from theano.sandbox.rng_mrg import MRG_RandomStreams as RandomStreams
+from lasagne.random import get_rng
 
 class LstmModel(object):
     def __init__(self,input_vars,pred,loss,updates):
         self.input_vars=input_vars
         vars_list=[input_vars['in_var'],input_vars['target_var'],input_vars['mask_var']]
         self.predict= theano.function([input_vars['in_var'],input_vars['mask_var']],pred)
-        self.train = theano.function(vars_list,loss, updates=updates)
-        self.loss = theano.function(vars_list, loss)
+        self.train = theano.function(vars_list,loss, updates=updates)#,optimizer=None)
+        self.loss = theano.function(vars_list, loss)#,optimizer=None)
 
     def get_category(self,x,mask):
         x=np.expand_dims(x,axis=0)
@@ -17,7 +19,8 @@ class LstmModel(object):
         return np.argmax(self.predict(x,mask))
 
 def make_LSTM(hyper_params):
-    n_batch=hyper_params['n_batch']
+    print(hyper_params)
+    n_batch=None#hyper_params['n_batch']
     max_seq=hyper_params['max_seq']
     seq_dim=hyper_params['seq_dim']
     n_cats=hyper_params['n_cats']
@@ -38,8 +41,9 @@ def make_LSTM(hyper_params):
     l_forward_slice = lasagne.layers.SliceLayer(l_forward, -1, 1)
     l_backward_slice = lasagne.layers.SliceLayer(l_backward, 0, 1)
     l_sum = lasagne.layers.ConcatLayer([l_forward_slice, l_backward_slice])
+    l_drop= lasagne.layers.DropoutLayer( lasagne.layers.FlattenLayer(l_sum))
     l_out = lasagne.layers.DenseLayer(
-        l_sum, num_units=n_cats, nonlinearity=lasagne.nonlinearities.softmax)
+        l_drop, num_units=n_cats, nonlinearity=lasagne.nonlinearities.softmax) 
     input_vars=make_input_vars(l_in,l_mask)
     return l_out,input_vars
 
@@ -60,7 +64,7 @@ def make_input_vars(l_in,l_mask):
 
 def get_hyper_params(masked_dataset):
     hyper_params=masked_dataset['params']
-    hyper_params['n_hidden']=30
+    hyper_params['n_hidden']=100
     hyper_params['grad_clip']=100
     hyper_params['learning_rate']=0.001
     hyper_params['learning_rate']=0.001
