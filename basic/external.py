@@ -1,10 +1,18 @@
 import sys,os
 sys.path.append(os.path.abspath('../cluster_images'))
 import numpy as np
-import utils
+import utils.timer
 import utils.dirs as dirs
 import utils.imgs as imgs
+import utils.files as files
 from sklearn import manifold
+
+@utils.timer.clock
+def make_external(in_path,out_path):
+    data=make_imgs(in_path)#[0:100]
+    feat_dict=reduced_imgs(data)
+    text_dict=files.dict_to_txt(feat_dict)
+    files.save_string(out_path,text_dict)
 
 def make_imgs(in_path):
     img_dirs=dirs.all_files(in_path)
@@ -28,32 +36,19 @@ def reduced_imgs(data,transform=transform_dim):
     return feat_dict
 
 def read_external(in_path):
-    seq_files=utils.files.get_files(in_path,True)
-    feat_dir={}
-    for seq_i in seq_files:
-        lines=utils.files.read_file(seq_i)
-        pairs=[parse_line(line_i) for line_i in lines]
-        for pair_i in pairs:
-            feat_dir[pair_i[0]]=pair_i[1]
-    print(feat_dir.keys())
-    return feat_dir
-
-def parse_line(line):
-    line=line.split("#")
-    name=utils.files.get_name(line[0])
-    vector=line[1]
-    vector=vector.replace(",\n","")
-    vector=vector.split(",")
-    vec_size=len(vector)
-    num_vector=np.zeros((vec_size,),dtype=float)
-    for i,cord_i in enumerate(vector):
-    	num_vector[i]=float(cord_i)
-    return (name,num_vector)
+    text='\n'.join(files.read_file(in_path))
+    feat_dict=files.txt_to_dict(text)
+    def get_features(img_i):
+        return feat_dict[img_i.name]
+    return get_features
 
 if __name__ == "__main__": 
     path_dir="../dataset0a/cats"
-    data=make_imgs(path_dir)[0:100]
-    print(len(data))
-    print(reduced_imgs(data))
+    out_dir="../dataset0a/spectral2.txt"
+    #make_external(path_dir,out_dir)
+    read_external(out_dir)
+    #data=make_imgs(path_dir)[0:100]
+    #print(len(data))
+    #print(reduced_imgs(data))
     #X_prim=transform_dim(data)
     #print(X_prim.shape)
