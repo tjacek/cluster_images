@@ -1,11 +1,19 @@
-import lasagne
-import lasagne
+import lasagne,pickle
 import numpy as np
 import theano
 import theano.tensor as T
 import utils.files as files
 import deep.tools as tools
 import autoencoder as ae
+
+class Model(object):
+    def __init__(self,hyperparams,params):
+        self.params=params
+        self.hyperparams=hyperparams
+
+    def save(self,path):
+        with open(path, 'w') as f:
+            pickle.dump(self, f)
 
 def train_model_unsuper(imgs,hyper_params,num_iter=500,input_dim=(60,60)):
     batch_size=hyper_params["batch_size"]

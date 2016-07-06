@@ -1,12 +1,15 @@
-import lasagne
+import lasagne,pickle
 import numpy as np
 import theano
 import theano.tensor as T
 from theano.sandbox.rng_mrg import MRG_RandomStreams as RandomStreams
 from lasagne.random import get_rng
+from . import Model
 
 class LstmModel(object):
-    def __init__(self,input_vars,pred,loss,updates):
+    def __init__(self,hyper_params,params,input_vars,pred,loss,updates):
+        self.hyper_params=hyper_params
+        self.params=params
         self.input_vars=input_vars
         vars_list=[input_vars['in_var'],input_vars['target_var'],input_vars['mask_var']]
         self.predict= theano.function([input_vars['in_var'],input_vars['mask_var']],pred)
@@ -17,6 +20,9 @@ class LstmModel(object):
         x=np.expand_dims(x,axis=0)
         mask=np.expand_dims(mask,axis=0)
         return np.argmax(self.predict(x,mask))
+
+    def get_model(self):
+        return Model(self.hyper_params,self.params)
 
 def make_LSTM(hyper_params):
     print(hyper_params)
@@ -49,12 +55,13 @@ def make_LSTM(hyper_params):
 
 def compile_lstm(lstm_equ,input_vars,hyper_params):
     prediction = lasagne.layers.get_output(lstm_equ)
+    params = lasagne.layers.get_all_param_values(lstm_equ)
     loss = lasagne.objectives.categorical_crossentropy(prediction,input_vars['target_var'])
     loss = loss.mean()
     params = lasagne.layers.get_all_params(lstm_equ, trainable=True)
     #updates = lasagne.updates.nesterov_momentum(loss,params, hyper_params['learning_rate'])
     updates =lasagne.updates.adagrad(loss,params, hyper_params['learning_rate'])
-    return LstmModel(input_vars,prediction,loss,updates)
+    return LstmModel(hyper_params,params,input_vars,prediction,loss,updates)
 
 def make_input_vars(l_in,l_mask):
     in_var=l_in.input_var
