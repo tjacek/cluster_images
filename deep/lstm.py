@@ -22,7 +22,23 @@ class LstmModel(object):
         return np.argmax(self.predict(x,mask))
 
     def get_model(self):
-        return Model(self.hyper_params,self.params)
+        params_values = lasagne.layers.get_all_param_values(self.params)
+        return Model(self.hyper_params,params_values)
+
+    def set_model(self,model):
+        print(type(model.params))
+        lasagne.layers.set_all_param_values(self.params,model.params)
+
+def compile_lstm(hyper_params):
+    lstm_equ,input_vars=make_LSTM(hyper_params)
+    prediction = lasagne.layers.get_output(lstm_equ)
+    params = lasagne.layers.get_all_params(lstm_equ, trainable=True)
+    loss = lasagne.objectives.categorical_crossentropy(prediction,input_vars['target_var'])
+    loss = loss.mean()
+    
+    #updates = lasagne.updates.nesterov_momentum(loss,params, hyper_params['learning_rate'])
+    updates =lasagne.updates.adagrad(loss,params, hyper_params['learning_rate'])
+    return LstmModel(hyper_params,lstm_equ,input_vars,prediction,loss,updates)
 
 def make_LSTM(hyper_params):
     print(hyper_params)
@@ -53,16 +69,6 @@ def make_LSTM(hyper_params):
     input_vars=make_input_vars(l_in,l_mask)
     return l_out,input_vars
 
-def compile_lstm(lstm_equ,input_vars,hyper_params):
-    prediction = lasagne.layers.get_output(lstm_equ)
-    params = lasagne.layers.get_all_param_values(lstm_equ)
-    loss = lasagne.objectives.categorical_crossentropy(prediction,input_vars['target_var'])
-    loss = loss.mean()
-    params = lasagne.layers.get_all_params(lstm_equ, trainable=True)
-    #updates = lasagne.updates.nesterov_momentum(loss,params, hyper_params['learning_rate'])
-    updates =lasagne.updates.adagrad(loss,params, hyper_params['learning_rate'])
-    return LstmModel(hyper_params,params,input_vars,prediction,loss,updates)
-
 def make_input_vars(l_in,l_mask):
     in_var=l_in.input_var
     target_var = T.ivector('targets')
@@ -76,4 +82,11 @@ def get_hyper_params(masked_dataset):
     hyper_params['learning_rate']=0.001
     hyper_params['learning_rate']=0.001
     hyper_params['momentum']=0.9
-    return hyper_params	
+    return hyper_params
+
+def read_lstm(path):
+    with open(path, 'r') as f:
+        model = pickle.load(f)
+    lstm_model=compile_lstm(model.hyperparams)
+    lstm_model.set_model(model)
+    return lstm_model   

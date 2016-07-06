@@ -9,8 +9,8 @@ from sklearn.metrics import classification_report,confusion_matrix
 
 def make_model(train_dataset):
     hyper_params=deep.lstm.get_hyper_params(train_dataset)
-    lstm_equ,input_vars=deep.lstm.make_LSTM(hyper_params)
-    model=deep.lstm.compile_lstm(lstm_equ,input_vars,hyper_params)
+    #model=deep.lstm.compile_lstm(hyper_params)
+    model=deep.lstm.read_lstm('../dataset0/test')
     return train_model(model,train_dataset)
 
 def check_model(model,test_dataset):
@@ -21,7 +21,7 @@ def check_model(model,test_dataset):
               for i,x_i in enumerate(x)]
     check_prediction(y_pred,y_true)
 
-def train_model(model,dataset,epochs=10000):
+def train_model(model,dataset,epochs=10):
     x=get_batches(dataset['x'])
     y=get_batches(dataset['y'])
     mask=get_batches(dataset['mask'])
@@ -50,8 +50,8 @@ def get_batches(x,batch_size=5):
 if __name__ == "__main__":
     path='../dataset0/seq/'
     dataset=to_dataset.seq_dataset(path)
-    new_dataset=to_dataset.masked_dataset(dataset)
-    
+    new_dataset=to_dataset.masked_dataset(dataset)    
     train,test=split.simple_dataset(new_dataset)
     model=make_model(train)
+    model.get_model().save('../dataset0/test')
     check_model(model,test)
