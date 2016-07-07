@@ -63,7 +63,8 @@ def make_LSTM(hyper_params):
     l_forward_slice = lasagne.layers.SliceLayer(l_forward, -1, 1)
     l_backward_slice = lasagne.layers.SliceLayer(l_backward, 0, 1)
     l_sum = lasagne.layers.ConcatLayer([l_forward_slice, l_backward_slice])
-    l_drop= lasagne.layers.DropoutLayer( lasagne.layers.FlattenLayer(l_sum))
+    l_drop= lasagne.layers.DropoutLayer( lasagne.layers.FlattenLayer(l_sum),
+                                         p=hyper_params['p'])
     l_out = lasagne.layers.DenseLayer(
         l_drop, num_units=n_cats, nonlinearity=lasagne.nonlinearities.softmax) 
     input_vars=make_input_vars(l_in,l_mask)
@@ -82,11 +83,13 @@ def get_hyper_params(masked_dataset):
     hyper_params['learning_rate']=0.001
     hyper_params['learning_rate']=0.001
     hyper_params['momentum']=0.9
+    hyper_params['p']=0.5
     return hyper_params
 
 def read_lstm(path):
     with open(path, 'r') as f:
         model = pickle.load(f)
+    model.hyperparams['p']=0.0
     lstm_model=compile_lstm(model.hyperparams)
     lstm_model.set_model(model)
     return lstm_model   
