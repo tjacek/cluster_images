@@ -15,6 +15,11 @@ class Model(object):
         with open(path, 'w') as f:
             pickle.dump(self, f)
 
+def read_model(in_path):
+    with open(in_path, 'r') as f:
+        model = pickle.load(f)
+    return model
+
 def train_model_unsuper(imgs,hyper_params,num_iter=500,input_dim=(60,60)):
     batch_size=hyper_params["batch_size"]
     input_dim=(np.product(imgs[0].shape),) 
@@ -90,10 +95,11 @@ def test_super_model(X,y,model,transform,
         print(str(epoch) + " "+str(cost_mean))
     return model
 
-def test_unsuper_model(X,model,transform,
+def test_unsuper_model(X,model,transform=None,
                         batch_size=100,num_iter=250):
     print(X.shape)
-    X=transform(X,dim=60)
+    if(transform!=None):
+        X=transform(X,dim=60)
     print(X.shape)
     x_batch,n_batches=tools.get_batch(X,batch_size)
     for epoch in range(num_iter):

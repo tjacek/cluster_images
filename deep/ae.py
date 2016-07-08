@@ -1,11 +1,13 @@
-import lasagne
+import sys,os
+sys.path.append(os.path.abspath('../cluster_images'))
+import lasagne,pickle
 import numpy as np
 import theano
 import theano.tensor as T
 import utils.files as files
 import deep.tools as tools
-import convnet
-import pickle
+import deep,convnet
+#from basic.external import make_imgs 
 
 class Autoencoder(object):
     def __init__(self,hyperparams,in_var,l_hid,l_out,
@@ -23,7 +25,7 @@ class Autoencoder(object):
 
     def get_model(self):
         data = lasagne.layers.get_all_param_values(self.l_out)
-        return convnet.Model(self.hyperparams,data)
+        return deep.Model(self.hyperparams,data)
     
     def set_model(self,model):
         lasagne.layers.set_all_param_values(self.l_out,model.params)
@@ -64,7 +66,7 @@ def get_loss(reconstruction,in_var):
 def get_updates(loss,out_layer):
     params = lasagne.layers.get_all_params(out_layer, trainable=True)
     return lasagne.updates.nesterov_momentum(
-                 loss, params, learning_rate=0.01, momentum=0.8) 
+                 loss, params, learning_rate=0.1, momentum=0.8) 
 
 def read_ae(path):
     with open(path, 'r') as f:
@@ -72,4 +74,11 @@ def read_ae(path):
     #nn.layers.set_all_param_values(model, data)
     conv_net=build_autoencoder(model.hyperparams)
     conv_net.set_model(model)
-    return conv_net  
+    return conv_net
+
+if __name__ == "__main__": 
+    path_dir="../dataset0a/cats"
+    #imgset=np.array(make_imgs(path_dir,norm=True))
+    #model=build_autoencoder(default_parametrs())
+    #model=deep.test_unsuper_model(imgset,model)
+    #model.get_model().save("../dataset0a/ae")

@@ -9,7 +9,7 @@ def get_features(img):
     points=pcloud.make_point_cloud(img)
     if(points==None):
     	return None
-    cloud_extractors=[height_feat, area_feat,corl_features,skewness_features]#,std_features,skewness_features]
+    cloud_extractors=[area_feat,corl_features,skewness_features]#,std_features,skewness_features]
     all_feats=[]
     for extr_i in cloud_extractors:
         all_feats+=extr_i(img,points)
