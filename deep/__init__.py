@@ -4,7 +4,7 @@ import theano
 import theano.tensor as T
 import utils.files as files
 import deep.tools as tools
-import autoencoder as ae
+import ae
 
 class Model(object):
     def __init__(self,hyperparams,params):

@@ -8,21 +8,24 @@ import utils.files as files
 import deep_extr #as ae
 from sklearn import manifold
 
-def get_autoencoder_extractor(in_path):
-    model=deep.read_model(in_path)
-    ae_model=ae.build_autoencoder(model.hyperparams)
-    ae_model.set_model(model)
-    def extractor(data):
-        return [ae_model.prediction(data_i)
-                  for data_i in data]
-    return extractor
-
 @utils.timer.clock
-def make_external(in_path,out_path):
+def transform_imgs(in_path,out_path):
     data=make_imgs(in_path)#[0:100]
     ae_extr=deep_extr.get_autoencoder_extractor("../dataset0a/ae")
-    feat_dict=reduced_imgs(data,ae_extr)
+    external_features(data,extractor)
+
+@utils.timer.clock
+def transform_features(in_path,out_path):
+    text=files.read_file(in_path,lines=False)
+    feat_dict=files.txt_to_dict(text)
+    data=[imgs.Image(name_i,np.expand_dims(vec_i,1))
+            for name_i,vec_i in feat_dict.items()]
+    external_features(out_path,data,transform_spectral)
+
+def external_features(out_path,data,extractor):
+    feat_dict=reduced_imgs(data,extractor)
     text_dict=files.dict_to_txt(feat_dict)
+    print(text_dict)
     files.save_string(out_path,text_dict)
 
 def make_imgs(in_path,norm=False):
@@ -40,9 +43,6 @@ def transform_spectral(data,dim=30):
         eigen_solver="arpack",n_neighbors=20)#neighbors)
     X_prim=embedder.fit_transform(X)
     return X_prim
-
-#def get_autoencoder_transform(in_path):
-
 
 def reduced_imgs(data,transform):
     names=dict([ (data_i.name,i) 
@@ -62,8 +62,9 @@ def read_external(in_path):
 if __name__ == "__main__": 
     #print(dir(deep))
     path_dir="../dataset0a/cats"
-    out_dir="../dataset0a/ae.txt"
-    make_external(path_dir,out_dir)
+    ae_path="../dataset0a/ae.txt"
+    sp_path="../dataset0a/spectral3.txt"
+    transform_features(ae_path,sp_path)
     #read_external(out_dir)
     #data=make_imgs(path_dir)[0:100]
     #print(len(data))
