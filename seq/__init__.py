@@ -50,12 +50,12 @@ def get_batches(x,batch_size=6):
                for i in range(n_batches)]
 
 if __name__ == "__main__":
-    path='../dataset0a/seq/'
+    path='../dataset0/seq/'
     dataset=to_dataset.seq_dataset(path)
     new_dataset=to_dataset.masked_dataset(dataset)    
     #print(new_dataset['y'])
     train,test=split.simple_dataset(new_dataset)
     print(train['y'])
     model=make_model(train)
-    model.get_model().save('../dataset0/test')
+    model.get_model().save('../dataset0/pure_spek')
     check_model(model,test)

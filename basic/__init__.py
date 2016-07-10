@@ -4,17 +4,24 @@ import scipy.stats
 import scipy.stats.stats as st
 from sklearn.decomposition import PCA
 
+
+
 def get_features(img):
     print(img.shape)
     points=pcloud.make_point_cloud(img)
+    points=pcloud.normalized_cloud(points)
+
     if(points==None):
     	return None
-    cloud_extractors=[area_feat,corl_features,skewness_features]#,std_features,skewness_features]
+    cloud_extractors=[area_feat,skewness_features,center]#,std_features,skewness_features]
     all_feats=[]
     for extr_i in cloud_extractors:
         all_feats+=extr_i(img,points)
     print(all_feats)      	
     return np.array(all_feats)
+
+def center(img,pcloud):
+    return list(pcloud.center_of_mass())
 
 def std_features(img,pcloud):
     points=pcloud.get_numpy()
