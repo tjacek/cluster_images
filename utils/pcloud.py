@@ -43,6 +43,13 @@ def normalized_cloud(pcloud):
                  for point_i in pcloud.points]
     return Pcloud(new_points)
 
+def unit_normalized(pcloud):
+    dim,min_dim=get_dim(pcloud)
+    #norm=np.linalg.norm(dim)
+    new_points=[ (point_i-min_dim)/dim
+                 for point_i in pcloud.points]
+    return Pcloud(new_points)
+
 def make_point3D(x,y,z):
     return np.array([x,y,z],dtype=float)
 
