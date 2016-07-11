@@ -15,6 +15,10 @@ class Image(np.ndarray):
         obj.org_dim=org_dim
         return obj
 
+    def __str__(self):
+        numbers=[ str(x_i) for x_i in self]
+        return '_'.join(numbers)
+
     def __array_finalize__(self, obj):
         if obj is None: return
         self.name = getattr(obj,'name', None)
@@ -25,19 +29,14 @@ class Image(np.ndarray):
 
 @dir_arg
 def read_images(paths,nomalized=True):
-    #print([str(path_i) for path_i in paths])
-    imgs=[cv2.imread(str(p),cv2.IMREAD_GRAYSCALE) 
-            for p in paths]
-    imgs=[Image(path_i.get_name(),img_i) for img_i,path_i in zip(imgs,paths)
-                   if img_i!=None]
-    if(nomalized):
-        imgs=[img_i/255.0 for img_i in imgs]
-    return imgs
-
+    return [read_img(path_i) for path_i in paths]
+    
 @paths.path_args
 def read_img(dir_path):
     raw_img=cv2.imread(str(dir_path),cv2.IMREAD_GRAYSCALE) 
-    img_i=Image(dir_path.get_name(),raw_img)
+    name=dir_path.get_name()
+    cat=dir_path[-2]
+    img_i=Image(cat+'_'+name,raw_img)
     return img_i
 
 def save_img(full_path,img):
@@ -52,3 +51,12 @@ def rescale(in_path,out_path,new_dim=(60,60)):
     img=cv2.imread(str(in_path))
     new_img=cv2.resize(img,new_dim)
     cv2.imwrite(str(out_path),new_img)
+
+def make_imgs(in_path,norm=False):
+    img_dirs=dirs.all_files(in_path)
+    imgset=[read_img(path_i)
+          for path_i in img_dirs]
+    if(norm):
+        imgset=[ img_i/255.0
+                 for img_i in imgset]
+    return imgset

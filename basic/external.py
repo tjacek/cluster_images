@@ -28,15 +28,6 @@ def external_features(out_path,data,extractor):
     print(text_dict)
     files.save_string(out_path,text_dict)
 
-def make_imgs(in_path,norm=False):
-    img_dirs=dirs.all_files(in_path)
-    imgset=[imgs.read_img(path_i)
-          for path_i in img_dirs]
-    if(norm):
-        imgset=[ img_i/255.0
-                 for img_i in imgset]
-    return imgset
-
 def transform_spectral(data,dim=30):
     X=np.array(data)
     embedder = manifold.SpectralEmbedding(n_components=dim, random_state=0,
