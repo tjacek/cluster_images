@@ -4,7 +4,22 @@ import theano
 import theano.tensor as T
 import utils.files as files
 import deep.tools as tools
-import ae
+#import ae
+
+class NeuralNetwork(object):
+    def __init__(self,hyperparams,params):
+        self.hyperparams=hyperparams
+        self.params=params
+
+    def get_model(self):
+        data = lasagne.layers.get_all_param_values(self.l_out)
+        return deep.Model(self.hyperparams,data)
+    
+    def set_model(self,model):
+        lasagne.layers.set_all_param_values(self.l_out,model.params)
+
+    def __str__(self):
+        return str(self.hyperparams)
 
 class Model(object):
     def __init__(self,hyperparams,params):
