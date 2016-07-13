@@ -6,14 +6,13 @@ import theano
 import theano.tensor as T
 import utils.files as files
 import utils.imgs as imgs
-#import deep.tools as tools
 import deep,convnet
 from lasagne.regularization import regularize_layer_params, l2, l1
 
 class Autoencoder(deep.NeuralNetwork):
-    def __init__(self,hyperparams,params,in_var,
+    def __init__(self,hyperparams,out_layer,in_var,
                      reduction,reconstruction,loss,updates):
-        super(Autoencoder,self).__init__(hyperparams,params)
+        super(Autoencoder,self).__init__(hyperparams,out_layer)
     	self.prediction=theano.function([in_var], reduction,allow_input_downcast=True)
         self.reconstructed=theano.function([in_var], 
                                            reconstruction,allow_input_downcast=True)
@@ -37,7 +36,7 @@ def compile_autoencoder(hyper_params):
     #    l1_penalty = regularize_layer_params(l_hid, l1) * 0.001
     #    loss + l1_penalty  
     updates=lasagne.updates.nesterov_momentum(loss, params, learning_rate=0.1, momentum=0.8) 
-    return   Autoencoder(hyper_params,params,in_var,#l_hid,l_out,
+    return Autoencoder(hyper_params,l_out,in_var,
                          reduction,reconstruction,loss,updates)    
 
 def build_autoencoder(hyper_params=None):
@@ -61,5 +60,5 @@ if __name__ == "__main__":
     path_dir="../dataset0a/cats"
     imgset=np.array(imgs.make_imgs(path_dir,norm=True))
     model=compile_autoencoder(default_parametrs())
-    model=deep.test_unsuper_model(imgset,model)
+    model=deep.test_unsuper_model(imgset,model,num_iter=10)
     model.get_model().save("../dataset0a/ae")

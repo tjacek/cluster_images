@@ -4,19 +4,18 @@ import theano
 import theano.tensor as T
 import utils.files as files
 import deep.tools as tools
-#import ae
 
 class NeuralNetwork(object):
-    def __init__(self,hyperparams,params):
+    def __init__(self,hyperparams,out_layer):
         self.hyperparams=hyperparams
-        self.params=params
+        self.out_layer=out_layer
 
     def get_model(self):
-        data = lasagne.layers.get_all_param_values(self.l_out)
-        return deep.Model(self.hyperparams,data)
+        data = lasagne.layers.get_all_param_values(self.out_layer)
+        return Model(self.hyperparams,data)
     
     def set_model(self,model):
-        lasagne.layers.set_all_param_values(self.l_out,model.params)
+        lasagne.layers.set_all_param_values(self.out_layer,model.params)
 
     def __str__(self):
         return str(self.hyperparams)
