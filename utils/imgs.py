@@ -52,11 +52,18 @@ def rescale(in_path,out_path,new_dim=(60,60)):
     new_img=cv2.resize(img,new_dim)
     cv2.imwrite(str(out_path),new_img)
 
-def make_imgs(in_path,norm=False):
+def make_imgs(in_path,norm=False,conv=False):
     img_dirs=dirs.all_files(in_path)
     imgset=[read_img(path_i)
           for path_i in img_dirs]
     if(norm):
         imgset=[ img_i/255.0
                  for img_i in imgset]
+    if(conv):
+        imgset=img_forconv(imgset)
     return imgset
+
+def img_forconv(imgset):
+    imgs2D=[ img_i.get_orginal()
+              for img_i in imgset]
+    return np.array(imgs2D)
