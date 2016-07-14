@@ -11,14 +11,22 @@ class SimpleLayer(object):
     def get_params(self):
         return [self.W, self.b] 
 
-def make_simple_layer(in_size,out_size,postfix="f"):
+class SigmoidLayer(SimpleLayer):
+    def symb_expr(self,x):
+        return T.nnet.sigmoid(T.dot(x,self.W) + self.b)
+
+class TanhLayer(SimpleLayer):
+    def symb_expr(self,x):
+        return T.nnet.tanh(T.dot(x,self.W) + self.b)        
+
+def make_simple_layer(in_size,out_size,postfix="f",layer=TanhLayer):
     ort_init=lasagne.init.Orthogonal()
     cons_init=lasagne.init.Constant(0.)
     W_value=ort_init.sample((in_size,out_size))
     b_value=cons_init.sample((out_size,))
     W=make_var(W_value,"W_"+postfix)
     b=make_var(b_value,"b_"+postfix)
-    return SimpleLayer(W,b)
+    return layer(W,b)
 
 def make_var(value,name):
     return theano.shared(value=value,name=name,borrow=True)
@@ -42,5 +50,9 @@ def get_batch(imgs,batch_size=10):
     batches=[imgs[i*batch_size:(i+1)*batch_size] for i in range(n_batches)]
     return [np.array(batch_i) for batch_i in batches],n_batches
 
-def get_n_batches(img,batch_size=10):
-    return (len(img)/batch_size)+1
+def get_n_batches(imgs,batch_size=10):
+    n_imgs=len(imgs)
+    n_batches=n_imgs/batch_size
+    if((n_imgs%batch_size)!=0):
+        n_batches+=1
+    return n_batches
