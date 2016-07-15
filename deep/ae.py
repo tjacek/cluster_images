@@ -8,23 +8,27 @@ import utils.files as files
 import utils.imgs as imgs
 import deep,convnet
 from lasagne.regularization import regularize_layer_params, l2, l1
+import deep.train as train
 
 class Autoencoder(deep.NeuralNetwork):
     def __init__(self,hyperparams,out_layer,in_var,
                      reduction,reconstruction,loss,updates):
         super(Autoencoder,self).__init__(hyperparams,out_layer)
     	self.prediction=theano.function([in_var], reduction,allow_input_downcast=True)
-        self.reconstructed=theano.function([in_var], 
+        self.__reconstructed__=theano.function([in_var], 
                                            reconstruction,allow_input_downcast=True)
         self.loss=theano.function([in_var], loss,allow_input_downcast=True,name="loss")
         self.updates=theano.function([in_var], loss, 
                                updates=updates,allow_input_downcast=True)
 
-    def get_numpy(self):
-        return [self.l_hid.W.get_value(),self.l_hid.b.get_value()]
+    def reconstructed(self,in_img):
+        org_dim=in_img.org_dim
+        img2D=np.expand_dims(in_img,0)
+        raw_rec=self.__reconstructed__(img2D)
+        return imgs.Image(in_img.name,raw_rec,org_dim)
 
 def default_parametrs():
-    return {"num_input":(None,7200),"num_hidden":600,"batch_size":100}	
+    return {"num_input":(None,3600),"num_hidden":600,"batch_size":100}	
 
 def compile_autoencoder(hyper_params):
     l_hid,l_out,in_var=build_autoencoder(hyper_params)
@@ -51,14 +55,14 @@ def build_autoencoder(hyper_params=None):
 def read_ae(path):
     with open(path, 'r') as f:
         model = pickle.load(f)
-    #nn.layers.set_all_param_values(model, data)
     conv_net=compile_autoencoder(model.hyperparams)
     conv_net.set_model(model)
     return conv_net
 
 if __name__ == "__main__": 
     path_dir="../dataset0a/cats"
+    ae_path="../dataset0a/ae"
     imgset=np.array(imgs.make_imgs(path_dir,norm=True))
     model=compile_autoencoder(default_parametrs())
-    model=deep.test_unsuper_model(imgset,model,num_iter=10)
-    model.get_model().save("../dataset0a/ae")
+    model=train.test_unsuper_model(imgset,model,num_iter=250)
+    model.get_model().save(ae_path)
