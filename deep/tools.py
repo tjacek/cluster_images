@@ -1,7 +1,11 @@
+import sys,os
+sys.path.append(os.path.abspath('../cluster_images'))
 import numpy as np
 import theano
 import theano.tensor as T
 import lasagne
+import deep
+import ae
 
 class SimpleLayer(object):
     def __init__(self,W,b):
@@ -45,14 +49,9 @@ def to_dist(index,n_cats):
     dist[index]=1
     return dist	
 
-def get_batch(imgs,batch_size=10):
-    n_batches=get_n_batches(imgs,batch_size)
-    batches=[imgs[i*batch_size:(i+1)*batch_size] for i in range(n_batches)]
-    return [np.array(batch_i) for batch_i in batches],n_batches
+def reconstruction(path):
+    nn=ae.read_ae(path)
 
-def get_n_batches(imgs,batch_size=10):
-    n_imgs=len(imgs)
-    n_batches=n_imgs/batch_size
-    if((n_imgs%batch_size)!=0):
-        n_batches+=1
-    return n_batches
+if __name__ == "__main__": 
+    ae_path="../dataset0a/ae"
+    reconstruction(ae_path)
