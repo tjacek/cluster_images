@@ -6,8 +6,9 @@ from dirs import dir_arg, ApplyToFiles
 #from paths import str_arg
 
 class Image(np.ndarray):
-    def __new__(cls,name,input_array):
-        org_dim=[input_array.shape[0],input_array.shape[1]]
+    def __new__(cls,name,input_array,org_dim=None):
+        if(org_dim==None):
+            org_dim=[input_array.shape[0],input_array.shape[1]]
         input_array=input_array.astype(float) 
         input_array=input_array.flatten()
         obj = np.asarray(input_array).view(cls) 
@@ -26,6 +27,11 @@ class Image(np.ndarray):
 
     def get_orginal(self):
         return np.reshape(self,self.org_dim)
+
+    def save(self,out_path):
+        full_name=out_path+'/'+self.name
+        img2D=self.get_orginal()
+        cv2.imwrite(full_name,img2D)
 
 @dir_arg
 def read_images(paths,nomalized=True):
@@ -66,4 +72,11 @@ def make_imgs(in_path,norm=False,conv=False):
 def img_forconv(imgset):
     imgs2D=[ img_i.get_orginal()
               for img_i in imgset]
-    return np.array(imgs2D)
+    conv=np.array(imgs2D)
+    conv=np.expand_dims(conv,1)
+    return conv
+
+
+def unorm(imgset):
+    return [ img_i*255.0
+             for img_i in imgset]

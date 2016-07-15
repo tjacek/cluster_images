@@ -6,6 +6,8 @@ import theano.tensor as T
 import lasagne
 import deep
 import ae
+import utils.imgs as imgs
+import utils.dirs as dirs
 
 class SimpleLayer(object):
     def __init__(self,W,b):
@@ -49,9 +51,18 @@ def to_dist(index,n_cats):
     dist[index]=1
     return dist	
 
-def reconstruction(path):
-    nn=ae.read_ae(path)
+def reconstruction(ae_path,img_path,out_path):
+    nn=ae.read_ae(ae_path)
+    imgset=imgs.make_imgs(img_path,norm=True,conv=False)
+    recon=[nn.reconstructed(img_i) 
+            for img_i in imgset]
+    recon=imgs.unorm(imgset)
+    dirs.make_dir(out_path)
+    for img_i in recon:
+        img_i.save(out_path)
 
 if __name__ == "__main__": 
     ae_path="../dataset0a/ae"
-    reconstruction(ae_path)
+    path_dir="../dataset0a/cats"
+    out_path="../dataset0a/out"
+    reconstruction(ae_path,path_dir,out_path)
