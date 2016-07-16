@@ -15,15 +15,23 @@ class ConvAutoencoder(deep.NeuralNetwork):
                      reduction,reconstruction,loss,updates):
         super(ConvAutoencoder,self).__init__(hyperparams,out_layer)
         self.prediction=theano.function([in_var], reduction,allow_input_downcast=True)
-        self.reconstructed=theano.function([in_var], 
+        self.__reconstructed__=theano.function([in_var], 
                                            reconstruction,allow_input_downcast=True)
         self.loss=theano.function([in_var], loss,allow_input_downcast=True,name="loss")
         self.updates=theano.function([in_var], loss, 
                                updates=updates,allow_input_downcast=True)
 
+    def reconstructed(self,in_img):
+        org_img=in_img.get_orginal()
+        org_dim=in_img.org_dim
+        img3D=np.expand_dims(org_img,0)
+        img4D=np.expand_dims(img3D,0)
+        raw_rec=self.__reconstructed__(img4D)
+        return imgs.Image(in_img.name,raw_rec,org_dim)
+
 def default_parametrs():
     return {"num_input":(None,1,60,60),"num_hidden":600,"batch_size":100,
-            "num_filters":4,"filter_size":(5,5),"pool_size":(8,8)}  
+            "num_filters":4,"filter_size":(5,5),"pool_size":(2,2)}  
 
 def compile_autoencoder(hyper_params):
     l_hid,l_out,in_var=build_conv_ae(hyper_params)
@@ -34,7 +42,7 @@ def compile_autoencoder(hyper_params):
     loss = lasagne.objectives.squared_error(reconstruction, in_var).mean()
     #    l1_penalty = regularize_layer_params(l_hid, l1) * 0.001
     #    loss + l1_penalty  
-    updates=lasagne.updates.nesterov_momentum(loss, params, learning_rate=0.001, momentum=0.8) 
+    updates=lasagne.updates.nesterov_momentum(loss, params, learning_rate=0.1, momentum=0.8) 
     return ConvAutoencoder(hyper_params,l_out,in_var,
                          reduction,reconstruction,loss,updates)    
 
@@ -55,10 +63,10 @@ def build_conv_ae(hyper_params):
     pool_size=list(lasagne.layers.get_output_shape(pool_layer1))
     pool_size[0]=[0]
     pool_size=tuple(pool_size)
-
+    print(pool_size)
     flat_layer1=lasagne.layers.ReshapeLayer(pool_layer1,([0],-1) )
     flat_size=lasagne.layers.get_output_shape(flat_layer1)[1]
-
+    print 'flat size %d' % flat_size
     hidden=lasagne.layers.DenseLayer(flat_layer1,
              num_units=num_hidden,
              nonlinearity=lasagne.nonlinearities.rectify)
@@ -75,13 +83,11 @@ def build_conv_ae(hyper_params):
             conv_layer2, num_filters=1, filter_size=filter_size2D,
             nonlinearity=None,#lasagne.nonlinearities.rectify,
             W=lasagne.init.GlorotUniform())
-
-    #features=lasagne.layers.get_output(hidden)
-    #reconstr=lasagne.layers.get_output(out_layer)
+    
     in_var=l_in.input_var
     return hidden,out_layer,in_var#l_hid,l_out,in_var
    
-def read_ae(path):
+def read_conv_ae(path):
     with open(path, 'r') as f:
         model = pickle.load(f)
     #nn.layers.set_all_param_values(model, data)
@@ -91,8 +97,8 @@ def read_ae(path):
 
 if __name__ == "__main__": 
     path_dir="../dataset0a/cats"
-    imgset=imgs.make_imgs(path_dir,norm=False,conv=True)
+    imgset=imgs.make_imgs(path_dir,norm=True,conv=True)
     print(imgset.shape)
     model=compile_autoencoder(default_parametrs())
-    model=deep.test_unsuper_model(imgset,model,num_iter=10)
-    model.get_model().save("../dataset0a/ae")
+    model=deep.test_unsuper_model(imgset,model,num_iter=250)
+    model.get_model().save("../dataset0a/conv_ae")
