@@ -14,7 +14,7 @@ class ConvAutoencoder(deep.NeuralNetwork):
     def __init__(self,hyperparams,out_layer,in_var,
                      reduction,reconstruction,loss,updates):
         super(ConvAutoencoder,self).__init__(hyperparams,out_layer)
-        self.prediction=theano.function([in_var], reduction,allow_input_downcast=True)
+        self.__prediction__=theano.function([in_var], reduction,allow_input_downcast=True)
         self.__reconstructed__=theano.function([in_var], 
                                            reconstruction,allow_input_downcast=True)
         self.loss=theano.function([in_var], loss,allow_input_downcast=True,name="loss")
@@ -22,12 +22,21 @@ class ConvAutoencoder(deep.NeuralNetwork):
                                updates=updates,allow_input_downcast=True)
 
     def reconstructed(self,in_img):
+        img4D=self.__preproc__(in_img)
+        raw_rec=self.__reconstructed__(img4D)
+        return imgs.Image(in_img.name,raw_rec,in_img.org_dim)
+
+    def prediction(self,in_img):
+        img4D=self.__preproc__(in_img)
+        return self.__prediction__(img4D)
+
+    def __preproc__(self,in_img):
+        print(type(in_img))
         org_img=in_img.get_orginal()
-        org_dim=in_img.org_dim
+        #org_dim=in_img.org_dim
         img3D=np.expand_dims(org_img,0)
         img4D=np.expand_dims(img3D,0)
-        raw_rec=self.__reconstructed__(img4D)
-        return imgs.Image(in_img.name,raw_rec,org_dim)
+        return img4D
 
 def default_parametrs():
     return {"num_input":(None,1,60,60),"num_hidden":600,"batch_size":100,

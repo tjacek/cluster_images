@@ -7,12 +7,13 @@ import utils.imgs as imgs
 import utils.files as files
 import deep_extr #as ae
 from sklearn import manifold
-
+import deep.autoconv
+ 
 @utils.timer.clock
 def transform_imgs(in_path,out_path):
-    data=make_imgs(in_path)#[0:100]
-    ae_extr=deep_extr.get_autoencoder_extractor("../dataset0a/ae")
-    external_features(data,extractor)
+    data=imgs.make_imgs(in_path)#[0:100]
+    ae_extr=deep_extr.get_deep_extractor("../dataset0a/conv_ae")
+    external_features(out_path,data,ae_extr)
 
 @utils.timer.clock
 def transform_features(in_path,out_path):
@@ -53,12 +54,7 @@ def read_external(in_path):
 if __name__ == "__main__": 
     #print(dir(deep))
     path_dir="../dataset0a/cats"
-    ae_path="../dataset0a/ae.txt"
-    sp_path="../dataset0a/spectral3.txt"
+    ae_path="../dataset0a/ae_conv.txt"
+    sp_path="../dataset0a/spectral5.txt"
+    #transform_imgs(path_dir,ae_path)
     transform_features(ae_path,sp_path)
-    #read_external(out_dir)
-    #data=make_imgs(path_dir)[0:100]
-    #print(len(data))
-    #print(reduced_imgs(data))
-    #X_prim=transform_dim(data)
-    #print(X_prim.shape)

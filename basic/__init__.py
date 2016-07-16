@@ -4,8 +4,6 @@ import scipy.stats
 import scipy.stats.stats as st
 from sklearn.decomposition import PCA
 
-
-
 def get_features(img):
     print(img.shape)
     points=pcloud.make_point_cloud(img)
