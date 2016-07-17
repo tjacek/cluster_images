@@ -16,6 +16,9 @@ class IntCat(object):
             self.names2int[cat_name]=len(self.names2int)
         return self.names2int[cat_name] 
 
+    def __str__(self):
+        return str(self.names2int)
+
 def seq_dataset(in_path):
     all_paths=dirs.all_files(in_path)
     seqs=[ parse_seq(path_i)
@@ -23,8 +26,9 @@ def seq_dataset(in_path):
     get_cat=IntCat()
     y=[ get_cat(seq_i[0]) 
         for seq_i in seqs]
+    print(get_cat)
     x=[ parse_text(seq_i[1])
-        for seq_i in seqs]    
+        for seq_i in seqs]
     return make_dataset(x,y)
 
 def parse_seq(path_i):
@@ -45,19 +49,26 @@ def line_to_vector(line):
     return vec_i
 
 def make_dataset(x,y):
-    return {'x':x,'y':y}
+    params=make_params(x,y)
+    return {'x':x,'y':y,'params':params}
 
 def masked_dataset(dataset):
     x=dataset['x']
-    max_seq = max_length(x)
-    n_batch = len(x)
-    seq_dim=x[0].shape[1]
-    n_cats=get_n_cats(dataset)
-    params={'n_batch':n_batch,'max_seq':max_seq,'seq_dim':seq_dim,'n_cats':n_cats}
+    y=dataset['y']
+    params= make_params(x,y)
+    print(params)
     mask=make_mask(x,n_batch,max_seq)
     x_masked=make_masked_seq(x,max_seq,seq_dim)
     new_dataset={'x':x_masked,'y':dataset['y'],'mask':mask,'params':params}
     return new_dataset
+
+def make_params(x,y):
+    max_seq = max_length(x)
+    n_batch = len(x)
+    n_cats=get_n_cats(y)
+    seq_dim=x[0].shape[1]
+    params={'n_batch':n_batch,'max_seq':max_seq,'seq_dim':seq_dim,'n_cats':n_cats}
+    return params
 
 def max_length(x):
     max_len=[ seq_len(x_i) for x_i in x]
@@ -81,9 +92,9 @@ def make_masked_seq(x,max_seq,seq_dim):
 def seq_len(seq_i):
     return seq_i.shape[0]
 
-def get_n_cats(dataset):
+def get_n_cats(y):#dataset):
     cats=Set()
-    cats.update(dataset['y'])
+    cats.update(y)#dataset['y'])
     return len(cats)
 
 if __name__ == "__main__":
