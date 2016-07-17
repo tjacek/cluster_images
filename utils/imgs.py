@@ -40,9 +40,9 @@ def read_images(paths,nomalized=True):
 @paths.path_args
 def read_img(dir_path):
     raw_img=cv2.imread(str(dir_path),cv2.IMREAD_GRAYSCALE) 
-    name=dir_path.get_name()
-    cat=dir_path[-2]
-    img_i=Image(cat+'_'+name,raw_img)
+    #name=dir_path.get_name()
+    #cat=dir_path[-2]
+    img_i=Image(str(dir_path),raw_img)
     return img_i
 
 def save_img(full_path,img):
@@ -76,7 +76,15 @@ def img_forconv(imgset):
     conv=np.expand_dims(conv,1)
     return conv
 
-
 def unorm(imgset):
     return [ img_i*255.0
              for img_i in imgset]
+
+def to_dataset(imgset,extract_cat,transform=None):
+    cats=[ extract_cat(img_i.name) 
+            for img_i in imgset]
+    if(transform!=None):
+        imgset=transform(imgset) 
+    x=np.array(imgset,dtype=float)
+    y=np.array(cats,dtype=float)
+    return x,y
