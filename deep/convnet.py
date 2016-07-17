@@ -1,3 +1,5 @@
+import sys,os
+sys.path.append(os.path.abspath('../cluster_images'))
 import numpy as np
 import theano
 import theano.tensor as T
@@ -5,57 +7,56 @@ import lasagne
 import tools
 import pickle
 from lasagne.regularization import regularize_layer_params, l2, l1
+import deep,train
+import utils
+import utils.imgs as imgs
+import utils.text as text
 
-class Model(object):
-    def __init__(self,hyperparams,params):
-        self.params=params
-        self.hyperparams=hyperparams
-
-class Convet(object):
-    def __init__(self,params,l_in,l_out,in_var,target_var,
+class Convet(deep.NeuralNetwork):
+    def __init__(self,hyperparams,out_layer,
+                     in_var,target_var,
                      features_pred,pred,loss,updates):
-        self.hyperparams=params
-        self.l_in=l_in
-        self.l_out=l_out
+        super(Convet,self).__init__(hyperparams,out_layer)
         self.in_var=in_var
         self.target_var=target_var
-        self.features=theano.function([in_var],features_pred)
+        self.__features__=theano.function([in_var],features_pred)
         self.pred=theano.function([in_var], pred,allow_input_downcast=True)        
         self.loss=theano.function([in_var,target_var], loss,allow_input_downcast=True)
         self.updates=theano.function([in_var, target_var], loss, 
                                updates=updates,allow_input_downcast=True)
 
+    def features(self,in_img):
+        img4D=self.__preproc__(in_img)
+        return self.__features__(img4D)
+    
     def get_category(self,img):
         dist=self.pred(img)
         return [tools.dist_to_category(dist_i) 
                     for dist_i in dist]
-
-    def get_model(self):
-        data = lasagne.layers.get_all_param_values(self.l_out)
-        return Model(self.hyperparams,data)
-    
-    def set_model(self,model):
-        lasagne.layers.set_all_param_values(self.l_out,model.params)
 
     def get_dim(self):
         dim=self.hyperparams["input_shape"]
         dim=(1,dim[1],dim[2],dim[3])
         return dim
 
-    def __str__(self):
-        return str(self.hyperparams)
+    def __preproc__(self,in_img):
+        org_img=in_img.get_orginal()
+        img3D=np.expand_dims(org_img,0)
+        img4D=np.expand_dims(img3D,0)
+        return img4D
 
-def build_convnet(params,n_cats):
+def compile_convnet(params,n_cats):
     in_layer,out_layer,hid_layer,all_layers=build_model(params,n_cats)
     target_var = T.ivector('targets')
     features_pred = lasagne.layers.get_output(hid_layer)
     pred,in_var=get_prediction(in_layer,out_layer)
     loss=get_loss(pred,in_var,target_var,all_layers)
     updates=get_updates(loss,out_layer)
-    return Convet(params,in_layer,out_layer,in_var,target_var,
+    return Convet(params,out_layer,in_var,target_var,
                   features_pred,pred,loss,updates)
 
 def build_model(params,n_cats):
+    print(params)
     input_shape=params["input_shape"]
     n_filters=params["num_filters"]
     filter_size2D=params["filter_size"]
@@ -104,20 +105,39 @@ def get_updates(loss,out_layer):
             loss, params, learning_rate=0.001, momentum=0.9)
     return updates
 
-def save_covnet(conv_net,path):
-    data = conv_net.get_model()#lasagne.layers.get_all_param_values(conv_net.l_out)
-    with open(path, 'w') as f:
-        pickle.dump(data, f)
-
 def read_covnet(path):
     with open(path, 'r') as f:
         model = pickle.load(f)
     model.hyperparams["p"]=0.0    
-    #nn.layers.set_all_param_values(model, data)
-    conv_net=build_convnet(model.hyperparams,n_cats=10)
+    conv_net=compile_convnet(model.hyperparams,n_cats=10)
     conv_net.set_model(model)
     return conv_net
 
 def default_params():
-    return {"input_shape":(None,2,60,60),"num_filters":16,
+    return {"input_shape":(None,1,60,60),"num_filters":16,
               "filter_size":(5,5),"pool_size":(4,4),"p":0.5}
+
+class ExtractCat(object):
+    def __init__(self):
+        self.dir={}
+
+    def __getitem__(self,i):
+        if(not i in self.dir):
+            self.dir[i]=len(self.dir)
+        return self.dir[i]
+
+    def __call__(self,img_path):
+        img_path=utils.paths.Path(img_path) 
+        str_i=str(img_path[-3])
+        return self[str_i]
+
+if __name__ == "__main__": 
+    img_path="../dataset0a/cats"
+    nn_path="../dataset0a/conv_nn"
+    imgset=imgs.make_imgs(img_path)
+    x,y=imgs.to_dataset(imgset,ExtractCat(),imgs.img_forconv)
+    print(x.shape)
+    print(y.shape)
+    model=compile_convnet(default_params(),n_cats=10)
+    train.test_super_model(x,y,model,num_iter=500)
+    model.get_model().save(nn_path)
