@@ -65,7 +65,7 @@ def make_imgs(in_path,norm=False,transform=None):
     if(norm):
         imgset=[ img_i/255.0
                  for img_i in imgset]
-    if(transform!=None):
+    if(transform):
         imgset=transform(imgset)
     return imgset
 
@@ -91,15 +91,18 @@ def split_img(x,scale=2):
     width=x.shape[1]
     new_height=height/scale
     new_x=np.reshape(x,(scale,new_height,width))
-    #img1=img[...][0:img_heigh]
-    #img2=img[...][img_height:2*img_height]  
-    #return img1,img2
+    return new_x
+
+def unify_img(x,scale=2):
+    height=x.shape[1]
+    width=x.shape[2]
+    new_x=np.reshape(x,(scale*height,width))
     return new_x
 
 def to_dataset(imgset,extract_cat,transform=None):
     cats=[ extract_cat(img_i.name) 
             for img_i in imgset]
-    if(transform!=None):
+    if(transform):
         imgset=transform(imgset) 
     x=np.array(imgset,dtype=float)
     y=np.array(cats,dtype=float)
