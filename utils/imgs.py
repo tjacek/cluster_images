@@ -58,27 +58,43 @@ def rescale(in_path,out_path,new_dim=(60,60)):
     new_img=cv2.resize(img,new_dim)
     cv2.imwrite(str(out_path),new_img)
 
-def make_imgs(in_path,norm=False,conv=False):
+def make_imgs(in_path,norm=False,transform=None):
     img_dirs=dirs.all_files(in_path)
     imgset=[read_img(path_i)
           for path_i in img_dirs]
     if(norm):
         imgset=[ img_i/255.0
                  for img_i in imgset]
-    if(conv):
-        imgset=img_forconv(imgset)
+    if(transform!=None):
+        imgset=transform(imgset)
     return imgset
 
-def img_forconv(imgset):
+def unorm(imgset):
+    return [ img_i*255.0
+             for img_i in imgset]
+
+def to_2D(imgset):
     imgs2D=[ img_i.get_orginal()
               for img_i in imgset]
     conv=np.array(imgs2D)
     conv=np.expand_dims(conv,1)
     return conv
 
-def unorm(imgset):
-    return [ img_i*255.0
-             for img_i in imgset]
+def to_3D(imgset):
+    imgs3D=[ split_img(img_i.get_orginal())
+              for img_i in imgset]
+    vol=np.array(imgs3D)
+    return vol
+
+def split_img(x,scale=2):
+    height=x.shape[0]
+    width=x.shape[1]
+    new_height=height/scale
+    new_x=np.reshape(x,(scale,new_height,width))
+    #img1=img[...][0:img_heigh]
+    #img2=img[...][img_height:2*img_height]  
+    #return img1,img2
+    return new_x
 
 def to_dataset(imgset,extract_cat,transform=None):
     cats=[ extract_cat(img_i.name) 
