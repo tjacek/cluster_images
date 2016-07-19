@@ -3,7 +3,6 @@ import numpy as np
 import theano
 import theano.tensor as T
 import utils.files as files
-#import deep.tools as tools
 
 class NeuralNetwork(object):
     def __init__(self,hyperparams,out_layer):
@@ -33,38 +32,3 @@ def read_model(in_path):
     with open(in_path, 'r') as f:
         model = pickle.load(f)
     return model
-
-def to_1D(X,dim=7200):
-    n_img=X.shape[0]
-    print(X[0].shape)
-    X_conv=[X[i].flatten() for i in range(n_img)]
-    X_conv=np.array(X_conv)
-    
-    return X_conv
-
-def to_conv(X,dim=60):
-    n_img=X.shape[0]
-    X_conv=[np.reshape(X[i]) for i in range(n_img)]
-    X_conv=np.array(X_conv)
-    return X_conv
-
-def to_vol(X,dim=60):
-    n_img=X.shape[0]
-    def reshape_img(img_i):
-        #print(img_i.shape)
-        x_i=np.reshape(img_i,(2*dim,dim))
-        #print(x_i.shape)
-        img1,img2=split_img(x_i)
-        
-        x_i=np.array([img1,img2])
-        #print(x_i.shape)
-        return x_i
-    X_conv=[reshape_img(X[i]) for i in range(n_img)]
-    X_conv=np.array(X_conv)
-    return X_conv
-    
-def split_img(img):
-    img_height=img.shape[0]/2
-    img1=img[...][0:img_height]
-    img2=img[...][img_height:2*img_height]  
-    return img1,img2
