@@ -14,10 +14,11 @@ import utils.text as text
 import utils.data as data
 
 class Convet(deep.NeuralNetwork):
-    def __init__(self,hyperparams,out_layer,
+    def __init__(self,hyperparams,out_layer,preproc,
                      in_var,target_var,
                      features_pred,pred,loss,updates):
         super(Convet,self).__init__(hyperparams,out_layer)
+        self.preproc=preproc
         self.in_var=in_var
         self.target_var=target_var
         self.__features__=theano.function([in_var],features_pred)
@@ -27,7 +28,7 @@ class Convet(deep.NeuralNetwork):
                                updates=updates,allow_input_downcast=True)
 
     def features(self,in_img):
-        img4D=self.__preproc__(in_img)
+        img4D=self.preproc(in_img)
         return self.__features__(img4D)
     
     def get_category(self,img):
@@ -40,11 +41,17 @@ class Convet(deep.NeuralNetwork):
         dim=(1,dim[1],dim[2],dim[3])
         return dim
 
-    def __preproc__(self,in_img):
-        org_img=in_img.get_orginal()
-        img3D=np.expand_dims(org_img,0)
-        img4D=np.expand_dims(img3D,0)
-        return img4D
+def preproc2D(in_img):
+    org_img=in_img.get_orginal()
+    img3D=np.expand_dims(org_img,0)
+    img4D=np.expand_dims(img3D,0)
+    return img4D
+
+def preproc3D(in_img):
+    org_img=in_img.get_orginal()
+    img3D=imgs.split_img(org_img)
+    img4D=np.expand_dims(img3D,0)
+    return img4D
 
 def compile_convnet(params,n_cats):
     in_layer,out_layer,hid_layer,all_layers=build_model(params,n_cats)
@@ -53,7 +60,7 @@ def compile_convnet(params,n_cats):
     pred,in_var=get_prediction(in_layer,out_layer)
     loss=get_loss(pred,in_var,target_var,all_layers)
     updates=get_updates(loss,out_layer)
-    return Convet(params,out_layer,in_var,target_var,
+    return Convet(params,out_layer,preproc3D,in_var,target_var,
                   features_pred,pred,loss,updates)
 
 def build_model(params,n_cats):
@@ -102,9 +109,9 @@ def get_loss(prediction,in_var,target_var,all_layers):
 
 def get_updates(loss,out_layer):
     params = lasagne.layers.get_all_params(out_layer, trainable=True)
-    #updates = lasagne.updates.nesterov_momentum(
-    #        loss, params, learning_rate=0.001, momentum=0.9)
-    updates =lasagne.updates.adagrad(loss,params, learning_rate=0.001)
+    updates = lasagne.updates.nesterov_momentum(
+            loss, params, learning_rate=0.001, momentum=0.9)
+    #updates =lasagne.updates.adagrad(loss,params, learning_rate=0.01)
     return updates
 
 def read_covnet(path):
@@ -117,7 +124,7 @@ def read_covnet(path):
 
 def default_params():
     return {"input_shape":(None,2,60,60),"num_filters":16,
-              "filter_size":(5,5),"pool_size":(4,4),"p":0.5}
+              "filter_size":(5,5),"pool_size":(2,2),"p":0.5}
 
 if __name__ == "__main__": 
     img_path="../dataset1/cats"
@@ -126,7 +133,7 @@ if __name__ == "__main__":
     x,y=imgs.to_dataset(imgset,data.ExtractCat(),imgs.to_3D)
     print(x.shape)
     print(y.shape)
-    #model=compile_convnet(default_params(),n_cats=10)
-    model= read_covnet(nn_path)
-    train.test_super_model(x,y,model,num_iter=100)
+    model=compile_convnet(default_params(),n_cats=10)
+    #model= read_covnet(nn_path)
+    train.test_super_model(x,y,model,num_iter=2500)
     model.get_model().save(nn_path)
