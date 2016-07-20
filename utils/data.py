@@ -1,6 +1,33 @@
-import utils.files #as files
+import files #as files
 import utils.imgs as images
+import utils.paths
 import numpy as np
+
+class ExtractCat(object):
+    def __init__(self):
+        self.dir={}
+
+    def __getitem__(self,i):
+        if(not i in self.dir):
+            self.dir[i]=len(self.dir)
+        return self.dir[i]
+
+    def __call__(self,img_path):
+        img_path=utils.paths.Path(img_path) 
+        str_i=str(img_path[-3])
+        return self[str_i]
+
+def OneHot(object):
+    def __init__(self,n_cats):
+        self.n_cats=n_cats
+
+    def __call__(self,cat_i):
+        vec=np.zeros((self.n_cats,))
+        vec[cat_i]=1
+        return vec
+
+def get_n_cats(y):
+    return np.amax(y)+1
 
 def read_dataset(dir_path):
     cat_dirs=files.get_dirs(dir_path,True)
@@ -48,9 +75,6 @@ def to_vectors(y):
         y_vec[i][y_i]=1
     return y_vec
 
-def get_n_cats(y):
-    return np.amax(y)+1
-
 def extract_cat(X,y,cat):
     print(X.shape)
     X_cat=[X[i] for i,y_i in enumerate(y)
@@ -59,8 +83,8 @@ def extract_cat(X,y,cat):
 
 def dataset_to_labels(out_path,X,y):
     text=""
+    y=to_ints(y)
     for i,y_i in enumerate(y):
         vector=utils.files.vector_string(X[i])
-        print(type(vector))
-        text+=vector+"#"+str(y_i)+"\n"
+        text+=vector+",#"+str(y_i)+"\n"
     utils.files.save_string(out_path,text)
