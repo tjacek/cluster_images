@@ -4,7 +4,7 @@ import numpy as np
 import theano
 import theano.tensor as T
 import lasagne
-import tools
+import tools 
 import pickle
 from lasagne.regularization import regularize_layer_params, l2, l1
 import deep,train
@@ -53,8 +53,8 @@ def preproc3D(in_img):
     img4D=np.expand_dims(img3D,0)
     return img4D
 
-def compile_convnet(params,n_cats):
-    in_layer,out_layer,hid_layer,all_layers=build_model(params,n_cats)
+def compile_convnet(params):
+    in_layer,out_layer,hid_layer,all_layers=build_model(params)
     target_var = T.ivector('targets')
     features_pred = lasagne.layers.get_output(hid_layer)
     pred,in_var=get_prediction(in_layer,out_layer)
@@ -63,13 +63,14 @@ def compile_convnet(params,n_cats):
     return Convet(params,out_layer,preproc3D,in_var,target_var,
                   features_pred,pred,loss,updates)
 
-def build_model(params,n_cats):
+def build_model(params):
     print(params)
     input_shape=params["input_shape"]
     n_filters=params["num_filters"]
     filter_size2D=params["filter_size"]
     pool_size2D=params["pool_size"]
     p_drop=params["p"]
+    n_cats=params['n_cats']
     in_layer = lasagne.layers.InputLayer(
                shape=input_shape)
                #input_var=input_var)
@@ -114,26 +115,30 @@ def get_updates(loss,out_layer):
     #updates =lasagne.updates.adagrad(loss,params, learning_rate=0.01)
     return updates
 
-def read_covnet(path):
+def read_covnet(path,determistic=True):
     with open(path, 'r') as f:
         model = pickle.load(f)
-    model.hyperparams["p"]=0.0    
-    conv_net=compile_convnet(model.hyperparams,n_cats=10)
+    if(determistic):
+        model.hyperparams["p"]=0.0
+    n_cats=model.hyperparams['n_cats']    
+    conv_net=compile_convnet(model.hyperparams)
     conv_net.set_model(model)
     return conv_net
 
 def default_params():
     return {"input_shape":(None,2,60,60),"num_filters":16,
-              "filter_size":(5,5),"pool_size":(2,2),"p":0.5}
+              "filter_size":(5,5),"pool_size":(4,4),"p":0.5}
 
 if __name__ == "__main__": 
     img_path="../dataset1/cats"
-    nn_path="../dataset1/conv_nn"
+    nn_path="../dataset1/conv_nn_"
     imgset=imgs.make_imgs(img_path,norm=True)
     x,y=imgs.to_dataset(imgset,data.ExtractCat(),imgs.to_3D)
     print(x.shape)
     print(y.shape)
-    model=compile_convnet(default_params(),n_cats=10)
-    #model= read_covnet(nn_path)
-    train.test_super_model(x,y,model,num_iter=2500)
+    params=default_params()
+    params['n_cats']= data.get_n_cats(y)
+    #model=compile_convnet(params)
+    model= read_covnet(nn_path,True)
+    train.test_super_model(x,y,model,num_iter=300)
     model.get_model().save(nn_path)

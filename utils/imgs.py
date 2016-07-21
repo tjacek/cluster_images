@@ -39,6 +39,7 @@ def read_images(paths,nomalized=True):
     
 @paths.path_args
 def read_img(dir_path):
+    print(str(dir_path))
     raw_img=cv2.imread(str(dir_path),cv2.IMREAD_GRAYSCALE) 
     #name=dir_path.get_name()
     #cat=dir_path[-2]
@@ -58,7 +59,7 @@ def rescale(in_path,out_path,new_dim=(60,60)):
     new_img=cv2.resize(img,new_dim)
     cv2.imwrite(str(out_path),new_img)
 
-def make_imgs(in_path,norm=False,transform=None):
+def make_imgs(in_path,norm=True,transform=None):
     img_dirs=dirs.all_files(in_path)
     imgset=[read_img(path_i)
           for path_i in img_dirs]
