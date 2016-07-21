@@ -19,22 +19,38 @@ class IntCat(object):
     def __str__(self):
         return str(self.names2int)
 
+class Seq(object):
+    def __init__(self,cat,person,data):
+        self.cat=cat
+        print(person)
+        self.person=self.__person__(person)
+        print(self.person)
+        self.data = data
+    
+    def __person__(self,person):
+        p=person.split('_')[0]
+        p=p.replace('s','')
+        return int(p)
+
 def seq_dataset(in_path):
     all_paths=dirs.all_files(in_path)
     seqs=[ parse_seq(path_i)
            for path_i in all_paths]
     get_cat=IntCat()
-    y=[ get_cat(seq_i[0]) 
+    y=[ get_cat(seq_i.cat) 
         for seq_i in seqs]
     print(get_cat)
-    x=[ parse_text(seq_i[1])
+    x=[ parse_text(seq_i.data)
         for seq_i in seqs]
-    return make_dataset(x,y)
+    persons=[ seq_i.person
+              for seq_i in seqs]
+    return make_dataset(x,y,persons)
 
 def parse_seq(path_i):
     name=path_i[-2]
+    person=path_i[-1]
     lines=files.read_file(str(path_i))
-    return name,lines
+    return Seq(name,person,lines)
 
 def parse_text(lines):
     x_i=[line_to_vector(line_i) 
@@ -48,17 +64,17 @@ def line_to_vector(line):
         vec_i[j]=float(dim_j)
     return vec_i
 
-def make_dataset(x,y):
+def make_dataset(x,y,persons):
     params=make_params(x,y)
-    return {'x':x,'y':y,'params':params}
+    return {'x':x,'y':y,'persons':persons,'params':params}
 
 def masked_dataset(dataset):
     x=dataset['x']
     y=dataset['y']
     params= make_params(x,y)
     print(params)
-    mask=make_mask(x,n_batch,max_seq)
-    x_masked=make_masked_seq(x,max_seq,seq_dim)
+    mask=make_mask(x,params['n_batch'],params['max_seq'])
+    x_masked=make_masked_seq(x,params['max_seq'],params['seq_dim'])
     new_dataset={'x':x_masked,'y':dataset['y'],'mask':mask,'params':params}
     return new_dataset
 

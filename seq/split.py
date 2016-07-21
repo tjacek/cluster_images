@@ -3,6 +3,13 @@ import utils.text
 from to_dataset import make_dataset
 
 def simple_dataset(dataset):
+    return split_dataset(dataset,select_simple)
+
+def person_dataset(dataset):
+    select_person=SelectPerson(dataset['persons'])
+    return split_dataset(dataset,select_person)
+
+def split_dataset(dataset,select):
     train={}
     test={}
     for key_i,value_i in dataset.items():
@@ -17,19 +24,14 @@ def simple_dataset(dataset):
     test['params']['n_batch']=len(test['y'])
     return train,test
 
-def select(instances,n=0,k=2):
+def select_simple(instances,n=0,k=2):
     return [inst_i for i,inst_i in enumerate(instances)
                 if((i % k)==n)]  
 
-def person_dataset(instances):
-    train=[]
-    test=[] 
-    for inst_i in instances:
-        raw_person=inst_i.name.split("_")[0]
-        person=utils.text.extract_number(raw_person)
-        print("$$"+str(person)) 
-        if((person % 2) ==0):
-            train.append(inst_i)
-        else:
-            test.append(inst_i) 
-    return train,test
+class SelectPerson(object):
+    def __init__(self, persons):
+        self.persons = persons
+        
+    def __call__(self,instances,n=0):
+        return [inst_i for i,inst_i in enumerate(instances)
+                 if((self.persons[i] % 2)==n)]  
