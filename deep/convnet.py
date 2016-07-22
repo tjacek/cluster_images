@@ -12,6 +12,7 @@ import utils
 import utils.imgs as imgs
 import utils.text as text
 import utils.data as data
+import deep.reader
 
 class Convet(deep.NeuralNetwork):
     def __init__(self,hyperparams,out_layer,preproc,
@@ -115,16 +116,6 @@ def get_updates(loss,out_layer):
     #updates =lasagne.updates.adagrad(loss,params, learning_rate=0.01)
     return updates
 
-def read_covnet(path,determistic=True):
-    with open(path, 'r') as f:
-        model = pickle.load(f)
-    if(determistic):
-        model.hyperparams["p"]=0.0
-    n_cats=model.hyperparams['n_cats']    
-    conv_net=compile_convnet(model.hyperparams)
-    conv_net.set_model(model)
-    return conv_net
-
 def default_params():
     return {"input_shape":(None,2,60,60),"num_filters":16,
               "filter_size":(5,5),"pool_size":(4,4),"p":0.5}
@@ -138,7 +129,7 @@ if __name__ == "__main__":
     print(y.shape)
     params=default_params()
     params['n_cats']= data.get_n_cats(y)
-    #model=compile_convnet(params)
-    model= read_covnet(nn_path,True)
-    train.test_super_model(x,y,model,num_iter=300)
-    model.get_model().save(nn_path)
+    nn_reader=deep.reader.NNReader()
+    model= nn_reader.read(nn_path,True)
+    train.test_super_model(x,y,model,num_iter=10)
+    #model.get_model().save(nn_path)

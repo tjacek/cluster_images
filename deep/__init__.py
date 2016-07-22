@@ -31,9 +31,6 @@ class Model(object):
         with open(path, 'w') as f:
             pickle.dump(self, f)
 
-#READERS={'Convet':deep.}
-
-def read_model(in_path):
-    with open(in_path, 'r') as f:
-        model = pickle.load(f)
-    return model
+    def set_determistic(self):
+        if('p' in self.hyperparams):
+            self.hyperparams['p']=0.0
