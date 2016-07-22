@@ -3,10 +3,14 @@ sys.path.append(os.path.abspath('../cluster_images'))
 import deep
 import pickle
 from deep.convnet import compile_convnet
+from deep.ae import compile_autoencoder
+from deep.autoconv import compile_conv_ae
 
 class NNReader(object):
     def __init__(self):
-        self.types = {'Convet':compile_convnet}
+        self.types = {'Convet':compile_convnet,
+                      'Autoencoder':compile_autoencoder,
+                      'ConvAutoencoder':compile_conv_ae}
 
     def read(self,in_path,determistic=True):
         model=self.__unpickle__(in_path)

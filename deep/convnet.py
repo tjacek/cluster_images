@@ -42,18 +42,6 @@ class Convet(deep.NeuralNetwork):
         dim=(1,dim[1],dim[2],dim[3])
         return dim
 
-def preproc2D(in_img):
-    org_img=in_img.get_orginal()
-    img3D=np.expand_dims(org_img,0)
-    img4D=np.expand_dims(img3D,0)
-    return img4D
-
-def preproc3D(in_img):
-    org_img=in_img.get_orginal()
-    img3D=imgs.split_img(org_img)
-    img4D=np.expand_dims(img3D,0)
-    return img4D
-
 def compile_convnet(params):
     in_layer,out_layer,hid_layer,all_layers=build_model(params)
     target_var = T.ivector('targets')
@@ -61,7 +49,7 @@ def compile_convnet(params):
     pred,in_var=get_prediction(in_layer,out_layer)
     loss=get_loss(pred,in_var,target_var,all_layers)
     updates=get_updates(loss,out_layer)
-    return Convet(params,out_layer,preproc3D,in_var,target_var,
+    return Convet(params,out_layer,tools.preproc3D,in_var,target_var,
                   features_pred,pred,loss,updates)
 
 def build_model(params):

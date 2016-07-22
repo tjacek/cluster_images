@@ -9,11 +9,13 @@ import utils.imgs as imgs
 import deep,convnet
 from lasagne.regularization import regularize_layer_params, l2, l1
 from lasagne.layers.conv import TransposedConv2DLayer
+import tools 
 
 class ConvAutoencoder(deep.NeuralNetwork):
-    def __init__(self,hyperparams,out_layer,in_var,
+    def __init__(self,hyperparams,out_layer,preproc,in_var,
                      reduction,reconstruction,loss,updates):
         super(ConvAutoencoder,self).__init__(hyperparams,out_layer)
+        self.preproc=preproc
         self.__prediction__=theano.function([in_var], reduction,allow_input_downcast=True)
         self.__reconstructed__=theano.function([in_var], 
                                            reconstruction,allow_input_downcast=True)
@@ -22,37 +24,29 @@ class ConvAutoencoder(deep.NeuralNetwork):
                                updates=updates,allow_input_downcast=True)
 
     def reconstructed(self,in_img):
-        img4D=self.__preproc__(in_img)
+        img4D=self.preproc(in_img)
         raw_rec=self.__reconstructed__(img4D)
         return imgs.Image(in_img.name,raw_rec,in_img.org_dim)
 
     def prediction(self,in_img):
-        img4D=self.__preproc__(in_img)
+        img4D=self.preproc(in_img)
         return self.__prediction__(img4D)
 
-    def __preproc__(self,in_img):
-        print(type(in_img))
-        org_img=in_img.get_orginal()
-        #org_dim=in_img.org_dim
-        img3D=np.expand_dims(org_img,0)
-        img4D=np.expand_dims(img3D,0)
-        return img4D
-
 def default_parametrs():
-    return {"num_input":(None,1,60,60),"num_hidden":600,"batch_size":100,
-            "num_filters":4,"filter_size":(5,5),"pool_size":(2,2)}  
+    return {"num_input":(None,2,60,60),"num_hidden":600,"batch_size":100,
+            "num_filters":16,"filter_size":(5,5),"pool_size":(4,4)}  
 
-def compile_autoencoder(hyper_params):
+def compile_conv_ae(hyper_params):
     l_hid,l_out,in_var=build_conv_ae(hyper_params)
     params = lasagne.layers.get_all_params(l_out, trainable=True)
     target_var = T.ivector('targets')
     reconstruction = lasagne.layers.get_output(l_out)
     reduction=lasagne.layers.get_output(l_hid)
     loss = lasagne.objectives.squared_error(reconstruction, in_var).mean()
-    #    l1_penalty = regularize_layer_params(l_hid, l1) * 0.001
-    #    loss + l1_penalty  
-    updates=lasagne.updates.nesterov_momentum(loss, params, learning_rate=0.1, momentum=0.8) 
-    return ConvAutoencoder(hyper_params,l_out,in_var,
+    l1_penalty = regularize_layer_params(l_hid, l1) * 0.0001
+    loss+=l1_penalty  
+    updates=lasagne.updates.nesterov_momentum(loss, params, learning_rate=0.001, momentum=0.8) 
+    return ConvAutoencoder(hyper_params,l_out,tools.preproc3D,in_var,
                          reduction,reconstruction,loss,updates)    
 
 def build_conv_ae(hyper_params):
@@ -105,9 +99,13 @@ def read_conv_ae(path):
     return conv_net
 
 if __name__ == "__main__": 
-    path_dir="../dataset0a/cats"
-    imgset=imgs.make_imgs(path_dir,norm=True,conv=True)
+    path_dir="../dataset1/cats"
+    ae_path="../dataset1/conv_ae"
+    imgset=imgs.make_imgs(path_dir,norm=True,transform=imgs.to_3D)
     print(imgset.shape)
-    model=compile_autoencoder(default_parametrs())
-    model=deep.test_unsuper_model(imgset,model,num_iter=250)
-    model.get_model().save("../dataset0a/conv_ae")
+    #model= read_conv_ae(ae_path)
+    nn_reader=deep.reader.NNReader()
+    model= nn_reader.read(ae_path)
+    # model=compile_conv_ae(default_parametrs())
+    model=deep.train.test_unsuper_model(imgset,model,num_iter=300)
+    model.get_model().save(ae_path)
