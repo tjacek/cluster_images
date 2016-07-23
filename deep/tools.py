@@ -9,7 +9,7 @@ import ae
 import autoconv
 import utils.imgs as imgs
 import utils.dirs as dirs
-
+import deep.reader
 def dist_to_category(dist):
     return dist.flatten().argmax(axis=0)
 
@@ -18,15 +18,33 @@ def to_dist(index,n_cats):
     dist[index]=1
     return dist	
 
+def preproc2D(in_img):
+    org_img=in_img.get_orginal()
+    img3D=np.expand_dims(org_img,0)
+    img4D=np.expand_dims(img3D,0)
+    return img4D
+
+def preproc3D(in_img):
+    org_img=in_img.get_orginal()
+    img3D=imgs.split_img(org_img)
+    img4D=np.expand_dims(img3D,0)
+    return img4D
+
+def postproc3D(in_img):
+    img3D=np.squeeze(in_img)
+    img2D=imgs.unify_img(img3D)
+    return img2D
+
 def reconstruction(ae_path,img_path,out_path):
-    nn=autoconv.read_conv_ae(ae_path)
-    imgset=imgs.make_imgs(img_path,norm=True,conv=False)
+    reader=deep.reader.NNReader()
+    nn=reader.read(ae_path)#autoconv.read_conv_ae(ae_path)
+    imgset=imgs.make_imgs(img_path,norm=True)
     recon=[nn.reconstructed(img_i) 
             for img_i in imgset]
     recon=imgs.unorm(recon)
     dirs.make_dir(out_path)
-    for img_i in recon:
-        img_i.save(out_path)
+    for i,img_i in enumerate(recon):
+        img_i.save(out_path,i)
 
 def check_transform(img_path,out_path):
     imgset=imgs.make_imgs(img_path,norm=False,transform=imgs.to_3D)
@@ -39,8 +57,8 @@ def check_transform(img_path,out_path):
         new_img_i.save(out_path)
 
 if __name__ == "__main__": 
-    ae_path="../dataset0a/conv_ae"
+    ae_path="../dataset1/conv_ae_"
     img_path="../dataset1/cats"
-    out_path="../wyniki/test"
-    check_transform(img_path,out_path)
-    #reconstruction(ae_path,path_dir,out_path)
+    out_path="../dataset1/recon"
+    #check_transform(img_path,out_path)
+    reconstruction(ae_path,img_path,out_path)

@@ -26,7 +26,9 @@ class ConvAutoencoder(deep.NeuralNetwork):
     def reconstructed(self,in_img):
         img4D=self.preproc(in_img)
         raw_rec=self.__reconstructed__(img4D)
-        return imgs.Image(in_img.name,raw_rec,in_img.org_dim)
+        img2D=tools.postproc3D(raw_rec)
+        print(img2D.shape)
+        return imgs.Image(in_img.name,img2D,in_img.org_dim)
 
     def prediction(self,in_img):
         img4D=self.preproc(in_img)
@@ -83,11 +85,12 @@ def build_conv_ae(hyper_params):
     conv_layer2=lasagne.layers.Upscale2DLayer(pool_layer2, pool_size2D)
     
     out_layer= lasagne.layers.TransposedConv2DLayer(
-            conv_layer2, num_filters=1, filter_size=filter_size2D,
+            conv_layer2, num_filters=2, filter_size=filter_size2D,
             nonlinearity=None,#lasagne.nonlinearities.rectify,
             W=lasagne.init.GlorotUniform())
     
     in_var=l_in.input_var
+    print(lasagne.layers.get_output_shape( out_layer))
     return hidden,out_layer,in_var#l_hid,l_out,in_var
    
 def read_conv_ae(path):
@@ -100,12 +103,12 @@ def read_conv_ae(path):
 
 if __name__ == "__main__": 
     path_dir="../dataset1/cats"
-    ae_path="../dataset1/conv_ae"
+    ae_path="../dataset1/conv_ae_"
     imgset=imgs.make_imgs(path_dir,norm=True,transform=imgs.to_3D)
     print(imgset.shape)
     #model= read_conv_ae(ae_path)
     nn_reader=deep.reader.NNReader()
     model= nn_reader.read(ae_path)
-    # model=compile_conv_ae(default_parametrs())
-    model=deep.train.test_unsuper_model(imgset,model,num_iter=300)
+    model=compile_conv_ae(default_parametrs())
+    model=deep.train.test_unsuper_model(imgset,model,num_iter=100)
     model.get_model().save(ae_path)
