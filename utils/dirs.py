@@ -28,15 +28,16 @@ def dir_arg(func):
 
 def apply_to_dirs( func):    
     @paths.path_args
-    def inner_func(in_dir,out_dir):
-        old_path=str(in_dir)
-        new_path=str(out_dir)
-        in_paths=bottom_dirs(in_dir)
+    def inner_func(*args):
+        old_path=str(args[0])
+        new_path=str(args[1])
+        other_args=args[2:]
+        in_paths=bottom_dirs(old_path)
         out_paths=[path_i.exchange(old_path,new_path) 
                       for path_i in in_paths]
-        print(make_dirs(new_path,out_paths))              
+        make_dirs(new_path,out_paths)              
         for in_i,out_i in zip(in_paths,out_paths):
-            func(in_i,out_i)
+            func(in_i,out_i,*other_args)
     return inner_func
     
 @paths.path_args
@@ -128,6 +129,4 @@ def sub_paths(out_path,dirs):
 
 if __name__ == "__main__":
     path="../../dataset9/"
-    copy_dir(path+"cats2/",path+"actions/")
-    #unify_dirs(data,"test2")
-    
+    copy_dir(path+"cats2/",path+"actions/")    

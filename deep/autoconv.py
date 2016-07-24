@@ -30,7 +30,7 @@ class ConvAutoencoder(deep.NeuralNetwork):
         print(img2D.shape)
         return imgs.Image(in_img.name,img2D,in_img.org_dim)
 
-    def prediction(self,in_img):
+    def __call__(self,in_img):
         img4D=self.preproc(in_img)
         return self.__prediction__(img4D)
 
@@ -109,6 +109,6 @@ if __name__ == "__main__":
     #model= read_conv_ae(ae_path)
     nn_reader=deep.reader.NNReader()
     model= nn_reader.read(ae_path)
-    model=compile_conv_ae(default_parametrs())
-    model=deep.train.test_unsuper_model(imgset,model,num_iter=100)
+    #model=compile_conv_ae(default_parametrs())
+    model=deep.train.test_unsuper_model(imgset,model,num_iter=500)
     model.get_model().save(ae_path)
