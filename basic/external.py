@@ -17,15 +17,15 @@ def transform_imgs(in_path,out_path):
     external_features(out_path,data,ae_extr)
 
 @utils.timer.clock
-def transform_features(in_path,out_path):
+def transform_features(in_path,out_path,extractor):
     text=files.read_file(in_path,lines=False)
     feat_dict=files.txt_to_dict(text)
     data=[imgs.Image(name_i,np.expand_dims(vec_i,1))
             for name_i,vec_i in feat_dict.items()]
-    external_features(out_path,data,redu.transform_spectral)
+    external_features(out_path,data,extractor,array_extr=True)
 
 def external_features(out_path,data,extractor,array_extr=False):
-    print(type(extractor))
+    print(extractor.__name__)
     if(array_extr):
         feat_dict=global_reduce(data,extractor)
     else:

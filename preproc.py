@@ -7,14 +7,14 @@ import utils.conf
 import numpy as np
 #from seq.features import extract_features
 import basic.reduction
+import basic.external
 from basic.external import external_features
 
-#EXTRACTORS={'spectral':basic.redu,'pca'}
-
-def preproc_seq(conf_dict):
+def transform_features(conf_dict):
     in_path=conf_dict['in_path']
+    out_path=conf_dict['out_path']
     extractor=select_extractor(conf_dict)
-    extract_features(in_path,extractor)
+    basic.external.transform_features(in_path,out_path,extractor) 
 
 def make_features(conf_dict):
     in_path=conf_dict['in_path']
@@ -30,12 +30,16 @@ def select_extractor(conf_dict):
         nn_path=conf_dict['nn_path']
         nn_reader=deep.reader.NNReader()
         extractor=nn_reader.read(nn_path)
+    elif extractor_type=='text':
+        text_path=conf_dict['text_path']
+        feat_dict=basic.external.read_external(text_path)
+        extractor=lambda img_i:feat_dict[img_i.name]
     else:
-         extractor=getattr(basic.reduction,extractor_type)
+        extractor=getattr(basic.reduction,extractor_type)
     return extractor
 
 if __name__ == "__main__":
-    conf_path="conf/dataset1.cfg"
+    conf_path="conf/dataset1_.cfg"
     conf_dict=utils.conf.read_config(conf_path)
-    #print(getattr(basic.reduction,'transform_pca') )
-    make_features(conf_dict)
+    #make_features(conf_dict)
+    transform_features(conf_dict)
