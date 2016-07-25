@@ -32,7 +32,7 @@ class ConvAutoencoder(deep.NeuralNetwork):
 
     def __call__(self,in_img):
         img4D=self.preproc(in_img)
-        return self.__prediction__(img4D)
+        return self.__prediction__(img4D).flatten()
 
 def default_parametrs():
     return {"num_input":(None,2,60,60),"num_hidden":600,"batch_size":100,

@@ -22,6 +22,7 @@ class Autoencoder(deep.NeuralNetwork):
                                updates=updates,allow_input_downcast=True)
 
     def reconstructed(self,in_img):
+        print(type(in_img))
         org_dim=in_img.org_dim
         img2D=np.expand_dims(in_img,0)
         raw_rec=self.__reconstructed__(img2D)
