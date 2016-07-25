@@ -1,3 +1,5 @@
+import sys,os
+sys.path.append(os.path.abspath('../cluster_images'))
 import lasagne
 import numpy as np
 import theano
@@ -7,13 +9,14 @@ import deep.tools as tools
 import autoencoder
 import pickle
 import convnet
+import deep
 
-class StackedAE(object):
-    def __init__(self,params,l_in,l_out,in_var,target_var,
+class StackedAE(deep.NeuralNetwork):
+    def __init__(self,params,out_layer,
+                 in_var,target_var,
                  features_pred,pred,loss,updates):
-        self.hyperparams=params
-        self.l_in=l_in
-        self.l_out=l_out
+        super(Convet,self).__init__(hyperparams,out_layer)      
+        
         self.in_var=in_var
         self.target_var=target_var
         self.features=theano.function([in_var],features_pred,allow_input_downcast=True)
@@ -27,20 +30,6 @@ class StackedAE(object):
         return [tools.dist_to_category(dist_i) 
                     for dist_i in dist]
 
-    def get_model(self):
-        data = lasagne.layers.get_all_param_values(self.l_out)
-        return convnet.Model(self.hyperparams,data)
-    
-    def set_model(self,model):
-        lasagne.layers.set_all_param_values(self.l_out,model.params)
-
-    def get_dim(self):
-        dim=self.hyperparams["input_shape"]
-        dim=(1,dim[1],dim[2],dim[3])
-        return dim
-
-    def __str__(self):
-        return str(self.hyperparams)
 
 def build_sae(params,n_cats):
     l_in,l_hid,l_hid2,l_out=build_model(params,n_cats)
@@ -85,10 +74,3 @@ def get_updates(loss,out_layer):
 def get_features(l_hid):
     features_pred = lasagne.layers.get_output(l_hid)
     return features_pred
-
-def read_sae(path):
-    with open(path, 'r') as f:
-        model = pickle.load(f)
-    sae_net=build_sae(model.hyperparams,n_cats=10)
-    sae_net.set_model(model)
-    return sae_net
