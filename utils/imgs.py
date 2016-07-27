@@ -12,13 +12,13 @@ class Image(np.ndarray):
         input_array=input_array.astype(float) 
         input_array=input_array.flatten()
         obj = np.asarray(input_array).view(cls) 
-        obj.name=name
+        obj.name=paths.Path(name)
         obj.org_dim=org_dim
         return obj
 
     def __str__(self):
-        numbers=[ str(x_i) for x_i in self]
-        return '_'.join(numbers)
+        #numbers=[ str(x_i) for x_i in self]
+        return self.name#'_'.join(numbers)
 
     def __array_finalize__(self, obj):
         if obj is None: return
@@ -28,8 +28,12 @@ class Image(np.ndarray):
     def get_orginal(self):
         return np.reshape(self,self.org_dim)
 
-    def save(self,out_path):
-        full_name=out_path+'/'+self.name
+    def save(self,out_path,i=None):
+        if(i):
+            filename= 'img' +str(i)+'.jpg'#self.name
+        else:
+            filename=self.name.get_name()
+        full_name=out_path+'/'+filename
         img2D=self.get_orginal()
         cv2.imwrite(full_name,img2D)
 
@@ -39,7 +43,6 @@ def read_images(paths,nomalized=True):
     
 @paths.path_args
 def read_img(dir_path):
-    print(str(dir_path))
     raw_img=cv2.imread(str(dir_path),cv2.IMREAD_GRAYSCALE) 
     #name=dir_path.get_name()
     #cat=dir_path[-2]

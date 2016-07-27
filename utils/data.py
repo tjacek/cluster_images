@@ -4,8 +4,15 @@ import utils.paths
 import numpy as np
 
 class ExtractCat(object):
-    def __init__(self):
+    def __init__(self,parse_cat=None):
         self.dir={}
+        if(parse_cat==None):
+            self.parse_cat=img_cat
+        else:
+            self.parse_cat=parse_cat
+
+    def names(self):
+        return self.dir.keys()
 
     def __getitem__(self,i):
         if(not i in self.dir):
@@ -13,8 +20,7 @@ class ExtractCat(object):
         return self.dir[i]
 
     def __call__(self,img_path):
-        img_path=utils.paths.Path(img_path) 
-        str_i=str(img_path[-3])
+        str_i=self.parse_cat(img_path)
         return self[str_i]
 
 def OneHot(object):
@@ -28,6 +34,11 @@ def OneHot(object):
 
 def get_n_cats(y):
     return np.amax(y)+1
+
+def img_cat(img_path):
+    img_path=utils.paths.Path(img_path) 
+    str_i=str(img_path[-3])
+    return str_i
 
 def read_dataset(dir_path):
     cat_dirs=files.get_dirs(dir_path,True)

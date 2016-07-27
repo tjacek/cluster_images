@@ -8,7 +8,8 @@ import utils.data
 import utils.text
 
 class Action(object):
-    def __init__(self,img_seq,cat=None,person=None):
+    def __init__(self,name,img_seq,cat=None,person=None):
+        self.name=name
         self.img_seq=img_seq
         self.cat=cat
         self.person=person
@@ -28,6 +29,12 @@ class Action(object):
     def __len__(self):
         return len(self.frames)
 
+    def save(self,outpath):
+        full_outpath=outpath+'/'+self.name
+        dirs.make_dir(full_outpath)
+        [img_i.save(full_outpath) 
+         for img_i in self.img_seq]
+
 def read_actions(action_path):
     action_dirs=dirs.bottom_dirs(action_path)
     actions=[parse_action(action_dir_i) 
@@ -38,15 +45,24 @@ def parse_action(action_dir):
     name=action_dir.get_name()
     cat=action_dir[-2]
     person=utils.text.get_person(name)
-    img_seq=imgs.make_imgs(action_dir)
-    return Action(img_seq,cat,person)
+    img_seq=imgs.make_imgs(action_dir,norm=False)
+    return Action(name,img_seq,cat,person)
 
+def select_actions(actions):
+    acts=[ action_i
+           for action_i in actions
+             if (action_i.person % 2)==0]
+    return acts
 
-def name_cat(action_path,name):
-    print(name)
-    raw_cat=name.split("_")[0]
-    raw_cat=raw_cat.replace("a","")
-    return int(raw_cat)
+def save_actions(actions,outpath):
+    dirs.make_dir(outpath)
+    extr_cats=utils.data.ExtractCat(parse_cat=lambda a:a.cat)
+    for action_i in actions:
+        extr_cats(action_i)
+    for name_i in extr_cats.names():
+        dirs.make_dir(outpath+'/'+name_i)
+    for action_i in actions:
+        action_i.save(outpath+'/'+action_i.cat)
 
 def get_action_dataset(action_path):
     actions=utils.apply_to_dir(action_path)
@@ -57,11 +73,9 @@ def get_action_dataset(action_path):
     X,y=utils.data.pairs_to_dataset(all_pairs)
     return X,y
 
-def apply_to_actions(actions,fun):
-    all_actions=[]
-    for action_i in actions:
-        all_actions+=action_i.apply(fun)
-    return all_actions
-
 if __name__ == "__main__":
-    read_actions("../dataset2/full")
+    in_path="../dataset2/full"
+    out_path="../dataset2/train"
+    actions=read_actions(in_path)
+    s_actions=select_actions(actions)
+    save_actions(s_actions,out_path)
