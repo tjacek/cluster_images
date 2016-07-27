@@ -1,30 +1,26 @@
-import files,dirs
-#import cv2
+import sys,os
+sys.path.append(os.path.abspath('../cluster_images'))
 import numpy as np
+import utils.dirs as dirs
+import utils.files as files
 import utils.imgs as imgs
 import utils.data
+import utils.text
 
 class Action(object):
-    def __init__(self,name,frames,cat=None):
-        self.name=name
-        print(frames[0].shape)
-        self.frames=[frame_i.reshape((1,frame_i.shape[0])) for frame_i in frames]
+    def __init__(self,img_seq,cat=None,person=None):
+        self.img_seq=img_seq
         self.cat=cat
-        self.seq=None
+        self.person=person
     
     def as_numpy(self):
         return np.array(self.frames)
 
-    def get_seq(self,cls):
-        self.seq=[ cls.get_robust_category(frame_i) 
-                         for frame_i in self.frames]
-        return self.seq
-
     def cat_labels(self):
         return [(frame_i,self.cat) for frame_i in self.frames]
 
-    def __str__(self):
-    	return self.name
+    #def __str__(self):
+    #	return self.name
 
     def __getitem__(self,index):
         return self.frames[index]
@@ -32,26 +28,19 @@ class Action(object):
     def __len__(self):
         return len(self.frames)
 
-    def apply(self,fun):
-        return [ fun(frame_i) for frame_i in self.frames]
+def read_actions(action_path):
+    action_dirs=dirs.bottom_dirs(action_path)
+    actions=[parse_action(action_dir_i) 
+              for action_dir_i in action_dirs]
+    return actions
 
-def read_action(action_path):
-    print(action_path)
-    frames= imgs.read_images(action_path)
-    if(frames==None):
-        return None
-    if(len(frames)==0):
-        return None
-    name=action_path.get_name()
-    cat=dir_cat(action_path,name)
-    print("name: "+name)
-    print("category:" + str(cat))
-    print(len(frames))
+def parse_action(action_dir):
+    name=action_dir.get_name()
+    cat=action_dir[-2]
+    person=utils.text.get_person(name)
+    img_seq=imgs.make_imgs(action_dir)
+    return Action(img_seq,cat,person)
 
-    return Action(name,frames,cat)
-
-def dir_cat(action_path,name):
-    return action_path.items[-2]
 
 def name_cat(action_path,name):
     print(name)
@@ -73,3 +62,6 @@ def apply_to_actions(actions,fun):
     for action_i in actions:
         all_actions+=action_i.apply(fun)
     return all_actions
+
+if __name__ == "__main__":
+    read_actions("../dataset2/full")
