@@ -1,5 +1,8 @@
+import sys,os
+sys.path.append(os.path.abspath('../cluster_images'))
 import files #as files
 import utils.imgs as images
+import utils.actions as action
 import utils.paths
 import numpy as np
 
@@ -20,6 +23,7 @@ class ExtractCat(object):
         return self.dir[i]
 
     def __call__(self,img_path):
+        print(img_path)
         str_i=self.parse_cat(img_path)
         return self[str_i]
 
@@ -32,70 +36,36 @@ def OneHot(object):
         vec[cat_i]=1
         return vec
 
-def get_n_cats(y):
-    return np.amax(y)+1
-
+@utils.paths.path_args
 def img_cat(img_path):
-    img_path=utils.paths.Path(img_path) 
     str_i=str(img_path[-3])
     return str_i
 
-def read_dataset(dir_path):
-    cat_dirs=files.get_dirs(dir_path,True)
-    all_images=[]
-    y=[]
-    for i,cat_dir_i in enumerate(cat_dirs):
-        images_cat_i=images.read_img_dir(cat_dir_i)
-        print(len(images_cat_i))
-        for img_j in images_cat_i:
-            all_images.append(img_j)
-            y.append(i)
-    return np.array(all_images),np.array(y)
+def make_dataset(x,y):
+    params=make_params(x,y)
+    return {'x':x,'y':y,'params':params}
 
-def agum_dataset(pairs):
-    new_pairs=[]
-    for pair_i in pairs:
-        org_img=pair_i[0].get_orginal()
-        org_img=org_img[::-1]
-        new_pairs.append((org_img,pair_i[1]))
-    pairs+=new_pairs
-    return pairs
-
-def pairs_to_dataset(pairs):
-    X=[pair_i[0] for pair_i in pairs]
-    y=[pair_i[1] for pair_i in pairs]
-    X=np.array(X,dtype=float)
-    y=np.array(to_ints(y),dtype=float)
-    return X,y
-
-def to_ints(y):
-    k=0
-    index_dir={}
-    for y_i in y:
-        if(not (y_i in index_dir)):
-            index_dir[y_i]=k
-            k+=1
-    print(index_dir.keys())
-    int_labels=[index_dir[y_i] for y_i in y]
-    return int_labels
-
-def to_vectors(y):
+def make_params(x,y):
+    max_seq = max_length(x)
+    n_batch = len(x)
     n_cats=get_n_cats(y)
-    y_vec=np.zeros((len(y),n_cats),dtype=float)   
-    for i,y_i in enumerate(y):
-        y_vec[i][y_i]=1
-    return y_vec
+    seq_dim=x[0].shape[1]
+    params={'n_batch':n_batch,'max_seq':max_seq,'seq_dim':seq_dim,'n_cats':n_cats}
+    return params
 
-def extract_cat(X,y,cat):
-    print(X.shape)
-    X_cat=[X[i] for i,y_i in enumerate(y)
-             if y_i==cat]
-    return X_cat
+def max_length(x):
+    max_len=[ seq_len(x_i) for x_i in x]
+    return max(max_len)
 
-def dataset_to_labels(out_path,X,y):
-    text=""
-    y=to_ints(y)
-    for i,y_i in enumerate(y):
-        vector=utils.files.vector_string(X[i])
-        text+=vector+",#"+str(y_i)+"\n"
-    utils.files.save_string(out_path,text)
+def seq_len(seq_i):
+    return seq_i.shape[0]
+
+def get_n_cats(y):
+    return np.amax(y)+1
+
+def projection(data,d):
+    return [data_i[d] for data_i in data]
+
+#if __name__ == "__main__":
+#    path='../dataset2/seq/'
+#    use_dtw(path)
