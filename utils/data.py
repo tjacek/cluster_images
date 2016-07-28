@@ -2,7 +2,7 @@ import sys,os
 sys.path.append(os.path.abspath('../cluster_images'))
 import files #as files
 import utils.imgs as images
-import utils.actions as action
+#import utils.actions as action
 import utils.paths
 import numpy as np
 
@@ -23,7 +23,6 @@ class ExtractCat(object):
         return self.dir[i]
 
     def __call__(self,img_path):
-        print(img_path)
         str_i=self.parse_cat(img_path)
         return self[str_i]
 
@@ -41,9 +40,12 @@ def img_cat(img_path):
     str_i=str(img_path[-3])
     return str_i
 
-def make_dataset(x,y):
+def id_cat(x):
+    return x
+
+def make_dataset(x,y,persons=None):
     params=make_params(x,y)
-    return {'x':x,'y':y,'params':params}
+    return {'x':x,'y':y,'persons':persons,'params':params}
 
 def make_params(x,y):
     max_seq = max_length(x)

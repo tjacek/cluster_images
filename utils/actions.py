@@ -14,14 +14,11 @@ class Action(object):
         self.cat=cat
         self.person=person
     
-    def as_numpy(self):
-        return np.array(self.frames)
+    #def as_numpy(self):
+    #    return np.array(self.frames)
 
-    def cat_labels(self):
-        return [(frame_i,self.cat) for frame_i in self.frames]
-
-    #def __str__(self):
-    #	return self.name
+    def __str__(self):
+        return self.name
 
     def __getitem__(self,index):
         return self.frames[index]
@@ -51,7 +48,7 @@ def parse_action(action_dir):
 def select_actions(actions):
     acts=[ action_i
            for action_i in actions
-             if (action_i.person % 2)==0]
+             if (action_i.person % 2)==1]
     return acts
 
 def save_actions(actions,outpath):
@@ -64,18 +61,9 @@ def save_actions(actions,outpath):
     for action_i in actions:
         action_i.save(outpath+'/'+action_i.cat)
 
-def get_action_dataset(action_path):
-    actions=utils.apply_to_dir(action_path)
-    action_pairs=[action_i.cat_labels() for action_i in actions]
-    all_pairs=[]
-    for action_i in action_pairs:
-        all_pairs+=action_i
-    X,y=utils.data.pairs_to_dataset(all_pairs)
-    return X,y
-
 if __name__ == "__main__":
     in_path="../dataset2/full"
-    out_path="../dataset2/train"
+    out_path="../dataset2/test"
     actions=read_actions(in_path)
     s_actions=select_actions(actions)
     save_actions(s_actions,out_path)
