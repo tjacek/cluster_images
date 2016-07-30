@@ -3,6 +3,7 @@ sys.path.append(os.path.abspath('../cluster_images'))
 import numpy as np
 import utils.actions as actions
 import utils.dirs as dirs
+import utils.paths
 
 def agum_data(action_path,out_path):
     old_actions=actions.read_actions(action_path)
@@ -11,7 +12,10 @@ def agum_data(action_path,out_path):
     all_actions=old_actions+new_actions
     dirs.make_dir(out_path)
     for action_i in all_actions:
-        action_i.save(out_path)
+        path_i=utils.paths.Path(out_path)
+        path_i.add(action_i.cat)
+        dirs.make_dir(path_i)
+        action_i.save(str(path_i))
 
 def flip_action(action_i):
     name=action_i.name+"_h"
