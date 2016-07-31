@@ -6,6 +6,7 @@ import utils.files as files
 import utils.imgs as imgs
 import utils.data
 import utils.text
+import utils.paths #as path
 
 class Action(object):
     def __init__(self,name,img_seq,cat=None,person=None):
@@ -13,9 +14,6 @@ class Action(object):
         self.img_seq=img_seq
         self.cat=cat
         self.person=person
-    
-    #def as_numpy(self):
-    #    return np.array(self.frames)
 
     def __str__(self):
         return self.name
@@ -26,8 +24,15 @@ class Action(object):
     def __len__(self):
         return len(self.frames)
 
+    def transform(self,fun):
+        new_seq=[fun(img_i)
+                  for img_i in self.img_seq]
+        return Action(self.name,new_seq,
+                      self.cat,self.person)
+    
+    @utils.paths.path_args
     def save(self,outpath):
-        full_outpath=outpath+'/'+self.name
+        full_outpath=outpath.append(self.name,copy=True)
         dirs.make_dir(full_outpath)
         [img_i.save(full_outpath) 
          for img_i in self.img_seq]
@@ -48,22 +53,26 @@ def parse_action(action_dir):
 def select_actions(actions):
     acts=[ action_i
            for action_i in actions
-             if (action_i.person % 2)==1]
+             if (action_i.person % 2)==0]
     return acts
 
+
+@utils.paths.path_args
 def save_actions(actions,outpath):
     dirs.make_dir(outpath)
     extr_cats=utils.data.ExtractCat(parse_cat=lambda a:a.cat)
     for action_i in actions:
         extr_cats(action_i)
     for name_i in extr_cats.names():
-        dirs.make_dir(outpath+'/'+name_i)
+        cat_dir_i=outpath.append(name_i,copy=True)
+        dirs.make_dir(cat_dir_i)
     for action_i in actions:
-        action_i.save(outpath+'/'+action_i.cat)
+        cat_path_i=outpath.append(action_i.cat,copy=True)
+        action_i.save(cat_path_i)
 
 if __name__ == "__main__":
-    in_path="../dataset2/full"
-    out_path="../dataset2/test"
+    in_path="../dataset2a/full"
+    out_path="../dataset2a/train"
     actions=read_actions(in_path)
     s_actions=select_actions(actions)
     save_actions(s_actions,out_path)

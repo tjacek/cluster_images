@@ -3,10 +3,11 @@ import re
 class Path(object):
     def __init__(self, text):
         if(type(text)==Path):
-            text=str(Path)
+            text=str(text)
         else:
             text=re.sub(r'(//)+','/',text)
-        self.items=str(text).split("/")
+        self.items=[]
+        self.add(str(text))
 
     def __getitem__(self,i):
         return self.items[i]
@@ -27,6 +28,11 @@ class Path(object):
         s=re.sub(r'(//)+','/',s)
         return s
 
+    def exchange(self,old,new):
+        str_path=str(self)
+        str_path=str_path.replace(old,new)
+        return Path(str_path)
+
     def replace(self,other_path):
         new_path=self.copy()
         name=other_path.get_name()
@@ -37,7 +43,6 @@ class Path(object):
         return self.items[-1]
 
     def set_name(self,name):
-        #name=name.replace('/','')
         self.items[-1]=name
         return self
 
@@ -47,12 +52,17 @@ class Path(object):
             if(str_i!=''):
                 self.append(str_i)
     
-    def append(self,items):
+    def append(self,items,copy=False):
+        if(copy):
+            path_i=self.copy()
+        else:
+            path_i=self
         if(type(items)==str):
             items=[items]
         for item_i in items:
     	    item=item_i.replace("/","")
-            self.items.append(item)
+            path_i.items.append(item)
+        return path_i
 
     def copy(self):	
         str_path=str(self)

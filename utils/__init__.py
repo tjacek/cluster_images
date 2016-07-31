@@ -1,31 +1,23 @@
+import sys,os
+sys.path.append(os.path.abspath('../cluster_images'))
+import cv2
+import numpy as np
 import utils.actions as action
-import utils.files as files
-import utils.dirs #as files
-import os
+import utils.imgs as imgs
 
-def apply_to_dir(in_path):
-    all_dirs=find_all_dirs(in_path)
-    action_dirs=[dir_i for dir_i in all_dirs
-                   if is_action(dir_i)]
-    actions=[action.read_action(dir_i)  for dir_i in action_dirs]
-    #for dir_i in action_dirs:
-    #    print(str(dir_i))
-    return actions
+def transform_actions(in_path,out_path):
+    actions=action.read_actions(in_path)
+    new_actions=[action_i.transform(canny_transform)
+                 for action_i in actions ]
+    action.save_actions(new_actions,out_path)
 
-def get_value(cat,mydict):
-    if(not (cat in mydict)):
-        mydict[cat]=len(mydict.keys())
-    return mydict[cat]
+def canny_transform(img):
+    raw_img=img.get_orginal()
+    int_img=np.uint8(raw_img)
+    canny_img=cv2.Canny(int_img,50,150)
+    return imgs.Image(img.name,canny_img)
 
-def is_action(dir_path):
-    dir_paths=utils.dirs.get_files(dir_path,dirs=True)
-    files_paths=utils.dirs.get_files(dir_path,dirs=False)
-    return len(dir_paths)==0 and len(files_paths)!=0
-
-def find_all_dirs(dir_path):
-    dirs=utils.dirs.get_files(dir_path)
-    all_dirs=[]
-    for dir_i in dirs:
-        all_dirs+=find_all_dirs(dir_i)
-    all_dirs+=dirs
-    return all_dirs
+if __name__ == "__main__":
+    in_path='../dataset3/cats'
+    out_path='../dataset3/edges'
+    transform_actions(in_path,out_path) 
