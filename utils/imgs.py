@@ -33,9 +33,16 @@ class Image(np.ndarray):
             filename= 'img' +str(i)+'.jpg'#self.name
         else:
             filename=self.name.get_name()
-        full_name=out_path+'/'+filename
+        full_name=out_path.append(filename,copy=True)
         img2D=self.get_orginal()
-        cv2.imwrite(full_name,img2D)
+        cv2.imwrite(str(full_name),img2D)
+
+def img_arg(func):
+    def inner_func(img_i):
+        org_i=img_i.get_orginal()
+        raw_img=func(org_i)
+        return Image(img_i.name,raw_img)
+    return inner_func
 
 @dir_arg
 def read_images(paths,nomalized=True):
@@ -44,8 +51,6 @@ def read_images(paths,nomalized=True):
 @paths.path_args
 def read_img(dir_path):
     raw_img=cv2.imread(str(dir_path),cv2.IMREAD_GRAYSCALE) 
-    #name=dir_path.get_name()
-    #cat=dir_path[-2]
     img_i=Image(str(dir_path),raw_img)
     return img_i
 
