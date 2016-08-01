@@ -7,7 +7,7 @@ import utils.imgs as imgs
 
 def transform_actions(in_path,out_path):
     actions=action.read_actions(in_path)
-    new_actions=[action_i.transform(canny_transform)
+    new_actions=[action_i.transform(find_keypoints)
                  for action_i in actions ]
     action.save_actions(new_actions,out_path)
 
@@ -17,7 +17,18 @@ def canny_transform(img):
     canny_img=cv2.Canny(int_img,50,150)
     return imgs.Image(img.name,canny_img)
 
+@imgs.img_arg
+def find_keypoints(img_i):
+    print(img_i.dtype)
+    img_i=np.uint8(img_i)
+    orb = cv2.ORB_create()
+    keypoints = orb.detect(img_i, None)
+    if(len(keypoints)>0):
+         img_i=cv2.drawKeypoints(img_i,keypoints,img_i,flags=cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
+         img_i = cv2.cvtColor(img_i, cv2.COLOR_BGR2GRAY)   
+    return np.float64(img_i)#cv2.medianBlur(img_i,1)
+
 if __name__ == "__main__":
     in_path='../dataset3/cats'
-    out_path='../dataset3/edges'
+    out_path='../dataset3/circles'
     transform_actions(in_path,out_path) 
