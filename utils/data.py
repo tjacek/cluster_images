@@ -68,6 +68,12 @@ def get_n_cats(y):
 def projection(data,d):
     return [data_i[d] for data_i in data]
 
-#if __name__ == "__main__":
-#    path='../dataset2/seq/'
-#    use_dtw(path)
+def find_errors(y_pred,dataset):
+    names=dataset['names']
+    y_true=dataset['y']
+    err=[ pred_i!=true_i  
+           for pred_i,true_i in zip(y_pred,y_true)]
+    err_names=[ names[i]
+                for i,err_i in enumerate(err)
+                    if err_i]
+    return err_names

@@ -14,15 +14,15 @@ def seq_dataset(in_path):
     all_paths=dirs.all_files(in_path)
     seqs=[ parse_seq(path_i)
            for path_i in all_paths]
+    names=[ seq_i.cat+'_'+seq_i.name
+            for seq_i in seqs]   
     get_cat=data.ExtractCat(data.id_cat)
     y=[ get_cat(seq_i.cat) 
         for seq_i in seqs]
     x=[ seq_i.img_seq
         for seq_i in seqs]
     persons=[ seq_i.person
-              for seq_i in seqs]
-    names=[ seq_i.name
-            for seq_i in seqs]          
+              for seq_i in seqs]       
     dataset=data.make_dataset(x,y,persons)
     dataset['names']=names
     return dataset
