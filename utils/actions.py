@@ -7,6 +7,7 @@ import utils.imgs as imgs
 import utils.data
 import utils.text
 import utils.paths #as path
+import utils.selection 
 
 class Action(object):
     def __init__(self,name,img_seq,cat=None,person=None):
@@ -51,15 +52,16 @@ def parse_action(action_dir):
     return Action(name,img_seq,cat,person)
 
 def select_actions(actions):
+    select=utils.selection.SelectModulo()
     acts=[ action_i
            for action_i in actions
-             if (action_i.person % 2)==0]
+             if select(action_i.person)]
     return acts
-
 
 @utils.paths.path_args
 def save_actions(actions,outpath):
     dirs.make_dir(outpath)
+    print(dir(utils.data))
     extr_cats=utils.data.ExtractCat(parse_cat=lambda a:a.cat)
     for action_i in actions:
         extr_cats(action_i)
