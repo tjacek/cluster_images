@@ -2,23 +2,33 @@ from sklearn import cluster
 from sklearn.cluster import AgglomerativeClustering as agglo
 from sklearn.neighbors import kneighbors_graph
 
-def kmeans(data,config):
-    clusters=int(config.get('clusters',4))
-    #cls=cluster.KMeans(n_clusters=clusters)
-    cls=cluster.MiniBatchKMeans(n_clusters=clusters)
-    res=cls.fit(data)
-    return cls.labels_
+class DbscanAlg(object):
+    def __init__(self, eps=0.1,min_samples=8):
+        self.eps = eps
+        self.min_samples=min_samples
+        
+    def __call__(self,data):
+        db = cluster.DBSCAN(self.eps, self.min_samples).fit(data)
+        return db.labels_
 
-def dbscan(data,config):
-    eps=float(config.get('eps',0.1))
-    min_samples=int(config.get('min_samples',8))
-    db = cluster.DBSCAN(eps, min_samples).fit(data)
-    return db.labels_
+def KMeansAlg(object):
+    def __init__(self, n_clusters=4):
+        self.n_clusters=n_clusters
 
-def agglomer(data,config):
-    clusters=int(config.get('clusters',6))
-    connectivity = kneighbors_graph(data, n_neighbors=10, include_self=False)	
-    cls=agglo(n_clusters=clusters, connectivity=connectivity,
-                               linkage='ward')
-    cls.fit(data)
-    return cls.labels_
+    def __call__(self,data):
+        #cls=cluster.KMeans(n_clusters=clusters)
+        cls=cluster.MiniBatchKMeans(n_clusters=clusters)
+        res=cls.fit(data)
+        return cls.labels_
+
+def AgglomerAlg(data,config):
+    def __init__(self,n_clusters=6,n_neighbors=10):
+        self.n_clusters=n_clusters
+        self.n_neighbors=n_neighbors
+    
+    def __call__(self,data):
+        connectivity = kneighbors_graph(data, n_neighbors=self.n_neighbors, include_self=False)	
+        cls=agglo(n_clusters=self.clusters, connectivity=connectivity,
+                            linkage='ward')
+        cls.fit(data)
+        return cls.labels_
