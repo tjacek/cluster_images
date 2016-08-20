@@ -50,12 +50,14 @@ def line_to_vector(line):
 def masked_dataset(dataset):
     x=dataset['x']
     y=dataset['y']
+    names=dataset['names']
     params= data.make_params(x,y)
     print(params)
     mask=make_mask(x,params['n_batch'],params['max_seq'])
     x_masked=make_masked_seq(x,params['max_seq'],params['seq_dim'])
     new_dataset={'x':x_masked,'y':dataset['y'],'mask':mask,
-                 'persons':dataset['persons'],'params':params}
+                 'persons':dataset['persons'],'params':params,
+                 'names':names}
     return new_dataset
 
 def make_mask(x,n_batch,max_seq):

@@ -7,19 +7,23 @@ import numpy as np
 import split,to_dataset
 import deep.lstm
 from sklearn.metrics import classification_report,confusion_matrix
+import utils.data
+
 
 def make_model(train_dataset):
     hyper_params=deep.lstm.get_hyper_params(train_dataset)
     model=deep.lstm.compile_lstm(hyper_params)
     #model=deep.lstm.read_lstm('../dataset0/test')
-    return train_model(model,train_dataset,epochs=2500)
+    return train_model(model,train_dataset,epochs=2000)
 
 def check_model(model,test_dataset):
+    print(test_dataset.keys())
     x=test_dataset['x']
     y_true=test_dataset['y']
     mask=test_dataset['mask']
     y_pred=[model.get_category(x_i,mask[i])
               for i,x_i in enumerate(x)]
+    print(utils.data.find_errors(y_pred,test))
     check_prediction(y_pred,y_true)
 
 def train_model(model,dataset,epochs=10000):
@@ -50,12 +54,12 @@ def get_batches(x,batch_size=6):
                for i in range(n_batches)]
 
 if __name__ == "__main__":
-    path='../dataset1/seq/'
+    path='../dataset7/seq/'
     dataset=to_dataset.seq_dataset(path)
     new_dataset=to_dataset.masked_dataset(dataset)    
     #print(new_dataset['y'])
     train,test=split.person_dataset(new_dataset)
     print(train['y'])
     model=make_model(train)
-    model.get_model().save('../dataset1/lstm_conv_')
+    model.get_model().save('../dataset7/lstm')    
     check_model(model,test)
