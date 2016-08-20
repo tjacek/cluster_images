@@ -36,9 +36,10 @@ def compile_lstm(hyper_params):
     loss = lasagne.objectives.categorical_crossentropy(prediction,input_vars['target_var'])
     loss = loss.mean()
     
-    #updates = lasagne.updates.nesterov_momentum(loss,params, hyper_params['learning_rate'])
+    prediction_det = lasagne.layers.get_output(lstm_equ, deterministic=True)
+
     updates =lasagne.updates.adagrad(loss,params, hyper_params['learning_rate'])
-    return LstmModel(hyper_params,lstm_equ,input_vars,prediction,loss,updates)
+    return LstmModel(hyper_params,lstm_equ,input_vars,prediction_det,loss,updates)
 
 def make_LSTM(hyper_params):
     print(hyper_params)
