@@ -28,19 +28,14 @@ class Convet(deep.NeuralNetwork):
         self.updates=theano.function([in_var, target_var], loss, 
                                updates=updates,allow_input_downcast=True)
 
-    def features(self,in_img):
+    def __call__(self,in_img):
         img4D=self.preproc(in_img)
-        return self.__features__(img4D)
+        return self.__features__(img4D).flatten()
     
     def get_category(self,img):
         dist=self.pred(img)
         return [tools.dist_to_category(dist_i) 
                     for dist_i in dist]
-
-    def get_dim(self):
-        dim=self.hyperparams["input_shape"]
-        dim=(1,dim[1],dim[2],dim[3])
-        return dim
 
 def compile_convnet(params):
     in_layer,out_layer,hid_layer,all_layers=build_model(params)
@@ -109,15 +104,17 @@ def default_params():
               "filter_size":(5,5),"pool_size":(4,4),"p":0.5}
 
 if __name__ == "__main__": 
-    img_path="../dataset1/cats"
-    nn_path="../dataset1/conv_nn_"
+    img_path="../dataset7/train"
+    nn_path="../dataset7/conv_nn"
     imgset=imgs.make_imgs(img_path,norm=True)
+    print("read")
     x,y=imgs.to_dataset(imgset,data.ExtractCat(),imgs.to_3D)
     print(x.shape)
     print(y.shape)
     params=default_params()
     params['n_cats']= data.get_n_cats(y)
-    nn_reader=deep.reader.NNReader()
-    model= nn_reader.read(nn_path,True)
-    train.test_super_model(x,y,model,num_iter=10)
-    #model.get_model().save(nn_path)
+    #nn_reader=deep.reader.NNReader()
+    #model= nn_reader.read(nn_path,0.5)
+    model=compile_convnet(params)
+    train.test_super_model(x,y,model,num_iter=4000)
+    model.get_model().save(nn_path)
