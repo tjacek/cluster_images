@@ -5,6 +5,12 @@ import numpy as np
 import utils.actions as action
 import utils.imgs as imgs
 
+def unify_list(list_of_list):
+    unified_list=[]
+    for list_i in list_of_list:
+        unified_list+=list_i
+    return unified_list
+
 def transform_actions(in_path,out_path):
     actions=action.read_actions(in_path)
     new_actions=[action_i.transform(find_keypoints)

@@ -20,10 +20,10 @@ class Action(object):
         return self.name
 
     def __getitem__(self,index):
-        return self.frames[index]
+        return self.img_seq[index]
 
     def __len__(self):
-        return len(self.frames)
+        return len(self.img_seq)
 
     def transform(self,fun):
         new_seq=[fun(img_i)
@@ -72,9 +72,14 @@ def save_actions(actions,outpath):
         cat_path_i=outpath.append(action_i.cat,copy=True)
         action_i.save(cat_path_i)
 
+def apply_to_imgs(fun,actions):
+    return [[fun(img_i)
+              for img_i in act_i.img_seq]
+                for act_i in actions]
+
 if __name__ == "__main__":
-    in_path="../dataset2a/full"
-    out_path="../dataset2a/train"
+    in_path="../dataset7/cats"
+    out_path="../dataset7/train"
     actions=read_actions(in_path)
     s_actions=select_actions(actions)
     save_actions(s_actions,out_path)
