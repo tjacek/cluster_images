@@ -45,11 +45,25 @@ def read_actions(action_path):
     return actions
 
 def parse_action(action_dir):
+    name,cat,person=cp_dataset(action_dir)
+    img_seq=imgs.make_imgs(action_dir,norm=False)
+    return Action(name,img_seq,cat,person)
+
+def cp_dataset(action_dir):
+    name=action_dir.get_name()
+    names=name.split('_')
+    cat=names[0].replace('a','')
+    person=int(names[1].replace('s',''))
+    print(person)
+    return name,cat,person
+
+def basic_dataset(action_dir):
     name=action_dir.get_name()
     cat=action_dir[-2]
     person=utils.text.get_person(name)
-    img_seq=imgs.make_imgs(action_dir,norm=False)
-    return Action(name,img_seq,cat,person)
+    print(cat+'%')
+    #print(person+'$')
+    return name,cat,person
 
 def select_actions(actions):
     select=utils.selection.SelectModulo()
@@ -78,8 +92,8 @@ def apply_to_imgs(fun,actions):
                 for act_i in actions]
 
 if __name__ == "__main__":
-    in_path="../dataset7/cats"
-    out_path="../dataset7/train"
+    in_path="../dataset3/scaled"
+    out_path="../dataset3/train"
     actions=read_actions(in_path)
     s_actions=select_actions(actions)
     save_actions(s_actions,out_path)
