@@ -28,10 +28,11 @@ def seq_dataset(in_path):
     return dataset
 
 def parse_seq(path_i):
-    name=path_i.get_name()
-    cat=path_i[-2]
-    person=utils.text.get_person(name)
+    #name=path_i.get_name()
+    #cat=path_i[-2]
+    #person=utils.text.get_person(name)
     lines=files.read_file(str(path_i))
+    name,cat,person=utils.actions.cp_dataset(path_i)
     data=parse_text(lines)
     return utils.actions.Action(name,data,cat,person)
 

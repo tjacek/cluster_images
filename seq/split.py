@@ -1,6 +1,6 @@
 import numpy as np
 import utils.text
-from to_dataset import make_dataset
+from utils.data import make_dataset
 
 def simple_dataset(dataset):
     return split_dataset(dataset,select_simple)
