@@ -3,12 +3,12 @@ import select_imgs
 import select_imgs.tools
 import numpy as np
 import cv2
-from utils.dirs import dir_arg, ApplyToFiles
+import utils.dirs
 
-def cluster_images(conf_path):
-    config=utils.conf.read_config(conf_path)
-    in_path=config["in_path"]
-    out_path=config["out_path"]
+def cluster_images(in_path,out_path):
+    data=imgs.make_imgs(in_path,norm=True)
+
+def cluster_images(in_path,out_path):
     @ApplyToFiles(True)
     def inner_func(in_cat,out_cat):
         print(str(in_cat)+"\n"+str(out_path)+"\n")
@@ -31,11 +31,6 @@ def create_cat_images(in_path,config):
     dataset=[(img_i,cls_i) for img_i,cls_i in zip(imgs_,img_cls)]
     #save_clustering("clust.lb",reduced_imgs,img_cls)
     return dataset,n_clusters
-
-def category_cluster(action_path):
-    actions,cats=utils.actions.get_action_dataset(action_path)
-    cat_i=utils.data.extract_cat(actions,cats,1)
-    print(len(cat_i))
 
 if __name__ == "__main__":
     conf_path="conf/dataset9.cfg"
