@@ -1,5 +1,6 @@
 import utils.imgs,utils.files,utils.conf,utils.actions
 import select_imgs
+import select_imgs.clustering
 import select_imgs.tools
 import numpy as np
 import cv2
@@ -7,7 +8,9 @@ import utils.dirs
 
 def cluster_images(in_path,out_path):
     data=imgs.make_imgs(in_path,norm=True)
-
+    cls_alg=select_imgs.clustering.DbscanAlg()
+    cls_alg(data)
+    
 def cluster_images(in_path,out_path):
     @ApplyToFiles(True)
     def inner_func(in_cat,out_cat):
