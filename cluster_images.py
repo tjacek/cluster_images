@@ -5,9 +5,11 @@ import select_imgs.tools
 import numpy as np
 import cv2
 import utils.dirs
+from basic.external import external_features
 
 def cluster_images(in_path,out_path):
     data=imgs.make_imgs(in_path,norm=True)
+    extractor=select_extractor(conf_dict)
     cls_alg=select_imgs.clustering.DbscanAlg()
     cls_alg(data)
     
