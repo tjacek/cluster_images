@@ -1,47 +1,10 @@
-import reduce_dim
 import clustering
-import init_features as init
 
-INIT_FEATURES={'autoencoder':init.use_autoencoder,
-               'shape_context':init.use_shape_context,
-               'basic':init.use_basic}
-
-REDUCTION={"spectral_reduction":reduce_dim.spectral_reduction,
-           "hessian_reduction":reduce_dim.hessian_reduction}
-
-CLUSTER={'kmeans':clustering.kmeans,
-         'dbscan':clustering.dbscan,
-         'agglomer':clustering.agglomer}
-
-def create_images(in_path,config,org_imgs): 
-    init_imgs=use_init_features(in_path,config)
-    reduced_imgs=use_reduction(init_imgs,config)
-    img_cls=use_clustering(reduced_imgs,config)
-    n_clusters=max(img_cls)
-    dataset=[(img_i,cls_i) for img_i,cls_i in zip(org_imgs,img_cls)]
-    #save_clustering("clust.lb",reduced_imgs,img_cls)
-    return dataset,n_clusters
-
-def use_init_features(in_path,config):
-    alg=INIT_FEATURES[config['init_features']]
-    reduced_data=alg(in_path,config)
-    reduced_data=[img_i for img_i in reduced_data
-                        if img_i!=None]
-    print("init features")
-    return reduced_data
-
-def use_reduction(mf_data,config):
-    alg_name=config.get('reduce_alg',None)
-    if(alg_name==None):
-        return mf_data
-    reduce_alg=REDUCTION[alg_name]
-    reduced_data=reduce_alg( mf_data,config)
-    print("reduce data")
-    return reduced_data
-
-def use_clustering(mf_data,config):
-    clust_alg=CLUSTER[config['cls_alg']]
-    img_cls= clust_alg(mf_data,config) #clustering.dbscan(mf_data,config)
-    print("cluster data")
-    return img_cls
-
+def split_cls(labels,data):
+    n_cats=max(labels)+1
+    clusters=[[] for i in range(n_cats)]
+    for label_i,data_i in zip(labels,data):
+        clusters[label_i].append(data_i)
+    for cluster_i in clusters:
+        print(len(cluster_i))
+    return clusters

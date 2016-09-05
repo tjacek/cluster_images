@@ -1,5 +1,5 @@
 import utils.imgs,utils.files,utils.conf,utils.actions
-#import select_imgs
+import select_imgs
 import select_imgs.clustering
 import select_imgs.tools
 import numpy as np
@@ -12,25 +12,12 @@ def cluster_images(conf_path):
     in_path=conf_path['img_path']
     out_path=conf_path['cls_path']
     data=utils.imgs.make_imgs(in_path,norm=True)
-    print(type(data[0]))
-    #extractor=select_extractor(conf_dict)
-    #cls_alg=select_imgs.clustering.DbscanAlg()
-    #cls_alg(data)
-    
-#def cluster_images(in_path,out_path):
-#    @ApplyToFiles(True)
-#    def inner_func(in_cat,out_cat):
-#        print(str(in_cat)+"\n"+str(out_path)+"\n")
-#        new_config=config.copy()
-#        new_config["in_path"]=str(in_cat)
-#        new_config["out_path"]=str(out_cat)
-#        if(config['init_features']=='autoencoder'):
-#            new_config["ae_path"]=config["ae_path"]+"/"+in_cat.get_name()
-#        imgs=utils.imgs.read_images(in_cat)
-#        print("Number of images %i",len(imgs))
-#        dataset,n_clusters=select_imgs.create_images(in_cat,new_config,imgs)
-#        select_imgs.tools.split_clusters(new_config,dataset,n_clusters)
-#    inner_func(in_path,out_path)
+    extractor=select_extractor(conf_dict)
+    imgset=[ extractor(img_i) for img_i in data ]
+    cls_alg=select_imgs.clustering.KMeansAlg(5)
+    labels=cls_alg(imgset)
+    select_imgs.split_cls(labels,data)
+    #print(type(labels))
 
 def create_cat_images(in_path,config): 
     init_imgs=use_init_features(in_path,config)
