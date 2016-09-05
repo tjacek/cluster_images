@@ -16,7 +16,8 @@ def cluster_images(conf_path):
     imgset=[ extractor(img_i) for img_i in data ]
     cls_alg=select_imgs.clustering.KMeansAlg(5)
     labels=cls_alg(imgset)
-    select_imgs.split_cls(labels,data)
+    clusters=select_imgs.split_cls(labels,data)
+    select_imgs.save_cls(out_path,clusters)
     #print(type(labels))
 
 def create_cat_images(in_path,config): 
