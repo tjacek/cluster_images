@@ -11,17 +11,17 @@ class DbscanAlg(object):
         db = cluster.DBSCAN(self.eps, self.min_samples).fit(data)
         return db.labels_
 
-def KMeansAlg(object):
+class KMeansAlg(object):
     def __init__(self, n_clusters=4):
         self.n_clusters=n_clusters
 
     def __call__(self,data):
         #cls=cluster.KMeans(n_clusters=clusters)
-        cls=cluster.MiniBatchKMeans(n_clusters=clusters)
+        cls=cluster.MiniBatchKMeans(n_clusters=self.n_clusters)
         res=cls.fit(data)
         return cls.labels_
 
-def AgglomerAlg(data,config):
+class AgglomerAlg(object):
     def __init__(self,n_clusters=6,n_neighbors=10):
         self.n_clusters=n_clusters
         self.n_neighbors=n_neighbors
