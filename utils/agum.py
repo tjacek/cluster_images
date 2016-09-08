@@ -25,6 +25,15 @@ def flip_action(action_i):
               for img_i in action_i.img_seq]
     return actions.Action(name,img_seq,cat,person)
 
+def subsample_action(action_i):
+    name=action_i.name+"_h"
+    cat=action_i.cat
+    person=action_i.person
+    img_seq=[ img_i
+              for i,img_i in enumerate(action_i.img_seq)
+                if (i%2)==0]
+    return actions.Action(name,img_seq,cat,person)
+
 if __name__ == "__main__":
     in_path='../dataset2a/train/'
     out_path='../dataset2a/train_agum/'
