@@ -47,15 +47,20 @@ def get_spectral(similarities):
     X=np.array(pos)
     return X
 
+class GetShape(object):
+    def __init__(self,colors='bgrcmykw', shape='ovs^p'):
+        self.colors=colors
+        self.shape=shape
+
+    def __call__(self):
+        j=index % len(self.colors)
+        s_i=index/len(self.colors)
+        s_i=s_i%len( self.shape)
+        return self.colors[j],self.shape[s_i]
+
 def labeled_plot(X,y):
     y=np.array(utils.data.to_ints(y),dtype=int)
-    COLORS="bgrcmykw"
-    SHAPE='ovs^p'
-    def get_shape(index):
-        j=index % len(COLORS)
-        s_i=index/len(COLORS)
-        s_i=s_i%len(SHAPE)
-        return COLORS[j],SHAPE[s_i]
+    get_shape=GetShape()
     fig, ax = plt.subplots()
     x_0=X[:,0]
     x_1=X[:,1]
