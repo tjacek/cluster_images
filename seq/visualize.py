@@ -20,10 +20,11 @@ def visualize_metric(instances,dwt_metric):
 
 def get_similarity_matrix(n_samples,instances,dwt_metric):
     similarities=np.zeros((n_samples,n_samples))
-    for i,inst_i in enumerate(instances):
-        print(i)
-        for j,inst_j in enumerate(instances):
-            similarities[i][j]=dwt_metric(inst_i,inst_j)
+    for index, x in np.ndenumerate(similarities):
+        x_i,y_i=index
+        inst_i=instances[x_i]
+        inst_j=instances[y_i]
+        similarities[x_i][x_j]=dwt_metric(inst_i,inst_j)
     similarities=norm_x(similarities)
     #similarities=1.0-similarities  
     return similarities
