@@ -44,7 +44,7 @@ def compile_convnet(params):
     pred,in_var=get_prediction(in_layer,out_layer)
     loss=get_loss(pred,in_var,target_var,all_layers)
     updates=get_updates(loss,out_layer)
-    return Convet(params,out_layer,tools.preproc3D,in_var,target_var,
+    return Convet(params,out_layer,tools.preproc_proj,in_var,target_var,
                   features_pred,pred,loss,updates)
 
 def build_model(params):
@@ -100,21 +100,22 @@ def get_updates(loss,out_layer):
     return updates
 
 def default_params():
-    return {"input_shape":(None,2,60,60),"num_filters":16,
+    return {"input_shape":(None,3,60,60),"num_filters":16,
               "filter_size":(5,5),"pool_size":(4,4),"p":0.5}
 
-if __name__ == "__main__": 
-    img_path="../dataset7/train"
-    nn_path="../dataset7/conv_nn"
+if __name__ == "__main__":
+    img_path='../dataset0/train'
+    nn_path='../dataset0/nn'
     imgset=imgs.make_imgs(img_path,norm=True)
     print("read")
-    x,y=imgs.to_dataset(imgset,data.ExtractCat(),imgs.to_3D)
+    print(len(imgset))
+    x,y=imgs.to_dataset(imgset,data.ExtractCat(),imgs.to_proj)
     print(x.shape)
     print(y.shape)
     params=default_params()
     params['n_cats']= data.get_n_cats(y)
-    #nn_reader=deep.reader.NNReader()
-    #model= nn_reader.read(nn_path,0.5)
-    model=compile_convnet(params)
-    train.test_super_model(x,y,model,num_iter=4000)
+    nn_reader=deep.reader.NNReader()
+    model= nn_reader.read(nn_path,0.0)
+    #model=compile_convnet(params)
+    train.test_super_model(x,y,model,num_iter=10)
     model.get_model().save(nn_path)
