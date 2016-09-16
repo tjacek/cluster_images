@@ -105,7 +105,7 @@ def default_params():
 
 if __name__ == "__main__":
     img_path='../dataset0/train'
-    nn_path='../dataset0/nn'
+    nn_path='../dataset0/nn_'
     imgset=imgs.make_imgs(img_path,norm=True)
     print("read")
     print(len(imgset))
@@ -114,8 +114,8 @@ if __name__ == "__main__":
     print(y.shape)
     params=default_params()
     params['n_cats']= data.get_n_cats(y)
-    nn_reader=deep.reader.NNReader()
-    model= nn_reader.read(nn_path,0.0)
-    #model=compile_convnet(params)
+    #nn_reader=deep.reader.NNReader()
+    #model= nn_reader.read(nn_path,0.5)
+    model=compile_convnet(params)
     train.test_super_model(x,y,model,num_iter=10)
     model.get_model().save(nn_path)
