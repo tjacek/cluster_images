@@ -5,6 +5,13 @@ import cv2
 import deep.reader
 import utils.dirs
 
+class CurryKernel(object):
+    def __init__(self, kernel):
+        self.kernel=kernel
+
+    def __call__(self,img):
+        return cv2.filter2D(img,self.kernel)
+
 def get_kernels(conv_net):
     model=conv_net.get_model()
     params=model.params
