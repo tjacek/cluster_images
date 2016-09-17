@@ -5,6 +5,15 @@ import cv2
 import deep.reader
 import utils.dirs
 
+class ApplyKernels(object):
+    def ApplyKernels(kernels):
+        self.curry_kern=[CurryKernel(kern_i)
+                for kern_i in kernels]
+    
+    def __call__(self,img_i):
+        return [kern_i(img_i) 
+                for kern_i in self.curry_kern]
+
 class CurryKernel(object):
     def __init__(self, kernel):
         self.kernel=kernel
