@@ -6,12 +6,15 @@ from seq.to_dataset import seq_dataset
 import seq,split
 import utils.paths as paths
 from utils.timer import clock 
+import utils.data
 
 @paths.path_args
 def use_dtw(dataset_path):
     dataset=seq_dataset(path)
-    train,test=split.person_dataset(dataset)
+    #train,test=split.person_dataset(dataset)
+    test,train=split.person_dataset(dataset)
     y_pred=wrap(train,test)
+    print(utils.data.find_errors(y_pred,test))
     seq.check_prediction(y_pred,test['y'])
 
 @clock
@@ -19,7 +22,7 @@ def wrap(train,test):
     return [knn(test_i,train) 
               for test_i in test['x']]
 
-def knn(new_x,train_dataset,k=3):
+def knn(new_x,train_dataset,k=1):
     distance=[dtw_metric(new_x,x_i) 
               for x_i in train_dataset['x']]
     distance=np.array(distance)
@@ -51,5 +54,5 @@ def d(v,d):
     return np.linalg.norm(v-d)
 
 if __name__ == "__main__":
-    path='../dataset1/seq/'
+    path='../dataset0/seq/'
     use_dtw(path)

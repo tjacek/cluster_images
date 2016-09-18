@@ -12,16 +12,23 @@ import utils.dirs as dirs
 import deep.reader
 
 class ImgPreproc(object):
-    #def __init__(self, arg):
-    #    super(Img2D, self).__init__()
-    #    self.arg = arg
-        
-    def __call__(self,img_i):
-        imgs2D=[ img_i.get_orginal()
-              for img_i in imgset]
-        conv=np.array(imgs2D)
-        conv=np.expand_dims(conv,1)
-        return conv
+
+    def apply(self,in_img):
+        org_img=in_img.get_orginal()
+        img3D=imgs.split_img(org_img,3)
+        img4D=np.expand_dims(img3D,0)
+        return img4D
+
+    def __call__(self,imgset):
+        raw_imgs=self.basic(imgset)
+        imgs3D=[ imgs.split_img(img_i,scale=3)
+                 for img_i in raw_imgs]
+        vol=np.array(imgs3D)
+        return vol
+
+    def basic(self,imgset):
+        return [img_i.get_orginal()
+                for img_i in imgset]
 
 def dist_to_category(dist):
     return dist.flatten().argmax(axis=0)
