@@ -50,12 +50,6 @@ def preproc3D(in_img):
     img4D=np.expand_dims(img3D,0)
     return img4D
 
-def preproc_proj(in_img):
-    org_img=in_img.get_orginal()
-    img3D=imgs.split_img(org_img,3)
-    img4D=np.expand_dims(img3D,0)
-    return img4D
-
 def postproc3D(in_img):
     img3D=np.squeeze(in_img)
     img2D=imgs.unify_img(img3D)
