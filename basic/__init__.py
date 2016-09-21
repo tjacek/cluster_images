@@ -1,8 +1,10 @@
+import cv2
 import numpy as np
 import utils.pcloud as pcloud
 import scipy.stats
 import scipy.stats.stats as st
 from sklearn.decomposition import PCA
+import utils
 
 def get_features(img):
     print(img.shape)
@@ -11,7 +13,8 @@ def get_features(img):
     points=pcloud.normalized_cloud(points)
     if(points==None):
     	return None
-    cloud_extractors=[area_feat,skewness_features,center,extr_features]#,std_features,skewness_features]
+    cloud_extractors=[area_feat,skewness_features,center,std_features,
+                      extr_features]#,elipse_feat]
     all_feats=[]
     for extr_i in cloud_extractors:
         all_feats+=extr_i(img,points)
@@ -67,11 +70,27 @@ def corl_features(img,pcloud):
     return feats
 
 def height_feat(img,pcloud):
-    x,y=img.shape
+    img2D=img.get_orginal()
+    x,y=img2D.shape
     return [float(x)/float(y)]
 
 def area_feat(img,pcloud):
     points=img[img!=0.0]
     nonzero_points=float(points.shape[0])
     all_points=float(np.prod(img.shape))
-    return [10.0*nonzero_points/all_points]
+    return [nonzero_points/all_points]
+
+
+def elipse_feat(img,pcloud):
+    
+    raw_img=img.get_orginal()
+    int_img=np.uint8(raw_img)
+    canny_img=cv2.Canny(int_img,50,150)
+    edges = canny_img#utils.canny_transform(canny_img)
+    #cv2.Canny(image_gray, sigma=2.0,          low_threshold=0.55, high_threshold=0.8)
+    result = cv2.HoughCircles(edges,cv2.HOUGH_GRADIENT,1,20,
+  param1=50,param2=30,minRadius=0,maxRadius=0)
+    result.sort(order='accumulator')
+    best = list(result[-1])
+    print(len(best))
+    return best

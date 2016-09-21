@@ -5,10 +5,7 @@ import utils.timer
 import utils.dirs as dirs
 import utils.imgs as imgs
 import utils.files as files
-import deep_extr #as ae
-import deep.autoconv
 import basic.reduction as redu
-import deep.reader as nn_reader
 
 @utils.timer.clock
 def transform_imgs(in_path,out_path):
@@ -25,7 +22,7 @@ def transform_features(in_path,out_path,extractor):
     external_features(out_path,data,extractor,array_extr=True)
 
 def external_features(out_path,data,extractor,array_extr=False):
-    print(extractor.__name__)
+    #print(extractor.__name__)
     if(array_extr):
         feat_dict=global_reduce(data,extractor)
     else:
@@ -43,14 +40,15 @@ def global_reduce(data,transform):
 
 def local_reduce(data,transform):
     feat_dict=[ (img_i.name,transform(img_i))
-                for img_i in data]
+                for img_i in data
+                  if img_i!=None]
     return dict(feat_dict)
 
 def read_external(in_path):
     text='\n'.join(files.read_file(in_path))
     feat_dict=files.txt_to_dict(text)
     def get_features(img_i):
-        return feat_dict[img_i.name]
+        return feat_dict[str(img_i.name)]
     return get_features
 
 if __name__ == "__main__": 
