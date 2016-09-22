@@ -5,6 +5,21 @@ import theano.tensor as T
 from theano.sandbox.rng_mrg import MRG_RandomStreams as RandomStreams
 from lasagne.random import get_rng
 from . import Model
+import deep
+
+class LSTM(deep.NeuralNetwork):
+    def __init__(self,hyperparams,out_layer,
+                     in_var,mask_var,target_var,
+                     pred,loss,updates):
+        super(LSTM,self).__init__(hyperparams,out_layer)
+        self.predict= theano.function([in_var,mask_var],pred)
+        self.train = theano.function([in_var, target_var,mask_var],loss, updates=updates)
+        self.loss = theano.function([in_var,target_var,mask_var], loss)
+
+    def get_category(self,x,mask):
+        x=np.expand_dims(x,axis=0)
+        mask=np.expand_dims(mask,axis=0)
+        return np.argmax(self.predict(x,mask))
 
 class LstmModel(object):
     def __init__(self,hyper_params,params,input_vars,pred,loss,updates):
@@ -30,16 +45,19 @@ class LstmModel(object):
         lasagne.layers.set_all_param_values(self.params,model.params)
 
 def compile_lstm(hyper_params):
-    lstm_equ,input_vars=make_LSTM(hyper_params)
-    prediction = lasagne.layers.get_output(lstm_equ)
-    params = lasagne.layers.get_all_params(lstm_equ, trainable=True)
+    l_out,input_vars=make_LSTM(hyper_params)
+    prediction = lasagne.layers.get_output(l_out)
+    params = lasagne.layers.get_all_params(l_out, trainable=True)
     loss = lasagne.objectives.categorical_crossentropy(prediction,input_vars['target_var'])
     loss = loss.mean()
     
-    prediction_det = lasagne.layers.get_output(lstm_equ, deterministic=True)
+    prediction_det = lasagne.layers.get_output(l_out, deterministic=True)
 
     updates =lasagne.updates.adagrad(loss,params, hyper_params['learning_rate'])
-    return LstmModel(hyper_params,lstm_equ,input_vars,prediction_det,loss,updates)
+    #return LstmModel(hyper_params,l_out,input_vars,prediction_det,loss,updates)
+    return LSTM(hyper_params,l_out,
+                     input_vars['in_var'],input_vars['mask_var'],input_vars['target_var'],
+                     prediction_det,loss,updates)
 
 def make_LSTM(hyper_params):
     print(hyper_params)
