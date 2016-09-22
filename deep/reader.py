@@ -5,12 +5,14 @@ import pickle
 from deep.convnet import compile_convnet
 from deep.ae import compile_autoencoder
 from deep.autoconv import compile_conv_ae
+from deep.lstm import compile_lstm
 
 class NNReader(object):
     def __init__(self):
         self.types = {'Convet':compile_convnet,
                       'Autoencoder':compile_autoencoder,
-                      'ConvAutoencoder':compile_conv_ae}
+                      'ConvAutoencoder':compile_conv_ae,
+                      'LSTM':compile_lstm}
 
     def read(self,in_path,preproc, drop_p=0.0):#determistic=False):
         model=self.__unpickle__(in_path)

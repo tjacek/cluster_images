@@ -21,30 +21,7 @@ class LSTM(deep.NeuralNetwork):
         mask=np.expand_dims(mask,axis=0)
         return np.argmax(self.predict(x,mask))
 
-class LstmModel(object):
-    def __init__(self,hyper_params,params,input_vars,pred,loss,updates):
-        self.hyper_params=hyper_params
-        self.params=params
-        self.input_vars=input_vars
-        vars_list=[input_vars['in_var'],input_vars['target_var'],input_vars['mask_var']]
-        self.predict= theano.function([input_vars['in_var'],input_vars['mask_var']],pred)
-        self.train = theano.function(vars_list,loss, updates=updates)#,optimizer=None)
-        self.loss = theano.function(vars_list, loss)#,optimizer=None)
-
-    def get_category(self,x,mask):
-        x=np.expand_dims(x,axis=0)
-        mask=np.expand_dims(mask,axis=0)
-        return np.argmax(self.predict(x,mask))
-
-    def get_model(self):
-        params_values = lasagne.layers.get_all_param_values(self.params)
-        return Model(self.hyper_params,params_values)
-
-    def set_model(self,model):
-        print(type(model.params))
-        lasagne.layers.set_all_param_values(self.params,model.params)
-
-def compile_lstm(hyper_params):
+def compile_lstm(hyper_params,preproc=None):
     l_out,input_vars=make_LSTM(hyper_params)
     prediction = lasagne.layers.get_output(l_out)
     params = lasagne.layers.get_all_params(l_out, trainable=True)
@@ -54,7 +31,6 @@ def compile_lstm(hyper_params):
     prediction_det = lasagne.layers.get_output(l_out, deterministic=True)
 
     updates =lasagne.updates.adagrad(loss,params, hyper_params['learning_rate'])
-    #return LstmModel(hyper_params,l_out,input_vars,prediction_det,loss,updates)
     return LSTM(hyper_params,l_out,
                      input_vars['in_var'],input_vars['mask_var'],input_vars['target_var'],
                      prediction_det,loss,updates)
