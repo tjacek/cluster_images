@@ -1,4 +1,9 @@
+import sys,os
+sys.path.append(os.path.abspath('../cluster_images'))
 import numpy as np 
+import utils.dirs
+import utils.imgs
+import deep.reader
 
 class CombinedFeatures(object):
     def __init__(self, extractors):
@@ -8,4 +13,17 @@ class CombinedFeatures(object):
         feats=[extr_i(img_i) 
     	        for extr_i in self.extractors]
     	return feats
-		
+
+def build_combined(in_path):
+    all_paths=utils.dirs.all_files(in_path)
+    nn_reader=deep.reader.NNReader()
+    extractors=[nn_reader.read(nn_path_i,0.3)
+                  for nn_path_i in all_paths]
+    return CombinedFeatures(extractors)
+
+if __name__ == "__main__":
+    in_path='../dane/nn'
+    img_path='../dane/train_last'
+    extractor=build_combined(in_path)
+    imgs=utils.imgs.read_img(img_path)
+    print(extractor(img[0]))
