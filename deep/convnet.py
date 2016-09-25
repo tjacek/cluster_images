@@ -37,14 +37,14 @@ class Convet(deep.NeuralNetwork):
         return [tools.dist_to_category(dist_i) 
                     for dist_i in dist]
 
-def compile_convnet(params):
+def compile_convnet(params,preproc):
     in_layer,out_layer,hid_layer,all_layers=build_model(params)
     target_var = T.ivector('targets')
     features_pred = lasagne.layers.get_output(hid_layer)
     pred,in_var=get_prediction(in_layer,out_layer)
     loss=get_loss(pred,in_var,target_var,all_layers)
     updates=get_updates(loss,out_layer)
-    return Convet(params,out_layer,tools.preproc_proj,in_var,target_var,
+    return Convet(params,out_layer,tools.preproc3D,in_var,target_var,
                   features_pred,pred,loss,updates)
 
 def build_model(params):
@@ -55,6 +55,8 @@ def build_model(params):
     pool_size2D=params["pool_size"]
     p_drop=params["p"]
     n_cats=params['n_cats']
+    n_hidden=params['n_hidden']
+
     in_layer = lasagne.layers.InputLayer(
                shape=input_shape)
                #input_var=input_var)
@@ -69,7 +71,7 @@ def build_model(params):
     pool_layer2 = lasagne.layers.MaxPool2DLayer(conv_layer2, pool_size=pool_size2D)
     dropout = lasagne.layers.DenseLayer(
             lasagne.layers.dropout(pool_layer2, p=p_drop),
-            num_units=300,
+            num_units= n_hidden,
             nonlinearity=lasagne.nonlinearities.rectify)
     out_layer = lasagne.layers.DenseLayer(
             lasagne.layers.dropout(dropout, p=p_drop),
@@ -100,22 +102,22 @@ def get_updates(loss,out_layer):
     return updates
 
 def default_params():
-    return {"input_shape":(None,3,60,60),"num_filters":16,
+    return {"input_shape":(None,2,60,60),"num_filters":16,"n_hidden":100,
               "filter_size":(5,5),"pool_size":(4,4),"p":0.5}
 
 if __name__ == "__main__":
-    img_path='../dataset0/train'
-    nn_path='../dataset0/nn_'
+    img_path='../dane/train_last'
+    nn_path='../dane/nn/nn_last'
     imgset=imgs.make_imgs(img_path,norm=True)
     print("read")
     print(len(imgset))
-    x,y=imgs.to_dataset(imgset,data.ExtractCat(),imgs.to_proj)
+    x,y=imgs.to_dataset(imgset,data.ExtractCat(),imgs.to_3D)
     print(x.shape)
     print(y.shape)
     params=default_params()
     params['n_cats']= data.get_n_cats(y)
     #nn_reader=deep.reader.NNReader()
-    #model= nn_reader.read(nn_path,0.5)
-    model=compile_convnet(params)
-    train.test_super_model(x,y,model,num_iter=10)
+    #model= nn_reader.read(nn_path,0.3)
+    model=compile_convnet(params,None)
+    train.test_super_model(x,y,model,num_iter=800)
     model.get_model().save(nn_path)
