@@ -8,16 +8,19 @@ import split,to_dataset
 import deep.lstm
 from sklearn.metrics import classification_report,confusion_matrix
 import utils.data
+import deep.reader
 
-
-def make_model(train_dataset):
-    hyper_params=deep.lstm.get_hyper_params(train_dataset)
-    model=deep.lstm.compile_lstm(hyper_params)
-    #model=deep.lstm.read_lstm('../dataset0/test')
-    return train_model(model,train_dataset,epochs=2000)
+def make_model(train_dataset,make=True):
+    if(make):
+        hyper_params=deep.lstm.get_hyper_params(train_dataset)
+    #print(train_dataset.keys())
+        model=deep.lstm.compile_lstm(hyper_params)
+    else:
+        nn_reader=deep.reader.NNReader()
+        model= nn_reader.read(nn_path,0.5)
+    return train_model(model,train_dataset,epochs=200)
 
 def check_model(model,test_dataset):
-    print(test_dataset.keys())
     x=test_dataset['x']
     y_true=test_dataset['y']
     mask=test_dataset['mask']
@@ -29,6 +32,7 @@ def check_model(model,test_dataset):
 def train_model(model,dataset,epochs=10000):
     x=get_batches(dataset['x'])
     y=get_batches(dataset['y'])
+    print(dataset.keys())
     mask=get_batches(dataset['mask'])
     for j in range(epochs):
         cost=[]
@@ -54,12 +58,14 @@ def get_batches(x,batch_size=6):
                for i in range(n_batches)]
 
 if __name__ == "__main__":
-    path='../dataset7/seq/'
+    path='../dane/seq/'
+    nn_path='../dataset0/lstm'
     dataset=to_dataset.seq_dataset(path)
-    new_dataset=to_dataset.masked_dataset(dataset)    
-    #print(new_dataset['y'])
+    #print(dataset['x'][0].shape)
+
+    new_dataset=to_dataset.masked_dataset(dataset)
     train,test=split.person_dataset(new_dataset)
-    print(train['y'])
-    model=make_model(train)
-    model.get_model().save('../dataset7/lstm')    
+    print(train.keys())
+    model=make_model(train,True)
+    model.get_model().save(nn_path)    
     check_model(model,test)
