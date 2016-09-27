@@ -7,6 +7,15 @@ import utils.imgs as imgs
 import utils.files as files
 import basic.reduction as redu
 
+class ExternalFeats(dict):
+    def __init__(self, arg):
+        super(ExternalFeats,dict.__init__()
+        self.arg = arg
+
+    def __call__(self,img_i):
+        return self[img_i.name]
+        
+
 @utils.timer.clock
 def transform_imgs(in_path,out_path):
     data=imgs.make_imgs(in_path,norm=True)#[0:100]
