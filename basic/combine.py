@@ -4,6 +4,7 @@ import numpy as np
 import utils.dirs
 import utils.imgs
 import deep.reader
+import basic.external
 
 class CombinedFeatures(object):
     def __init__(self, extractors):
@@ -22,6 +23,11 @@ def build_combined(in_path):
     extractors=[nn_reader.read(nn_path_i,0.0)
                   for nn_path_i in all_paths]
     return CombinedFeatures(extractors)
+
+def unify_text_features(in_path):
+    all_paths=utils.dirs.all_files(in_path)
+    dict_features=[basic.external.read_external(path_i)
+                        for path_i in all_paths]
 
 if __name__ == "__main__":
     in_path='../dane/nn'
