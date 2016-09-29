@@ -30,6 +30,36 @@ class ImgPreproc(object):
         return [img_i.get_orginal()
                 for img_i in imgset]
 
+class ImgPreproc2D(ImgPreproc):
+  
+    def apply(self,in_img):
+        org_img=in_img.get_orginal()
+        img3D=imgs.split_img(org_img)
+        img4D=np.expand_dims(img3D,0)
+        return img4D
+
+    def __call__(self,imgset):
+        raw_imgs=super.basic(imgset)
+        imgs3D=[ imgs.split_img(raw_imgs)
+              for img_i in imgset]
+        vol=np.array(imgs3D)
+        return vol
+
+class ImgPreprocProj(ImgPreproc):
+  
+    def apply(self,in_img):
+        org_img=in_img.get_orginal()
+        img3D=imgs.split_img(org_img,scale=3)
+        img4D=np.expand_dims(img3D,0)
+        return img4D
+
+    def __call__(self,imgset):
+        raw_imgs=super.basic(imgset)
+        imgs3D=[ split_img(img_i,scale=3)
+              for img_i in raw_imgs]
+        vol=np.array(imgs3D)
+        return vol
+
 def dist_to_category(dist):
     return dist.flatten().argmax(axis=0)
 
@@ -47,6 +77,12 @@ def preproc2D(in_img):
 def preproc3D(in_img):
     org_img=in_img.get_orginal()
     img3D=imgs.split_img(org_img)
+    img4D=np.expand_dims(img3D,0)
+    return img4D
+
+def preprocPost(in_img): 
+    org_img=in_img.get_orginal()
+    img3D=imgs.split_img(org_img,scale=3)
     img4D=np.expand_dims(img3D,0)
     return img4D
 
