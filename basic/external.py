@@ -5,16 +5,30 @@ import utils.timer
 import utils.dirs as dirs
 import utils.imgs as imgs
 import utils.files as files
+import utils.paths
 import basic.reduction as redu
 
-class ExternalFeats(dict):
-    def __init__(self, arg):
-        super(ExternalFeats,dict.__init__()
-        self.arg = arg
+class ExternalFeats():
+    def __init__(self, raw_dict):
+        self.raw_dict = raw_dict
 
     def __call__(self,img_i):
-        return self[img_i.name]
+        if(type(img_i)==str):
+            return self.raw_dict[img_i]
+        return self.raw_dict[img_i.name]
+
+    def names(self):
+        return self.raw_dict.keys()
+
+    def short_names(self):
+        self.raw_dict=dict([ (utils.paths.Path(key_i).get_name(),value_i)
+                           for key_i,value_i in self.raw_dict.items()])
+        return self
         
+    def filter_names(self,keys):
+        return [key_i  
+                  for key_i in keys
+                    if key_i in self.raw_dict.keys()]
 
 @utils.timer.clock
 def transform_imgs(in_path,out_path):
@@ -56,8 +70,9 @@ def local_reduce(data,transform):
 def read_external(in_path):
     text='\n'.join(files.read_file(in_path))
     feat_dict=files.txt_to_dict(text)
-    def get_features(img_i):
-        return feat_dict[str(img_i.name)]
+    get_features=ExternalFeats(feat_dict)
+    #def get_features(img_i):
+    #    return feat_dict[str(img_i.name)]
     return get_features
 
 if __name__ == "__main__": 
