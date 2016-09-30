@@ -3,6 +3,7 @@ sys.path.append(os.path.abspath('../cluster_images'))
 import numpy as np 
 import utils.dirs
 import utils.imgs
+import utils.paths
 import deep.reader
 import basic.external
 
@@ -26,12 +27,29 @@ def build_combined(in_path):
 
 def unify_text_features(in_path):
     all_paths=utils.dirs.all_files(in_path)
-    dict_features=[basic.external.read_external(path_i)
+    dict_features=[basic.external.read_external(path_i).short_names()
                         for path_i in all_paths]
+    img_names=dict_features[0].names()
+    for dict_i in dict_features:
+        img_names=dict_i.filter_names(img_names)
+    print(len(img_names))
+    unifed_feats={}
+    for key_i in img_names:
+        
+        feats_i=[dict_j.raw_dict[key_i]
+                 for dict_j in dict_features]
+        feats_i=np.concatenate(feats_i,axis=0)
+        unifed_feats[key_i]=feats_i
+    return unifed_feats
 
 if __name__ == "__main__":
-    in_path='../dane/nn'
-    img_path='../dane/train_last'
-    extractor=build_combined(in_path)
-    imgset=utils.imgs.make_imgs(img_path,norm=True)
-    extractor(imgset[0])
+    in_path="../dane2/feats"
+    out_path="../dane2/out_path.txt"
+    unifed_feats=unify_text_features(in_path)
+    basic.external.save_features(out_path,unifed_feats)
+
+    #in_path='../dane/nn'
+    #img_path='../dane/train_last'
+    #extractor=build_combined(in_path)
+    #imgset=utils.imgs.make_imgs(img_path,norm=True)
+    #extractor(imgset[0])
