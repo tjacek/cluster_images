@@ -15,7 +15,7 @@ class ExternalFeats():
     def __call__(self,img_i):
         if(type(img_i)==str):
             return self.raw_dict[img_i]
-        return self.raw_dict[img_i.name]
+        return self.raw_dict[str(img_i.name)]
 
     def names(self):
         return self.raw_dict.keys()
@@ -50,6 +50,9 @@ def external_features(out_path,data,extractor,array_extr=False):
         feat_dict=global_reduce(data,extractor)
     else:
         feat_dict=local_reduce(data,extractor)
+    save_features(out_path,feat_dict)
+    
+def save_features(out_path,feat_dict):
     text_dict=files.dict_to_txt(feat_dict)
     files.save_string(out_path,text_dict)
 
