@@ -1,9 +1,10 @@
 import preproc
 import seq.features
 import utils.conf
-    
+import utils.actions
+
 if __name__ == "__main__":
-    conf_path="conf/dataset0.cfg"
+    conf_path="conf/dane2.cfg"
     conf_dict=utils.conf.read_config(conf_path)
     print(conf_dict)
     preproc.make_features(conf_dict)

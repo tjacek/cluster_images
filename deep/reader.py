@@ -14,11 +14,13 @@ class NNReader(object):
                       'ConvAutoencoder':compile_conv_ae,
                       'LSTM':compile_lstm}
 
-    def read(self,in_path,preproc, drop_p=0.0):#determistic=False):
+    def read(self,in_path,preproc=None, drop_p=0.0):#determistic=False):
         model=self.__unpickle__(in_path)
         #if(determistic):
         #    model.set_determistic()
         model.hyperparams['p']=drop_p
+        #model.hyperparams['n_hidden']=100
+
         print(model.type_name)
         type_reader=self.types[model.type_name]
         neural_net=type_reader(model.hyperparams,preproc)

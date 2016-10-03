@@ -54,5 +54,5 @@ def d(v,d):
     return np.linalg.norm(v-d)
 
 if __name__ == "__main__":
-    path='../dataset0/seq/'
+    path='../dane2/seq/'
     use_dtw(path)
