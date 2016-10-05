@@ -14,7 +14,7 @@ class NNReader(object):
                       'ConvAutoencoder':compile_conv_ae,
                       'LSTM':compile_lstm}
 
-    def read(self,in_path,preproc=None, drop_p=0.0):#determistic=False):
+    def __call__(self,in_path,preproc=None, drop_p=0.0):#determistic=False):
         model=self.__unpickle__(in_path)
         #if(determistic):
         #    model.set_determistic()

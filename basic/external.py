@@ -9,13 +9,22 @@ import utils.paths
 import basic.reduction as redu
 
 class ExternalFeats():
-    def __init__(self, raw_dict):
+    def __init__(self, raw_dict,short_name=False):
         self.raw_dict = raw_dict
+        self.short_name=short_name
 
     def __call__(self,img_i):
         if(type(img_i)==str):
             return self.raw_dict[img_i]
-        return self.raw_dict[str(img_i.name)]
+        
+        if(self.short_name):
+            name=str(img_i.name.get_name())
+        else:
+            name=str(img_i.name)
+        if(name in self.raw_dict):        
+            return self.raw_dict[name]
+        else:
+            return None
 
     def names(self):
         return self.raw_dict.keys()
@@ -70,10 +79,10 @@ def local_reduce(data,transform):
                   if img_i!=None]
     return dict(feat_dict)
 
-def read_external(in_path):
+def read_external(in_path,short_name=False):
     text='\n'.join(files.read_file(in_path))
     feat_dict=files.txt_to_dict(text)
-    get_features=ExternalFeats(feat_dict)
+    get_features=ExternalFeats(feat_dict,short_name)
     #def get_features(img_i):
     #    return feat_dict[str(img_i.name)]
     return get_features
