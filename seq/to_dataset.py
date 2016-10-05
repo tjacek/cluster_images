@@ -27,14 +27,19 @@ def seq_dataset(in_path):
     dataset['names']=names
     return dataset
 
-def parse_seq(path_i):
-    #name=path_i.get_name()
-    #cat=path_i[-2]
-    #person=utils.text.get_person(name)
+def parse_seq(path_i,flat=False):
+    if(flat):
+        name=path_i.get_name()
+        cat=path_i[-2]
+        person=utils.text.get_person(name)
+    else:
+        name,cat,person=utils.actions.cp_dataset(path_i)
+    print(path_i)
+
     lines=files.read_file(str(path_i))
-    name,cat,person=utils.actions.cp_dataset(path_i)
-    data=parse_text(lines)
-    return utils.actions.Action(name,data,cat,person)
+    assert(len(lines)>0)
+    parsed_data=parse_text(lines)
+    return utils.actions.Action(name,parsed_data,cat,person)
 
 def parse_text(lines):
     x_i=[line_to_vector(line_i) 
@@ -53,7 +58,6 @@ def masked_dataset(dataset):
     y=dataset['y']
     names=dataset['names']
     params= data.make_params(x,y)
-    print(params)
     mask=make_mask(x,params['n_batch'],params['max_seq'])
     x_masked=make_masked_seq(x,params['max_seq'],params['seq_dim'])
     new_dataset={'x':x_masked,'y':dataset['y'],'mask':mask,
