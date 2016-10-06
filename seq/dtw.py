@@ -11,7 +11,6 @@ import utils.data
 @paths.path_args
 def use_dtw(dataset_path):
     dataset=seq_dataset(path)
-    #train,test=split.person_dataset(dataset)
     test,train=split.person_dataset(dataset)
     y_pred=wrap(train,test)
     print(utils.data.find_errors(y_pred,test))
@@ -29,6 +28,7 @@ def knn(new_x,train_dataset,k=1):
     dist_inds=distance.argsort()[0:k]
     y=   train_dataset['y']
     nearest=[y[i] for i in dist_inds]
+    print(train_dataset['x'][0].shape)
     print(nearest)
     count =Counter(nearest)
     new_cat=count.most_common()[0][0]
@@ -54,5 +54,5 @@ def d(v,d):
     return np.linalg.norm(v-d)
 
 if __name__ == "__main__":
-    path='../dane2/seq/'
+    path='../dane/seq/'
     use_dtw(path)

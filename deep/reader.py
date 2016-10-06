@@ -8,13 +8,14 @@ from deep.autoconv import compile_conv_ae
 from deep.lstm import compile_lstm
 
 class NNReader(object):
-    def __init__(self):
+    def __init__(self,preproc=None):
+        self.preproc=preproc
         self.types = {'Convet':compile_convnet,
                       'Autoencoder':compile_autoencoder,
                       'ConvAutoencoder':compile_conv_ae,
                       'LSTM':compile_lstm}
 
-    def __call__(self,in_path,preproc=None, drop_p=0.0):#determistic=False):
+    def __call__(self,in_path, drop_p=0.0):#determistic=False):
         model=self.__unpickle__(in_path)
         #if(determistic):
         #    model.set_determistic()
@@ -23,7 +24,7 @@ class NNReader(object):
 
         print(model.type_name)
         type_reader=self.types[model.type_name]
-        neural_net=type_reader(model.hyperparams,preproc)
+        neural_net=type_reader(model.hyperparams,self.preproc)
         neural_net.set_model(model)
         return neural_net
     

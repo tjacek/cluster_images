@@ -29,7 +29,7 @@ class Convet(deep.NeuralNetwork):
                                updates=updates,allow_input_downcast=True)
 
     def __call__(self,in_img):
-        img4D=self.preproc(in_img)
+        img4D=self.preproc.apply(in_img)
         return self.__features__(img4D).flatten()
     
     def get_category(self,img):
@@ -44,7 +44,8 @@ def compile_convnet(params,preproc):
     pred,in_var=get_prediction(in_layer,out_layer)
     loss=get_loss(pred,in_var,target_var,all_layers)
     updates=get_updates(loss,out_layer)
-    return Convet(params,out_layer,tools.preprocPost,in_var,target_var,
+    return Convet(params,out_layer,preproc, #tools.preprocPost,
+                  in_var,target_var,
                   features_pred,pred,loss,updates)
 
 def build_model(params):
@@ -55,7 +56,7 @@ def build_model(params):
     pool_size2D=params["pool_size"]
     p_drop=params["p"]
     n_cats=params['n_cats']
-    n_hidden=params['n_hidden']
+    n_hidden=params.get('n_hidden',300) #['n_hidden']
 
     in_layer = lasagne.layers.InputLayer(
                shape=input_shape)
@@ -106,18 +107,20 @@ def default_params():
               "filter_size":(5,5),"pool_size":(4,4),"p":0.5}
 
 if __name__ == "__main__":
-    img_path='../dane2/train_basic'
-    nn_path='../dane2/nn_basic'
+    img_path='../dane3/train_4'
+    nn_path='../dane3/nn_4'
+
+    preproc=tools.ImgPreproc()
     imgset=imgs.make_imgs(img_path,norm=True)
     print("read")
     print(len(imgset))
-    x,y=imgs.to_dataset(imgset,data.ExtractCat(),imgs.to_proj)
+    x,y=imgs.to_dataset(imgset,data.ExtractCat(),preproc)
     print(x.shape)
     print(y.shape)
     params=default_params()
     params['n_cats']= data.get_n_cats(y)
-    nn_reader=deep.reader.NNReader()
-    model= nn_reader.read(nn_path,0.1)
-    #model=compile_convnet(params,None)
-    train.test_super_model(x,y,model,num_iter=600)
+    nn_reader=deep.reader.NNReader(preproc)
+    model= nn_reader(nn_path,0.1)
+    #model=compile_convnet(params,preproc)
+    train.test_super_model(x,y,model,num_iter=100)
     model.get_model().save(nn_path)
