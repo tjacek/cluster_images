@@ -35,6 +35,6 @@ def extract_data(actions,fun=len):
     return [fun(action_i) for action_i in actions]
 
 if __name__ == "__main__": 
-    action_path="../dataset7/cats/"
+    action_path="../dataset7/cats2/"
     actions=utils.actions.read_actions(action_path)
     action_stats(actions)

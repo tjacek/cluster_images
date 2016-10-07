@@ -10,7 +10,6 @@ import basic
 import basic.reduction
 import basic.external
 import basic.combine
-from basic.external import external_features
 
 def transform_features(conf_dict):
     in_path=conf_dict['in_path']
@@ -23,16 +22,17 @@ def make_features(conf_dict):
     out_path=conf_dict['feat_path']
     extractor=select_extractor(conf_dict)
     data=imgs.make_imgs(in_path,norm=True)
-    print(type(data[0]))
-    external_features(out_path,data,extractor)
+    basic.external.external_features(out_path,data,extractor)
 
 def select_extractor(conf_dict):
     extractor_type=conf_dict['extractor']
+    #preproc3D=deep.tools.ImgPreproc2D()
     preproc3D=deep.tools.ImgPreproc()
+
     if(extractor_type=='deep'):
         nn_path=conf_dict['nn_path']
-        nn_reader=deep.reader.NNReader()
-        extractor=nn_reader.read(nn_path,preproc3D)
+        nn_reader=deep.reader.NNReader(preproc3D)
+        extractor=nn_reader(nn_path)
     elif extractor_type=='text':
         text_path=conf_dict['text_path']
         feat_dict=basic.external.read_external(text_path)
@@ -41,7 +41,7 @@ def select_extractor(conf_dict):
         extractor=basic.get_features
     elif extractor_type=='combine':
         combine_path=conf_dict['combine_path']
-        extractor=basic.combine.build_combined(combine_path)
+        extractor=basic.combine.build_combined(combine_path,preproc3D)
     else:
         extractor=getattr(basic.reduction,extractor_type)
     return extractor

@@ -9,7 +9,7 @@ def make_seq_files(conf_path, new_features=True):
         preproc.make_features(conf_dict)
     img_path=conf_dict['img_path']
     feat_path=conf_dict['feat_path']
-    seq.features.extract_features(img_path,feat_path,'seq')
+    seq.features.extract_features(img_path,feat_path,'seq',True)
 
 if __name__ == "__main__":
     conf_path="conf/dane3.cfg"
