@@ -103,14 +103,14 @@ def get_updates(loss,out_layer):
     return updates
 
 def default_params():
-    return {"input_shape":(None,3,60,60),"num_filters":16,"n_hidden":200,
+    return {"input_shape":(None,2,60,60),"num_filters":16,"n_hidden":100,
               "filter_size":(5,5),"pool_size":(4,4),"p":0.5}
 
 if __name__ == "__main__":
-    img_path='../dane3/train_4'
-    nn_path='../dane3/nn_4'
+    img_path='../dane/train_trival'
+    nn_path='../dane/nn_trival'
 
-    preproc=tools.ImgPreproc()
+    preproc=tools.ImgPreproc2D()
     imgset=imgs.make_imgs(img_path,norm=True)
     print("read")
     print(len(imgset))
@@ -122,5 +122,5 @@ if __name__ == "__main__":
     nn_reader=deep.reader.NNReader(preproc)
     model= nn_reader(nn_path,0.1)
     #model=compile_convnet(params,preproc)
-    train.test_super_model(x,y,model,num_iter=100)
+    train.test_super_model(x,y,model,num_iter=400)
     model.get_model().save(nn_path)

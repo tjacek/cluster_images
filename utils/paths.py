@@ -82,7 +82,8 @@ def get_paths(path,filename):
 
 def path_args(func):
     def path_fun(*args): 
-        path_args=[ str_to_path(arg_i) for arg_i in args]
+        path_args=[ str_to_path(arg_i) 
+                      for arg_i in args]
         return func(*path_args)
     return path_fun        
 
