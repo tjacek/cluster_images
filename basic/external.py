@@ -18,12 +18,17 @@ class ExternalFeats():
             return self.raw_dict[img_i]
         
         if(self.short_name):
+            #print(self.raw_dict.keys())
             name=str(img_i.name.get_name())
         else:
             name=str(img_i.name)
         if(name in self.raw_dict):        
+            #print(self.raw_dict.keys()[0:10])
             return self.raw_dict[name]
         else:
+            print("Key not found")
+            print(name)
+            print(self.raw_dict.keys()[0:10])
             return None
 
     def names(self):
@@ -73,10 +78,11 @@ def global_reduce(data,transform):
                       for name_i,i in names.items()])
     return feat_dict
 
-def local_reduce(data,transform):
+def local_reduce(data,transform): 
     feat_dict=[ (img_i.name,transform(img_i))
                 for img_i in data
                   if img_i!=None]
+    #print(feat_dict[0][1].shape)              
     return dict(feat_dict)
 
 def read_external(in_path,short_name=False):
