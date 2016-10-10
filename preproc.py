@@ -17,17 +17,19 @@ def transform_features(conf_dict):
     extractor=select_extractor(conf_dict)
     basic.external.transform_features(in_path,out_path,extractor) 
 
-def make_features(conf_dict):
+def make_features(conf_dict,weight=0.0):
     in_path=conf_dict['img_path']
     out_path=conf_dict['feat_path']
     extractor=select_extractor(conf_dict)
     data=imgs.make_imgs(in_path,norm=True)
-    basic.external.external_features(out_path,data,extractor)
+    assert(type(data[0])== utils.imgs.Image )
+    
+    basic.external.external_features(out_path,data,extractor, weight)
 
 def select_extractor(conf_dict):
     extractor_type=conf_dict['extractor']
     #preproc3D=deep.tools.ImgPreproc2D()
-    preproc3D=deep.tools.ImgPreproc()
+    preproc3D=select_preproc(conf_dict)
 
     if(extractor_type=='deep'):
         nn_path=conf_dict['nn_path']
@@ -45,6 +47,14 @@ def select_extractor(conf_dict):
     else:
         extractor=getattr(basic.reduction,extractor_type)
     return extractor
+
+def select_preproc(conf_dict):
+    preproc=conf_dict['preproc']
+    if(preproc=='proj'):
+        return deep.tools.ImgPreproc()
+    elif preproc=='time':    
+        return deep.tools.ImgPreproc2D()
+    return None
 
 if __name__ == "__main__":
     conf_path="conf/dane.cfg"

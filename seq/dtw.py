@@ -21,7 +21,7 @@ def wrap(train,test):
     return [knn(test_i,train) 
               for test_i in test['x']]
 
-def knn(new_x,train_dataset,k=1):
+def knn(new_x,train_dataset,k=3):
     distance=[dtw_metric(new_x,x_i) 
               for x_i in train_dataset['x']]
     distance=np.array(distance)
@@ -46,12 +46,17 @@ def dtw_metric(s,t):
     dwt[0][0]=0.0
     for i in range(1,n+1):
         for j in range(1,m+1):
-            cost=d(s[i-1],t[j-1])
+            cost=d1(s[i-1],t[j-1])
             dwt[i,j]=cost+min([dwt[i-1][j],dwt[i][j-1],dwt[i-1][j-1]])
     return dwt[n][m]
 
-def d(v,d):
+def d1(v,d):
     return np.linalg.norm(v-d)
+
+def d2(v,u):
+    dist=np.dot(u,v)
+    dist/=np.linalg.norm(v) * np.linalg.norm(u)
+    return dist
 
 if __name__ == "__main__":
     path='../dane/seq/'

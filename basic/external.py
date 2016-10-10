@@ -58,12 +58,15 @@ def transform_features(in_path,out_path,extractor):
             for name_i,vec_i in feat_dict.items()]
     external_features(out_path,data,extractor,array_extr=True)
 
-def external_features(out_path,data,extractor,array_extr=False):
+def external_features(out_path,data,extractor,weight=1.0,array_extr=False):
     #print(extractor.__name__)
     if(array_extr):
         feat_dict=global_reduce(data,extractor)
     else:
         feat_dict=local_reduce(data,extractor)
+    if(weight!=1.0):
+        for key_i in feat_dict.keys():
+            feat_dict[key_i]=weight*feat_dict[key_i]
     save_features(out_path,feat_dict)
     
 def save_features(out_path,feat_dict):
