@@ -15,13 +15,12 @@ class CombinedFeatures(object):
         feats=[extr_i(img_i) 
     	        for extr_i in self.extractors]
     	feats=np.concatenate(feats)
-    	print(feats.shape)
     	return feats
 
-def build_combined(in_path):
+def build_combined(in_path,preproc=None):
     all_paths=utils.dirs.all_files(in_path)
     nn_reader=deep.reader.NNReader()
-    extractors=[nn_reader.read(nn_path_i,0.0)
+    extractors=[nn_reader(nn_path_i,preproc,drop_p=0.0)
                   for nn_path_i in all_paths]
     return CombinedFeatures(extractors)
 
@@ -32,19 +31,19 @@ def unify_text_features(in_path):
     img_names=dict_features[0].names()
     for dict_i in dict_features:
         img_names=dict_i.filter_names(img_names)
-    print(len(img_names))
     unifed_feats={}
     for key_i in img_names:
         
         feats_i=[dict_j.raw_dict[key_i]
                  for dict_j in dict_features]
         feats_i=np.concatenate(feats_i,axis=0)
+        print(feats_i.shape)
         unifed_feats[key_i]=feats_i
     return unifed_feats
 
 if __name__ == "__main__":
-    in_path="../dane2/feats"
-    out_path="../dane2/out_path.txt"
+    in_path="../dane3/feats"
+    out_path="../dane3/out_path.txt"
     unifed_feats=unify_text_features(in_path)
     basic.external.save_features(out_path,unifed_feats)
 
