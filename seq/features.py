@@ -19,6 +19,7 @@ def extract_features(in_path,ext_path,seq_path='seq',short_names=True):
 @dirs.apply_to_dirs
 def transform_seq(in_path,out_path,extractor):
     imgs_seq= imgs.make_imgs(in_path,norm=True) #imgs.read_images(in_path)
+    print(str(extractor))
     seq=[extractor(img_i)
                 for img_i in imgs_seq]
     seq=[ seq_i.flatten()  
