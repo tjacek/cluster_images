@@ -57,7 +57,6 @@ def transform_features(in_path,out_path,extractor):
     external_features(out_path,data,extractor,array_extr=True)
 
 def external_features(out_path,data,extractor,weight=1.0,array_extr=False):
-    #print(extractor.__name__)
     if(array_extr):
         feat_dict=global_reduce(data,extractor)
     else:
@@ -89,12 +88,9 @@ def read_external(in_path,short_name=False):
     text='\n'.join(files.read_file(in_path))
     feat_dict=files.txt_to_dict(text)
     get_features=ExternalFeats(feat_dict,short_name)
-    #def get_features(img_i):
-    #    return feat_dict[str(img_i.name)]
     return get_features
 
 if __name__ == "__main__": 
-    #print(dir(deep))
     path_dir="../dataset1/cats"
     ae_path="../dataset1/conv.txt"
     sp_path="../wyniki/spectral.txt"
