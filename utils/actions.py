@@ -54,19 +54,19 @@ def cp_dataset(action_dir):
     names=name.split('_')
     cat=names[0].replace('a','')
     person=int(names[1].replace('s',''))
+    print(cat)
     print(person)
+    print(name)
     return name,cat,person
 
 def basic_dataset(action_dir):
     name=action_dir.get_name()
     cat=action_dir[-2]
     person=utils.text.get_person(name)
-    print(cat+'%')
-    #print(person+'$')
     return name,cat,person
 
 def select_actions(actions):
-    select=utils.selection.SelectModulo()
+    select=utils.selection.SelectModulo(1)
     acts=[ action_i
            for action_i in actions
              if select(action_i.person)]
@@ -92,8 +92,8 @@ def apply_to_imgs(fun,actions):
                 for act_i in actions]
 
 if __name__ == "__main__":
-    in_path="../dataset3/scaled"
-    out_path="../dataset3/train"
+    in_path="../dane2/proj"
+    out_path="../dane2/train_full"
     actions=read_actions(in_path)
     s_actions=select_actions(actions)
     save_actions(s_actions,out_path)
