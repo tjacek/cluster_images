@@ -16,6 +16,7 @@ def split_dataset(dataset,select):
         if(type(value_i)!=dict):
             print(key_i)        
             train[key_i]=select(dataset[key_i],n=0)
+            print(select.persons)
             test[key_i]=select(dataset[key_i],n=1)
         else:
             train[key_i]=dataset[key_i].copy()
@@ -30,8 +31,10 @@ def select_simple(instances,n=0,k=2):
 
 class SelectPerson(object):
     def __init__(self, persons):
-        self.persons = persons
+        print(persons)
+        self.persons = [ (person_i % 2) 
+                         for person_i in persons]
         
     def __call__(self,instances,n=0):
         return [inst_i for i,inst_i in enumerate(instances)
-                 if((self.persons[i] % 2)==n)]  
+                 if(self.persons[i]==n)]  

@@ -21,7 +21,7 @@ def wrap(train,test):
     return [knn(test_i,train) 
               for test_i in test['x']]
 
-def knn(new_x,train_dataset,k=3):
+def knn(new_x,train_dataset,k=1):
     distance=[dtw_metric(new_x,x_i) 
               for x_i in train_dataset['x']]
     distance=np.array(distance)
