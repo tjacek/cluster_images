@@ -46,9 +46,3 @@ if __name__ == "__main__":
     out_path="../dane3/out_path.txt"
     unifed_feats=unify_text_features(in_path)
     basic.external.save_features(out_path,unifed_feats)
-
-    #in_path='../dane/nn'
-    #img_path='../dane/train_last'
-    #extractor=build_combined(in_path)
-    #imgset=utils.imgs.make_imgs(img_path,norm=True)
-    #extractor(imgset[0])
