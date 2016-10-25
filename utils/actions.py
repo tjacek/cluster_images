@@ -38,26 +38,32 @@ class Action(object):
         [img_i.save(full_outpath) 
          for img_i in self.img_seq]
 
-def read_actions(action_path):
-    action_dirs=dirs.bottom_dirs(action_path)
-    actions=[parse_action(action_dir_i) 
-              for action_dir_i in action_dirs]
-    return actions
+class ReadActions(object):
+    def __init__(self, dataset_format):
+        self.dataset_format=dataset_format
+        
+    def __call__(self,action_path):
+        action_dirs=dirs.bottom_dirs(action_path)
+        actions=[self.parse_action(action_dir_i) 
+                   for action_dir_i in action_dirs]
+        return actions
 
-def parse_action(action_dir):
-    name,cat,person=cp_dataset(action_dir)
-    img_seq=imgs.make_imgs(action_dir,norm=False)
-    return Action(name,img_seq,cat,person)
+    def parse_action(self,action_dir):
+        name,cat,person=self.dataset_format(action_dir)
+        img_seq=imgs.make_imgs(action_dir,norm=False)
+        return Action(name,img_seq,cat,person)
 
 def cp_dataset(action_dir):
     name=action_dir.get_name()
     names=name.split('_')
-    cat=names[0].replace('a','')
-    person=int(names[1].replace('s',''))
-    print(cat)
-    print(person)
-    print(name)
-    return name,cat,person
+    if(len(names)==3):
+        cat=names[0].replace('a','')
+        person=int(names[1].replace('s',''))
+        print(cat)
+        print(person)
+        print(name)
+        return name,cat,person
+    raise Exception("Wrong dataset format")
 
 def basic_dataset(action_dir):
     name=action_dir.get_name()
@@ -92,8 +98,9 @@ def apply_to_imgs(fun,actions):
                 for act_i in actions]
 
 if __name__ == "__main__":
-    in_path="../dane2/proj"
-    out_path="../dane2/train_full"
+    in_path="../dane4/scaled"
+    out_path="../dane4/train"
+    read_actions=ReadActions(basic_dataset)
     actions=read_actions(in_path)
     s_actions=select_actions(actions)
     save_actions(s_actions,out_path)
