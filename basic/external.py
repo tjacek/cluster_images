@@ -79,6 +79,7 @@ def global_reduce(data,transform):
     return feat_dict
 
 def local_reduce(data,transform): 
+    print("%%%%%%%%%%%%%%%%%%%%%%%")
     feat_dict=[ (img_i.name,transform(img_i))
                 for img_i in data
                   if img_i!=None]

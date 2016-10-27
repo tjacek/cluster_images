@@ -24,7 +24,10 @@ class ImgPreproc(object):
         imgs3D=[ imgs.split_img(img_i,scale=3)
                  for img_i in raw_imgs]
         vol=np.array(imgs3D)
-        return vol
+        #for img_i in imgs3D:
+        #    print(img_i.name)
+        #    print(img_i.shape)
+        return imgs3D#vol
 
     def basic(self,imgset):
         return [img_i.get_orginal()
@@ -34,16 +37,21 @@ class ImgPreproc2D(ImgPreproc):
   
     def apply(self,in_img):
         org_img=in_img.get_orginal()
-        img3D=imgs.split_img(org_img)
+        img3D=imgs.split_img(org_img,scale=2)
         img4D=np.expand_dims(img3D,0)
         return img4D
 
     def __call__(self,imgset):
-        raw_imgs=super.basic(imgset)
-        imgs3D=[ imgs.split_img(raw_imgs)
-              for img_i in imgset]
+        raw_imgs=self.basic(imgset)
+        imgs3D=[ imgs.split_img(img_i,scale=2)
+              for img_i in raw_imgs]
         vol=np.array(imgs3D)
+        print(vol.shape)
         return vol
+
+    def basic(self,imgset):
+        return [img_i.get_orginal()
+                for img_i in imgset]
 
 class ImgPreprocProj(ImgPreproc):
   
@@ -54,11 +62,16 @@ class ImgPreprocProj(ImgPreproc):
         return img4D
 
     def __call__(self,imgset):
-        raw_imgs=super.basic(imgset)
-        imgs3D=[ split_img(img_i,scale=3)
+        raw_imgs=self.basic(imgset)
+        imgs3D=[ imgs.split_img(img_i,scale=3)
               for img_i in raw_imgs]
         vol=np.array(imgs3D)
+        print(vol.shape)
         return vol
+
+    def basic(self,imgset):
+        return [img_i.get_orginal()
+                for img_i in imgset]
 
 def dist_to_category(dist):
     return dist.flatten().argmax(axis=0)
