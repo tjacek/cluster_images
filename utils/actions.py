@@ -98,8 +98,8 @@ def apply_to_imgs(fun,actions):
                 for act_i in actions]
 
 if __name__ == "__main__":
-    in_path="../dane4/scaled"
-    out_path="../dane4/train"
+    in_path="../dane5/cats"
+    out_path="../dane5/train"
     read_actions=ReadActions(basic_dataset)
     actions=read_actions(in_path)
     s_actions=select_actions(actions)
