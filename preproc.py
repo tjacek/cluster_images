@@ -22,13 +22,12 @@ def make_features(conf_dict,weight=0.0):
     out_path=conf_dict['feat_path']
     extractor=select_extractor(conf_dict)
     data=imgs.make_imgs(in_path,norm=True)
+    #print(data[0].shape)
     assert(type(data[0])== utils.imgs.Image )
-    
     basic.external.external_features(out_path,data,extractor, weight)
 
 def select_extractor(conf_dict):
     extractor_type=conf_dict['extractor']
-    #preproc3D=deep.tools.ImgPreproc2D()
     preproc3D=select_preproc(conf_dict)
 
     if(extractor_type=='deep'):
@@ -51,13 +50,13 @@ def select_extractor(conf_dict):
 def select_preproc(conf_dict):
     preproc=conf_dict['preproc']
     if(preproc=='proj'):
-        return deep.tools.ImgPreproc()
+        return deep.tools.ImgPreprocProj()
     elif preproc=='time':    
         return deep.tools.ImgPreproc2D()
-    return None
+    raise Exception("No preproc")
 
 if __name__ == "__main__":
-    conf_path="conf/dane.cfg"
+    conf_path="conf/dane4.cfg"
     conf_dict=utils.conf.read_config(conf_path)
     make_features(conf_dict)
     #transform_features(conf_dict)
