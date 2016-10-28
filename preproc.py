@@ -45,6 +45,7 @@ def select_extractor(conf_dict):
         extractor=basic.combine.build_combined(combine_path,preproc3D)
     else:
         extractor=getattr(basic.reduction,extractor_type)
+    assert(extractor!=None)
     return extractor
 
 def select_preproc(conf_dict):
