@@ -24,10 +24,11 @@ class ExternalFeats():
         if(name in self.raw_dict):        
             return self.raw_dict[name]
         else:
-            print("Key not found")
-            print(name)
-            print(self.raw_dict.keys()[0:10])
-            return None
+            raise Exception("Key not found")
+            #print("Key not found")
+            #print(name)
+            #print(self.raw_dict.keys()[0:10])
+            #return None
 
     def names(self):
         return self.raw_dict.keys()
@@ -41,12 +42,6 @@ class ExternalFeats():
         return [key_i  
                   for key_i in keys
                     if key_i in self.raw_dict.keys()]
-
-@utils.timer.clock
-def transform_imgs(in_path,out_path):
-    data=imgs.make_imgs(in_path,norm=True)#[0:100]
-    ae_extr=deep_extr.get_deep_extractor("../dataset1/conv_nn_")
-    external_features(out_path,data,ae_extr)
 
 @utils.timer.clock
 def transform_features(in_path,out_path,extractor):
