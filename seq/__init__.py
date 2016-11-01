@@ -13,12 +13,11 @@ import deep.reader
 def make_model(train_dataset,make=True):
     if(make):
         hyper_params=deep.lstm.get_hyper_params(train_dataset)
-    #print(train_dataset.keys())
         model=deep.lstm.compile_lstm(hyper_params)
     else:
         nn_reader=deep.reader.NNReader()
         model= nn_reader.read(nn_path,0.5)
-    return train_model(model,train_dataset,epochs=200)
+    return train_model(model,train_dataset,epochs=500)
 
 def check_model(model,test_dataset):
     x=test_dataset['x']
@@ -58,13 +57,12 @@ def get_batches(x,batch_size=6):
                for i in range(n_batches)]
 
 if __name__ == "__main__":
-    path='../dane/seq/'
-    nn_path='../dataset0/lstm'
+    path='../dane5/seq/'
+    nn_path='../dane5/lstm_'
     dataset=to_dataset.seq_dataset(path)
-    #print(dataset['x'][0].shape)
 
     new_dataset=to_dataset.masked_dataset(dataset)
-    train,test=split.person_dataset(new_dataset)
+    test,train=split.person_dataset(new_dataset)
     print(train.keys())
     model=make_model(train,True)
     model.get_model().save(nn_path)    
