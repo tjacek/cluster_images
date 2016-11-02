@@ -6,7 +6,7 @@ import utils.files as files
 import utils.imgs as imgs
 import utils.data
 import utils.text
-import utils.paths #as path
+import utils.paths 
 import utils.selection 
 
 class Action(object):
