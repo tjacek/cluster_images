@@ -3,7 +3,6 @@ import cv2
 import paths
 import dirs
 from dirs import dir_arg, ApplyToFiles
-#from paths import str_arg
 
 class Image(np.ndarray):
     def __new__(cls,name,input_array,org_dim=None):
@@ -17,8 +16,7 @@ class Image(np.ndarray):
         return obj
 
     def __str__(self):
-        #numbers=[ str(x_i) for x_i in self]
-        return self.name#'_'.join(numbers)
+        return self.name
 
     def __array_finalize__(self, obj):
         if obj is None: return
@@ -82,26 +80,6 @@ def unorm(imgset):
     return [ img_i*255.0
              for img_i in imgset]
 
-def to_2D(imgset):
-    imgs2D=[ img_i.get_orginal()
-              for img_i in imgset]
-    conv=np.array(imgs2D)
-    conv=np.expand_dims(conv,1)
-    return conv
-
-def to_3D(imgset):
-    imgs3D=[ split_img(img_i.get_orginal())
-              for img_i in imgset]
-    vol=np.array(imgs3D)
-    return vol
-
-def split_img(x,scale=2):
-    height=x.shape[0]
-    width=x.shape[1]
-    new_height=height/scale
-    new_x=np.reshape(x,(scale,new_height,width))
-    return new_x
-
 def unify_img(x,scale=2):
     height=x.shape[1]
     width=x.shape[2]
@@ -116,3 +94,29 @@ def to_dataset(imgset,extract_cat,transform=None):
     x=np.array(imgset,dtype=float)
     y=np.array(cats,dtype=float)
     return x,y
+
+def to_2D(imgset):
+    imgs2D=[ img_i.get_orginal()
+              for img_i in imgset]
+    conv=np.array(imgs2D)
+    conv=np.expand_dims(conv,1)
+    return conv
+
+def to_3D(imgset):
+    imgs3D=[ split_img(img_i.get_orginal())
+              for img_i in imgset]
+    vol=np.array(imgs3D)
+    return vol
+
+def to_proj(imgset):
+    imgs3D=[ split_img(img_i.get_orginal(),scale=3)
+              for img_i in imgset]
+    vol=np.array(imgs3D)
+    return vol
+
+def split_img(x,scale=2):
+    height=x.shape[0]
+    width=x.shape[1]
+    new_height=height/scale
+    new_x=np.reshape(x,(scale,new_height,width))
+    return new_x
