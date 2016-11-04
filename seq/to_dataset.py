@@ -8,7 +8,7 @@ import utils.dirs as dirs
 import utils.files as files
 import utils.actions
 import utils.data as data
-import utils.text #as
+import utils.text
 
 def seq_dataset(in_path):
     all_paths=dirs.all_files(in_path)
@@ -27,15 +27,13 @@ def seq_dataset(in_path):
     dataset['names']=names
     return dataset
 
-def parse_seq(path_i,flat=False):
+def parse_seq(path_i,flat=True):
     if(flat):
         name=path_i.get_name()
         cat=path_i[-2]
         person=utils.text.get_person(name)
     else:
         name,cat,person=utils.actions.cp_dataset(path_i)
-    print(path_i)
-
     lines=files.read_file(str(path_i))
     assert(len(lines)>0)
     parsed_data=parse_text(lines)
