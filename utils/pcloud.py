@@ -2,24 +2,35 @@ import numpy as np
 
 class Pcloud(object):
     def __init__(self,points):
-        self.points=points
-        self.dims=points[0].shape[0]
+        self.points=np.array(points)
+        self.len=len(points)
+        self.dims=self.points.shape[1]
+        #self.points=points
+        #self.dims=points[0].shape[0]
        
     def __getitem__(self,index):
-        return self.seq[index]
+        return self.points[index]
 
     def __str__(self): 
         return str(len(self.seq))+" "+str(self.cat)
 
     def __len__(self):
-        return len(self.points) 
+        return self.len 
 
     def get_numpy(self):
-        return np.array(self.points)
+        return self.points#np.array(self.points)
 
     def center_of_mass(self):
-        arr=self.get_numpy()    
-        return np.mean(arr,axis=0)
+        return np.mean(self.points,axis=0)
+
+    def max(self,dim):
+        index=np.argmax(self.points[:,dim],axis=0)
+        print(index)
+        return self.points[index]
+   
+    def min(self,dim):
+        index=np.argmin(self.points[:,dim],axis=0)
+        return self.points[index]
 
 def make_point_cloud(img,dim3D=True):
     img=img.get_orginal()
