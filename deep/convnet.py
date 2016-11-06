@@ -106,7 +106,7 @@ def default_params():
     return {"input_shape":(None,2,60,60),"num_filters":16,"n_hidden":100,
               "filter_size":(5,5),"pool_size":(4,4),"p":0.5}
 
-def get_model(preproc,nn_path=None,,compile=True):
+def get_model(preproc,nn_path=None,compile=True):
     if(nn_path==None):
         compile=True
     if(compile):
@@ -118,8 +118,8 @@ def get_model(preproc,nn_path=None,,compile=True):
         return nn_reader(nn_path,0.1)
 
 if __name__ == "__main__":
-    img_path='../dane4/train'
-    nn_path='../dane4/nn_basic'
+    img_path='../dane4/cats'
+    nn_path='../dane4/nn_2'
     preproc=tools.ImgPreproc2D()
     imgset=imgs.make_imgs(img_path,norm=True)
     print("read")
@@ -128,5 +128,5 @@ if __name__ == "__main__":
     print(x.shape)
     print(y.shape)
     model=get_model(preproc,nn_path,compile=False)
-    train.test_super_model(x,y,model,num_iter=100)
+    train.test_super_model(x,y,model,num_iter=500)
     model.get_model().save(nn_path)
