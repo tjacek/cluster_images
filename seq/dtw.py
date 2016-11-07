@@ -59,5 +59,5 @@ def d2(v,u):
     return dist
 
 if __name__ == "__main__":
-    path='../dane/seq/'
+    path='../dane5/seq/'
     use_dtw(path)
