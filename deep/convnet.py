@@ -99,7 +99,6 @@ def get_updates(loss,out_layer):
     params = lasagne.layers.get_all_params(out_layer, trainable=True)
     updates = lasagne.updates.nesterov_momentum(
             loss, params, learning_rate=0.001, momentum=0.9)
-    #updates =lasagne.updates.adagrad(loss,params, learning_rate=0.01)
     return updates
 
 def default_params():
