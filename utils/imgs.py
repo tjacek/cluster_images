@@ -53,8 +53,9 @@ def read_img(dir_path):
     return img_i
 
 def save_img(full_path,img):
+    norm_const=250.0
     img=img.get_orginal()
-    img*=250.0
+    img*=norm_const
     img.astype(int)
     cv2.imwrite(str(full_path),img)
 
