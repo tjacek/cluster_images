@@ -33,7 +33,6 @@ def unify_text_features(in_path):
         img_names=dict_i.filter_names(img_names)
     unifed_feats={}
     for key_i in img_names:
-        
         feats_i=[dict_j.raw_dict[key_i]
                  for dict_j in dict_features]
         feats_i=np.concatenate(feats_i,axis=0)
