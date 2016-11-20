@@ -10,14 +10,14 @@ from sklearn.metrics import classification_report,confusion_matrix
 import utils.data
 import deep.reader
 
-def make_model(train_dataset,make=True):
+def make_model(train_dataset,make=True,n_epochs=50):
     if(make):
         hyper_params=deep.lstm.get_hyper_params(train_dataset)
         model=deep.lstm.compile_lstm(hyper_params)
     else:
         nn_reader=deep.reader.NNReader()
-        model= nn_reader.read(nn_path,0.5)
-    return train_model(model,train_dataset,epochs=500)
+        model= nn_reader(nn_path,0.5)
+    return train_model(model,train_dataset,epochs=n_epochs)
 
 def check_model(model,test_dataset):
     x=test_dataset['x']
@@ -64,6 +64,6 @@ if __name__ == "__main__":
     new_dataset=to_dataset.masked_dataset(dataset)
     test,train=split.person_dataset(new_dataset)
     print(train.keys())
-    model=make_model(train,True)
+    model=make_model(train,False)
     model.get_model().save(nn_path)    
     check_model(model,test)
