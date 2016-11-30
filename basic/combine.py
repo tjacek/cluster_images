@@ -26,6 +26,9 @@ def build_combined(in_path,preproc=None):
 
 def unify_text_features(in_path):
     all_paths=utils.dirs.all_files(in_path)
+    unify_text_features_paths(all_paths)
+
+def unify_text_features_paths(all_paths):
     dict_features=[basic.external.read_external(path_i).short_names()
                         for path_i in all_paths]
     img_names=dict_features[0].names()
