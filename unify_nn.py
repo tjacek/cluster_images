@@ -30,12 +30,15 @@ def make_combined_seq(feat_path,img_path):
     #conf_path['feat_path']=feat_path
     cats.easy_make_seq(conf_path, new_feat=False)
 
-if __name__ == "__main__":
-    conf_paths=['conf/exp1.cfg','conf/exp2.cfg']	
-    weights=[1.0,1.0]
-    out_path='../exp3'
-    img_path='../exp3/cats'
+def unify_feats(conf_paths,weights,out_path,img_path):
     make_feat_files(conf_paths,weights)
     feat_path=out_path+'/feat.txt'
     combine_feat(conf_paths,feat_path)
     make_combined_seq(feat_path,img_path)
+
+if __name__ == "__main__":
+    conf_paths=['conf/1exp1.cfg','conf/1exp2.cfg']	
+    weights=[1.0,1.0]
+    out_path='../dataset1/exp3'
+    img_path='../dataset1/exp3/cats'
+    unify_feats(conf_paths,weights,out_path,img_path)
