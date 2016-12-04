@@ -8,11 +8,9 @@ import preproc
 def make_feat_files(conf_paths,weights=None):
     if(weights==None):
         for conf_path_i in conf_paths:
-            #preproc.make_features(conf_path_i)
             cats.easy_make_seq(conf_path_i, new_feat=True)
     else:
         for conf_path_i,weight_i in zip(conf_paths,weights):
-            #preproc.make_features(conf_path_i,weight_i)
             cats.easy_make_seq(conf_path_i, new_feat=True,weight=weight_i)
 
 
@@ -27,7 +25,6 @@ def combine_feat(conf_paths,out_path):
 
 def make_combined_seq(feat_path,img_path):
     conf_path={'feat_path':feat_path,'img_path':img_path}
-    #conf_path['feat_path']=feat_path
     cats.easy_make_seq(conf_path, new_feat=False)
 
 def unify_feats(conf_paths,weights,out_path,img_path):
