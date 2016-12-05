@@ -20,7 +20,6 @@ def combine_feat(conf_paths,out_path):
     feat_paths=[conf_file_i['feat_path'] 
                   for conf_file_i in conf_files]
     unifed_feats=basic.combine.unify_text_features_paths(feat_paths)
-    print(type(unifed_feats))
     basic.external.save_features(out_path,unifed_feats)
 
 def make_combined_seq(feat_path,img_path):
