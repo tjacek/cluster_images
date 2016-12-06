@@ -15,12 +15,9 @@ class NNReader(object):
                       'ConvAutoencoder':compile_conv_ae,
                       'LSTM':compile_lstm}
 
-    def __call__(self,in_path, drop_p=0.0):#determistic=False):
-        model=self.__unpickle__(in_path)
-        #if(determistic):
-        #    model.set_determistic()
+    def __call__(self,in_path, drop_p=0.0):
+        model=self.__unpickle__(in_path) 
         model.hyperparams['p']=drop_p
-        #model.hyperparams['n_hidden']=100
 
         print(model.type_name)
         type_reader=self.types[model.type_name]
