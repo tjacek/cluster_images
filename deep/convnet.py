@@ -37,12 +37,12 @@ class Convet(deep.NeuralNetwork):
         return [tools.dist_to_category(dist_i) 
                     for dist_i in dist]
 
-def compile_convnet(params,preproc):
+def compile_convnet(params,preproc,l1_reg=True):
     in_layer,out_layer,hid_layer,all_layers=build_model(params)
     target_var = T.ivector('targets')
     features_pred = lasagne.layers.get_output(hid_layer)
     pred,in_var=get_prediction(in_layer,out_layer)
-    loss=get_loss(pred,in_var,target_var,all_layers)
+    loss=get_loss(pred,in_var,target_var,all_layers,l1_reg)
     updates=get_updates(loss,out_layer)
     return Convet(params,out_layer,preproc, #tools.preprocPost,
                   in_var,target_var,
@@ -88,12 +88,15 @@ def get_prediction(in_layer,out_layer):
     prediction = lasagne.layers.get_output(out_layer)
     return prediction,in_var
 
-def get_loss(prediction,in_var,target_var,all_layers):    
+def get_loss(prediction,in_var,target_var,all_layers,l1_reg=True):    
     loss = lasagne.objectives.categorical_crossentropy(prediction, target_var)
     loss = loss.mean()
     l_hid=all_layers["out"]
-    l1_penalty = regularize_layer_params(l_hid, l1) * 0.001
-    return loss + l1_penalty
+    if(l1_reg):
+        l1_penalty = regularize_layer_params(l_hid, l1) * 0.001
+        return loss + l1_penalty
+    else:
+        return loss
 
 def get_updates(loss,out_layer):
     params = lasagne.layers.get_all_params(out_layer, trainable=True)
@@ -111,14 +114,14 @@ def get_model(preproc,nn_path=None,compile=True):
     if(compile):
         params=default_params()
         params['n_cats']= data.get_n_cats(y)
-        return compile_convnet(params,preproc)
+        return compile_convnet(params,preproc,False)
     else:
         nn_reader=deep.reader.NNReader(preproc)
         return nn_reader(nn_path,0.1)
 
 if __name__ == "__main__":
-    img_path='../dane4/cats'
-    nn_path='../dane4/nn_2'
+    img_path='../dataset2/exp1/train'
+    nn_path='../dataset2/exp1/nn_full_nol2'
     preproc=tools.ImgPreproc2D()
     imgset=imgs.make_imgs(img_path,norm=True)
     print("read")
@@ -127,5 +130,5 @@ if __name__ == "__main__":
     print(x.shape)
     print(y.shape)
     model=get_model(preproc,nn_path,compile=False)
-    train.test_super_model(x,y,model,num_iter=500)
+    train.test_super_model(x,y,model,num_iter=120)
     model.get_model().save(nn_path)
