@@ -92,8 +92,9 @@ def get_loss(prediction,in_var,target_var,all_layers,l1_reg=True):
     loss = lasagne.objectives.categorical_crossentropy(prediction, target_var)
     loss = loss.mean()
     l_hid=all_layers["out"]
+    reg_param=0.001
     if(l1_reg):
-        l1_penalty = regularize_layer_params(l_hid, l1) * 0.001
+        l1_penalty = regularize_layer_params(l_hid, l1) * reg_param
         return loss + l1_penalty
     else:
         return loss
@@ -130,5 +131,5 @@ if __name__ == "__main__":
     print(x.shape)
     print(y.shape)
     model=get_model(preproc,nn_path,compile=False)
-    train.test_super_model(x,y,model,num_iter=120)
+    train.test_super_model(x,y,model,num_iter=100)
     model.get_model().save(nn_path)
