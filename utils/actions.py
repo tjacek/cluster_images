@@ -56,14 +56,14 @@ class ReadActions(object):
 def cp_dataset(action_dir):
     name=action_dir.get_name()
     names=name.split('_')
-    if(len(names)==3):
+    if(len(names)>3):
         cat=names[0].replace('a','')
         person=int(names[1].replace('s',''))
         print(cat)
         print(person)
         print(name)
         return name,cat,person
-    raise Exception("Wrong dataset format")
+    raise Exception("Wrong dataset format " + name +" " + str(len(names)))
 
 def basic_dataset(action_dir):
     name=action_dir.get_name()
