@@ -37,11 +37,12 @@ class Convet(deep.NeuralNetwork):
         return [tools.dist_to_category(dist_i) 
                     for dist_i in dist]
 
-def compile_convnet(params,preproc,l1_reg=True):
+def compile_convnet(params,preproc):
     in_layer,out_layer,hid_layer,all_layers=build_model(params)
     target_var = T.ivector('targets')
     features_pred = lasagne.layers.get_output(hid_layer)
     pred,in_var=get_prediction(in_layer,out_layer)
+    l1_reg=preproc['l1_reg']
     loss=get_loss(pred,in_var,target_var,all_layers,l1_reg)
     updates=get_updates(loss,out_layer)
     return Convet(params,out_layer,preproc, #tools.preprocPost,
@@ -88,12 +89,12 @@ def get_prediction(in_layer,out_layer):
     prediction = lasagne.layers.get_output(out_layer)
     return prediction,in_var
 
-def get_loss(prediction,in_var,target_var,all_layers,l1_reg=True):    
+def get_loss(prediction,in_var,target_var,all_layers,l1_reg=0.001):    
     loss = lasagne.objectives.categorical_crossentropy(prediction, target_var)
     loss = loss.mean()
     l_hid=all_layers["out"]
     reg_param=0.001
-    if(l1_reg):
+    if(l1_reg>0.0):
         l1_penalty = regularize_layer_params(l_hid, l1) * reg_param
         return loss + l1_penalty
     else:
@@ -107,7 +108,7 @@ def get_updates(loss,out_layer):
 
 def default_params():
     return {"input_shape":(None,3,60,60),"num_filters":16,"n_hidden":100,
-              "filter_size":(5,5),"pool_size":(4,4),"p":0.5}
+              "filter_size":(5,5),"pool_size":(4,4),"p":0.5, "l1_reg":0.001}
 
 def get_model(preproc,nn_path=None,compile=True,l1_reg=True):
     if(nn_path==None):
@@ -115,12 +116,10 @@ def get_model(preproc,nn_path=None,compile=True,l1_reg=True):
     if(compile):
         params=default_params()
         params['n_cats']= data.get_n_cats(y)
-        return compile_convnet(params,preproc,l1_reg=l1_reg)
+        return compile_convnet(params,preproc)
     else:
         nn_reader=deep.reader.NNReader(preproc)
         return nn_reader(nn_path,0.1)
-
-#def train_convnet():
 
 
 if __name__ == "__main__":
@@ -134,5 +133,5 @@ if __name__ == "__main__":
     print(x.shape)
     print(y.shape)
     model=get_model(preproc,nn_path,compile=False)
-    train.test_super_model(x,y,model,num_iter=100)
+    train.test_super_model(x,y,model,num_iter=10)
     model.get_model().save(nn_path)
