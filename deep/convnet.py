@@ -42,7 +42,9 @@ def compile_convnet(params,preproc):
     target_var = T.ivector('targets')
     features_pred = lasagne.layers.get_output(hid_layer)
     pred,in_var=get_prediction(in_layer,out_layer)
-    l1_reg=preproc['l1_reg']
+    if(not 'l1_reg' in params):
+        params['l1_reg']=0.001
+    l1_reg=params['l1_reg']
     loss=get_loss(pred,in_var,target_var,all_layers,l1_reg)
     updates=get_updates(loss,out_layer)
     return Convet(params,out_layer,preproc, #tools.preprocPost,
@@ -107,7 +109,7 @@ def get_updates(loss,out_layer):
     return updates
 
 def default_params():
-    return {"input_shape":(None,3,60,60),"num_filters":16,"n_hidden":100,
+    return {"input_shape":(None,2,60,60),"num_filters":16,"n_hidden":100,
               "filter_size":(5,5),"pool_size":(4,4),"p":0.5, "l1_reg":0.001}
 
 def get_model(preproc,nn_path=None,compile=True,l1_reg=True):
@@ -123,9 +125,9 @@ def get_model(preproc,nn_path=None,compile=True,l1_reg=True):
 
 
 if __name__ == "__main__":
-    img_path='../dataset1/exp2/train_trivial'
-    nn_path='../dataset1/exp2/nn_trivial'
-    preproc=tools.ImgPreprocProj()
+    img_path='../dataset1/exp1/train_17'
+    nn_path='../dataset1/exp1/nn_17'
+    preproc=tools.ImgPreproc2D()
     imgset=imgs.make_imgs(img_path,norm=True)
     print("read")
     print(len(imgset))
@@ -133,5 +135,5 @@ if __name__ == "__main__":
     print(x.shape)
     print(y.shape)
     model=get_model(preproc,nn_path,compile=False)
-    train.test_super_model(x,y,model,num_iter=10)
+    train.test_super_model(x,y,model,num_iter=500)
     model.get_model().save(nn_path)
