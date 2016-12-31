@@ -47,7 +47,7 @@ def compile_convnet(params,preproc):
     l1_reg=params['l1_reg']
     loss=get_loss(pred,in_var,target_var,all_layers,l1_reg)
     updates=get_updates(loss,out_layer)
-    return Convet(params,out_layer,preproc, #tools.preprocPost,
+    return Convet(params,out_layer,preproc,
                   in_var,target_var,
                   features_pred,pred,loss,updates)
 
@@ -59,7 +59,7 @@ def build_model(params):
     pool_size2D=params["pool_size"]
     p_drop=params["p"]
     n_cats=params['n_cats']
-    n_hidden=params.get('n_hidden',300) #['n_hidden']
+    n_hidden=params.get('n_hidden',300) 
 
     in_layer = lasagne.layers.InputLayer(
                shape=input_shape)
