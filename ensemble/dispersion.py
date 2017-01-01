@@ -4,11 +4,21 @@ def gini_index(raw):
     raw=list(raw)
     n=len(raw)
     y=range(n+1)
-    f=gini_sum(raw,y,n)
-    return rmad(f,y)/2.0
+    #f=gini_sum(raw,y,n)
+    
+def lorenz_curve(y):
+    y=sort_vector(y)
+    n=len(y)
+    def f_i(i):
+        return float(i)/float(n)
+    def s_i(i):
+        return sum(y[:i])
+    s_n=s_i(n)
+    l=[ s_i(i)/s_n for i in range(1,n+1)]
+    return l
 
-def f_sum(y):
-    sum()
+#def f_sum(y):
+#    sum()
 
 def rmad(f,y):
     s=0.0
@@ -44,7 +54,8 @@ def sort_vector(in_vector):
     return in_vector#np.array(in_vector)
 
 if __name__ == "__main__":
-    #test=[0.0,0.0,0.0,1.0]
-    test=[0.25,0.25,0.25,0.25]
-    sort_vec=sort_vector(test)
-    print(gini_index(sort_vec))
+    lorentz=[0.1,0.2,0.3,0.4]
+    print(lorenz_curve(lorentz))
+    #test=[0.25,0.25,0.25,0.25]
+    #sort_vec=sort_vector(test)
+    #print(gini_index(sort_vec))
