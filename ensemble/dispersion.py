@@ -1,9 +1,10 @@
 import numpy as np 
 
+def gini_index_simple(p):
+    return sum([ p_i*p_i for p_i in p])
+
 def gini_index(raw):
     l,f=lorenz_curve(raw)
-    print(f)
-    print(l)
     return sum([ f_i - l_i
                  for l_i,f_i in zip(l,f)])
 
@@ -17,24 +18,7 @@ def lorenz_curve(y):
     s_n=s_i(n)
     l=[ s_i(i)/s_n for i in range(1,n+1)]    
     f=[ f_i(i) for i in range(1,n+1)]   
-    return l,f
-
-def rmad(f,y):
-    s=0.0
-    for i,f_i in enumerate(f):
-        for j,f_j in enumerate(f):
-            s+= f_i*f_j*float(abs(y[i]-y[j]))
-    mi=dot_product(f,y)
-    return s/mi
-
-def gini_index_fast(in_vector):
-    f=sort_vector(in_vector)
-    n=len(in_vector)
-    y=range(1,n+1)
-    f_sum = gini_sum(f,y,n)
-    s_sum=[ f[i]*(f_sum[i-1]+  f_sum[i])
-            for i in range(1,n)]
-    return 1.0- (dot_product(f,s_sum))#/f_sum[n])  
+    return l,f 
 
 def gini_sum(f,y,n):
     f_sum=[0.0]
