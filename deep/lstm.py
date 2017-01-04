@@ -17,9 +17,12 @@ class LSTM(deep.NeuralNetwork):
         self.loss = theano.function([in_var,target_var,mask_var], loss)
 
     def get_category(self,x,mask):
+        return np.argmax(self.get_distribution(x,mask))
+
+    def get_distribution(self,x,mask):
         x=np.expand_dims(x,axis=0)
         mask=np.expand_dims(mask,axis=0)
-        return np.argmax(self.predict(x,mask))
+        return self.predict(x,mask).flatten()
 
 def compile_lstm(hyper_params,preproc=None):
     l_out,input_vars=make_LSTM(hyper_params)
@@ -75,7 +78,6 @@ def get_hyper_params(masked_dataset):
     hyper_params=masked_dataset['params']
     hyper_params['n_hidden']=100
     hyper_params['grad_clip']=100
-    hyper_params['learning_rate']=0.001
     hyper_params['learning_rate']=0.001
     hyper_params['momentum']=0.9
     hyper_params['p']=0.5
