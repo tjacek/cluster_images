@@ -24,11 +24,7 @@ class ExternalFeats():
         if(name in self.raw_dict):        
             return self.raw_dict[name]
         else:
-            raise Exception("Key not found")
-            #print("Key not found")
-            #print(name)
-            #print(self.raw_dict.keys()[0:10])
-            #return None
+            raise Exception("Key not found:"+name)
 
     def names(self):
         return self.raw_dict.keys()
