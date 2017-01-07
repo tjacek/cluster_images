@@ -24,10 +24,7 @@ class ImgPreproc(object):
         imgs3D=[ imgs.split_img(img_i,scale=3)
                  for img_i in raw_imgs]
         vol=np.array(imgs3D)
-        #for img_i in imgs3D:
-        #    print(img_i.name)
-        #    print(img_i.shape)
-        return imgs3D#vol
+        return imgs3D
 
     def basic(self,imgset):
         return [img_i.get_orginal()
@@ -129,5 +126,4 @@ if __name__ == "__main__":
     ae_path="../dataset1/conv_ae_"
     img_path="../dataset1/cats"
     out_path="../dataset1/recon"
-    #check_transform(img_path,out_path)
     reconstruction(ae_path,img_path,out_path)
