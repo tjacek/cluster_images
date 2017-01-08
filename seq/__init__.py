@@ -10,14 +10,16 @@ from sklearn.metrics import classification_report,confusion_matrix
 import utils.data
 import deep.reader
 
-def make_model(train_dataset,make=True,n_epochs=50):
+def make_model(train_dataset,make=True,n_epochs=0):
     if(make):
         hyper_params=deep.lstm.get_hyper_params(train_dataset)
         model=deep.lstm.compile_lstm(hyper_params)
     else:
         nn_reader=deep.reader.NNReader()
         model= nn_reader(nn_path,0.5)
-    return train_model(model,train_dataset,epochs=n_epochs)
+    if(n_epochs!=0):
+        return train_model(model,train_dataset,epochs=n_epochs)
+    return model
 
 def check_model(model,test_dataset):
     x=test_dataset['x']
@@ -38,7 +40,6 @@ def train_model(model,dataset,epochs=10000):
         for i,x_i in enumerate(x):
             y_i=y[i]
             mask_i=mask[i]
-
             loss_i=model.train(x_i,y_i,mask_i)
             cost.append(loss_i)
         sum_j=sum(cost)/float(len(cost))
@@ -57,13 +58,11 @@ def get_batches(x,batch_size=6):
                for i in range(n_batches)]
 
 if __name__ == "__main__":
-    path='../dane5/seq/'
-    nn_path='../dane5/lstm_'
+    path='../dataset1/exp2/seq/'
+    nn_path='../dataset1/exp2/lstm_full'
     dataset=to_dataset.seq_dataset(path)
-
     new_dataset=to_dataset.masked_dataset(dataset)
     test,train=split.person_dataset(new_dataset)
-    print(train.keys())
-    model=make_model(train,False)
+    model=make_model(train,False,n_epochs=450)
     model.get_model().save(nn_path)    
     check_model(model,test)
