@@ -8,7 +8,7 @@ class Ensemble(object):
         self.simple_cls=simple_cls
 
     def get_category(self,action):
-        result=[cls_i.gini_weighted(action) 
+        result=[cls_i(action) 
                  for cls_i in self.simple_cls]
         result=np.array(result)
         dist=np.sum(result,axis=0)
