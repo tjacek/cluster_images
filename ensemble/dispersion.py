@@ -1,7 +1,7 @@
 import numpy as np 
 
 def gini_index_simple(p):
-    return sum([ p_i*p_i for p_i in p])
+    return np.sqrt(sum([ p_i*p_i for p_i in p]))
 
 def gini_index(raw):
     l,f=lorenz_curve(raw)
