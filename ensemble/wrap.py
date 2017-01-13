@@ -6,4 +6,9 @@ class FeatSeq(object):
 
     def __call__(self,action):
         return [self.conv(img_i)  
-                for img_i in action.img_seq]	
+                for img_i in action.img_seq]
+
+class DTWcls(object):
+    def __init__(self,seqs,k):
+        self.seqs=seqs
+        self.k=k
