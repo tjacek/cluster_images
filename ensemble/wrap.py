@@ -9,6 +9,13 @@ class FeatSeq(object):
                 for img_i in action.img_seq]
 
 class DTWcls(object):
-    def __init__(self,seqs,k):
+    def __init__(self,seqs,k,metric):
         self.seqs=seqs
         self.k=k
+        self.metric=metric
+
+    def __call__(self,x):
+        distance=[self.metric(x,seq_i) 
+                    for seq_i in self.seqs]
+        distance=np.array(distance)
+        dist_inds=distance.argsort()[0:k]
