@@ -7,7 +7,6 @@ class SingleDTW(object):
         self.k=k
         self.conv=conv
 
-
     def __call__(self,action):
         action_feat=self.conv(action)
         distance=[self.metric(x,seq_i) 
@@ -19,3 +18,4 @@ class SingleDTW(object):
         pair_dist=[dtw_metric(seq_i,seq_j)
             for seq_i in self.seqs
               for seq_j in self.seqs]
+        return np.array(pair_dist).mean()      
