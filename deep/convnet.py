@@ -123,10 +123,9 @@ def get_model(preproc,nn_path=None,compile=True,l1_reg=True):
         nn_reader=deep.reader.NNReader(preproc)
         return nn_reader(nn_path,0.1)
 
-
 if __name__ == "__main__":
-    img_path='../dataset1/exp1/train_17'
-    nn_path='../dataset1/exp1/nn_17'
+    img_path='../dataset1/exp1/train_trivial'
+    nn_path='../dataset1/exp1/nn_trivial'
     preproc=tools.ImgPreproc2D()
     imgset=imgs.make_imgs(img_path,norm=True)
     print("read")
@@ -135,5 +134,5 @@ if __name__ == "__main__":
     print(x.shape)
     print(y.shape)
     model=get_model(preproc,nn_path,compile=False)
-    train.test_super_model(x,y,model,num_iter=500)
+    train.test_super_model(x,y,model,num_iter=100)
     model.get_model().save(nn_path)
