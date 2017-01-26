@@ -7,9 +7,12 @@ class Ensemble(object):
     def __init__(self,simple_cls):
         self.simple_cls=simple_cls
 
+    def __call__(self):
+        return [cls_i(action) 
+                 for cls_i in self.simple_cls] 
+
     def get_category(self,action):
-        result=[cls_i(action) 
-                 for cls_i in self.simple_cls]
+        result=self(action) 
         result=np.array(result)
         dist=np.sum(result,axis=0)
         return dist.argmax()
@@ -33,11 +36,14 @@ def test_model(model,action_path):
     s_actions= utils.actions.select_actions(actions)
     check_model(model,s_actions)
 
-def read_actions(cat_path,action_type='cp_dataset'):
+def read_actions(cat_path,action_type='cp_dataset', action_selection=None):
     action_reader=utils.actions.ReadActions(action_type)
     actions=action_reader(cat_path)
     if(len(actions)==0):
         raise Exception("No actions found in: "+ cat_path)
+        
+    if(action_selection!=None):
+        return utils.actions.select_actions(actions,action_selection)
     return actions
 
 if __name__ == "__main__":
