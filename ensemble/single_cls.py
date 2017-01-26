@@ -1,15 +1,10 @@
 import sys,os
 sys.path.append(os.path.abspath('../cluster_images'))
-import deep.tools as tools
-import deep.convnet
 import utils.actions
 import numpy as np
 import seq.to_dataset
 import utils.data 
 import ensemble.dispersion
-
-PREPROC_DICT={"time":tools.ImgPreproc2D,
-              "proj":tools.ImgPreprocProj}
 
 class SingleCls(object):
     def __init__(self,conv,lstm,max_seq):
@@ -32,7 +27,8 @@ class SingleCls(object):
         
         masked_feats=masked_seq(seq_feats_arr,self.max_seq,seq_dim)
         mask=make_mask(seq_size,self.max_seq)
-        return self.lstm.get_distribution(masked_feats,mask)                	
+        result=self.lstm.get_distribution(masked_feats,mask)                	
+        return result
 
 def make_mask(seq_size,max_size):
     mask=np.zeros((max_size,))
@@ -56,14 +52,8 @@ def read_actions(cat_path):
     actions=action_reader(cat_path)
     return actions
 
-def read_convnet(nn_path,prep_type="time"):
-    preproc_method=PREPROC_DICT[prep_type]
-    preproc=preproc_method()
-    return deep.convnet.get_model(preproc,nn_path,compile=False)
-
 if __name__ == "__main__":
     conv_path='../dataset1/exp1/nn_17'
-    #read_convnet(nn_path,"time")
     cat_path='../dataset1/exp1/cats'
     lstm_path='../dataset1/exp1/lstm_full'
     single_cls=make_single_cls(conv_path,lstm_path)
