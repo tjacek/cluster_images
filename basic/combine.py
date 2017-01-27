@@ -28,13 +28,41 @@ def unify_text_features(in_path):
     all_paths=utils.dirs.all_files(in_path)
     unify_text_features_paths(all_paths)
 
+class PathDict(object):
+    def __init__(self,raw_dict=None):
+        if(raw_dict==None):
+            self.raw_dict={}
+        elif( type(raw_dict)==list):
+            self.raw_dict=dict(raw_dict)
+        else:    
+            self.raw_dict=raw_dict
+
+    def __setitem__(self, key, item):
+        self.raw_dict[ self.name(key)]=item
+        self.raw_dict[key] = item
+
+    def __getitem__(self, key):
+        if(key in self.raw_dict[key]):
+            return self.raw_dict[key]
+        new_key=key.split('/')[-1]
+        return self.raw_dict[new_key]
+    
+    def name(self,key):
+        return key.split('/')[-1]
+
+    def items(self):
+        return self.raw_dict.items()
+    
+    def keys(self):
+        return self.raw_dict.keys()
+
 def unify_text_features_paths(all_paths):
     dict_features=[basic.external.read_external(path_i).short_names()
                         for path_i in all_paths]
     img_names=dict_features[0].names()
     for dict_i in dict_features:
         img_names=dict_i.filter_names(img_names)
-    unifed_feats={}
+    unifed_feats={}#PathDict()
     for key_i in img_names:
         feats_i=[dict_j.raw_dict[key_i]
                  for dict_j in dict_features]
