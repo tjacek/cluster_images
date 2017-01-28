@@ -37,11 +37,10 @@ def test_model(model,action_path):
     check_model(model,s_actions)
 
 def read_actions(cat_path,action_type='cp_dataset', action_selection=None):
-    action_reader=utils.actions.ReadActions(action_type)
+    action_reader=utils.actions.ReadActions(action_type,norm=True)
     actions=action_reader(cat_path)
     if(len(actions)==0):
         raise Exception("No actions found in: "+ cat_path)
-        
     if(action_selection!=None):
         return utils.actions.select_actions(actions,action_selection)
     return actions
