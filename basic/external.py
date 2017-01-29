@@ -7,6 +7,7 @@ import utils.imgs as imgs
 import utils.files as files
 import utils.paths
 import basic.reduction as redu
+import basic.combine
 
 class ExternalFeats():
     def __init__(self, raw_dict,short_name=False):
@@ -23,8 +24,12 @@ class ExternalFeats():
             name=str(img_i.name)
         if(name in self.raw_dict):        
             return self.raw_dict[name]
-        else:
-            raise Exception("Key not found:"+name)
+        
+        new_key=name.split('/')[-1]
+        if(new_key in self.raw_dict):
+            return self.raw_dict[new_key]
+        print(self.raw_dict.keys())
+        raise Exception("Key not found:"+name)
 
     def names(self):
         return self.raw_dict.keys()
@@ -67,14 +72,14 @@ def global_reduce(data,transform):
     data_prim=transform(data)
     feat_dict=dict([(name_i,data_prim[i])
                       for name_i,i in names.items()])
-    return feat_dict
+    return feat_dict#basic.combine.PathDict(feat_dict)
 
 def local_reduce(data,transform): 
     print("%%%%%%%%%%%%%%%%%%%%%%%")
-    feat_dict=[ (img_i.name,transform(img_i))
+    feat_dict={ img_i.name:transform(img_i)
                 for img_i in data
-                  if img_i!=None]
-    return dict(feat_dict)
+                  if img_i!=None}
+    return feat_dict#basic.combine.PathDict(feat_dict)
 
 def read_external(in_path,short_name=False):
     text='\n'.join(files.read_file(in_path))

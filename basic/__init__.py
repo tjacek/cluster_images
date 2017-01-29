@@ -9,8 +9,8 @@ import utils
 def get_features(img):
     print(img.shape)
     points=pcloud.make_point_cloud(img)
-    #points=pcloud.unit_normalized(points)
-    points=pcloud.normalized_cloud(points)
+    points=pcloud.unit_normalized(points)
+    #points=pcloud.normalized_cloud(points)
     if(points==None):
     	return None
     cloud_extractors=[area_feat,skewness_features,center,std_features,

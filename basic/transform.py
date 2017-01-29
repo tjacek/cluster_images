@@ -15,7 +15,7 @@ def dict_to_numpy(feat_dict):
     for i,key_i in enumerate(feat_dict.keys()):
         index_dict[key_i]=i
         features.append(feat_dict[key_i])
-    return index_dict,np.array(features)
+    return index_dict,np.array(features,dtype=float)
 
 def update_dict(feat_dict,index_dict,features):
     new_dict={}
