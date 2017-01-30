@@ -3,6 +3,7 @@ sys.path.append(os.path.abspath('../cluster_images'))
 import ensemble
 from ensemble.single_cls import make_single_cls
 import utils.actions
+import numpy as np
 
 class MultiNNEnsemble(object):
     def __init__(self,datasets,nnetworks):
@@ -11,9 +12,11 @@ class MultiNNEnsemble(object):
 
     def get_category(self,action):
         result=self(action) 
+        print(result)
         result=np.array(result)
         dist=np.sum(result,axis=0)
-        return dist.argmax()
+        print(dist.shape)
+        return np.argmax(dist)
 
     def __call__(self,action):
         return [self.get_distribution(action,type_i,act_dict_i)
@@ -44,10 +47,10 @@ def make_actions_dict(path_i,s_action='odd'):
                for action_i in actions}
 
 if __name__ == "__main__":
-    dataset_paths={'time':'../dataset1/exp1/full_dataset',
+    dataset_paths={#'time':'../dataset1/exp1/full_dataset',
                    'proj':'../dataset1/exp2/cats'}
-    nn_paths={'time':('../dataset1/exp1/self_nn' ,'../dataset1/exp1/lstm_self'),
-              'proj':('../dataset1/exp2/nn_self' ,'../dataset1/exp2/lstm_self')}
+    nn_paths={#'time':('../dataset1/exp1/self_nn' ,'../dataset1/exp1/lstm_self'),
+              'proj':('../dataset1/exp2/nn_full' ,'../dataset1/exp2/lstm_self')}
     ens=make_multi_nn(dataset_paths,nn_paths)
 
     in_path="../dataset1/exp1/full_dataset"

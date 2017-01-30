@@ -13,7 +13,6 @@ def make_feat_files(conf_paths,weights=None):
         for conf_path_i,weight_i in zip(conf_paths,weights):
             cats.easy_make_seq(conf_path_i, new_feat=True,weight=weight_i)
 
-
 def combine_feat(conf_paths,out_path):
     conf_files=[ utils.conf.read_config(conf_path_i)
                   for conf_path_i in conf_paths]
