@@ -14,7 +14,7 @@ def make_seq_files(conf_path, new_features=True,short_names=True,weight=0.25):
     feat_path=conf_dict['feat_path']
     seq.features.extract_features(img_path,feat_path,'seq',short_names)
 
-def easy_make_seq(conf_path,new_feat=True,weight=0.25):
+def easy_make_seq(conf_path,new_feat=True,weight=1.00):
     print(conf_path)
     make_seq_files(conf_path, new_feat, not new_feat,weight)
 
