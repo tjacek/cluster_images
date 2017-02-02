@@ -6,22 +6,32 @@ import utils.actions
 import numpy as np
 
 class MultiNNEnsemble(object):
-    def __init__(self,datasets,nnetworks):
+    def __init__(self,datasets,nnetworks,dispersion=False,vote=False):
         self.datasets=datasets
         self.nnetworks=nnetworks
+        self.dispersion=dispersion
+        self.vote=vote
 
     def get_category(self,action):
-        result=self(action) 
+        result=self(action,self.dispersion,self.vote) 
         print(result)
         result=np.array(result)
         dist=np.sum(result,axis=0)
         print(dist.shape)
         return np.argmax(dist)
 
-    def __call__(self,action):
-        return [self.get_distribution(action,type_i,act_dict_i)
-                    for type_i,act_dict_i in self.datasets.items()]
-            
+    def __call__(self,action, dispersion=False,vote=False):
+        distributions=[ self.get_distribution(action,type_i,act_dict_i)
+                         for type_i,act_dict_i in self.datasets.items()]
+        if(vote):
+            return [ get_binary_dist(dist_i) 
+                      for dist_i in distributions]
+        if(dispersion):
+            return [ np.linalg.norm(dist_i,ord=2) * dist_i 
+                      for dist_i in distributions]
+        else:    
+            return distributions    
+    
     def get_distribution(self,action_x,type_i,action_dict_i):
         typed_action=action_dict_i[action_x.name]
         print(type(typed_action))
@@ -29,6 +39,12 @@ class MultiNNEnsemble(object):
         print(action_x.img_seq[0].shape)
         typeed_nn=self.nnetworks[type_i]
         return typeed_nn(typed_action)
+
+def get_binary_dist(dist):
+    index=np.argmax(dist)
+    binary_dist= np.zeros(dist.shape)
+    binary_dist[index]=1.0
+    return binary_dist  
 
 def make_multi_nn(dataset_paths,nn_paths):
     if(type(dataset_paths)!=dict):
@@ -47,10 +63,10 @@ def make_actions_dict(path_i,s_action='odd'):
                for action_i in actions}
 
 if __name__ == "__main__":
-    dataset_paths={#'time':'../dataset1/exp1/full_dataset',
+    dataset_paths={'time':'../dataset1/exp1/full_dataset',
                    'proj':'../dataset1/exp2/cats'}
-    nn_paths={#'time':('../dataset1/exp1/self_nn' ,'../dataset1/exp1/lstm_self'),
-              'proj':('../dataset1/exp2/nn_full' ,'../dataset1/exp2/lstm_self')}
+    nn_paths={'time':('../dataset1/exp1/nn_data_1' ,'../dataset1/exp1/lstm_self'),
+              'proj':('../dataset1/exp2/nn_worst' ,'../dataset1/exp2/lstm_worst')}
     ens=make_multi_nn(dataset_paths,nn_paths)
 
     in_path="../dataset1/exp1/full_dataset"
