@@ -15,7 +15,6 @@ class EnsembleDTW(object):
                   for cls_i in self.single_cls]
         cats_k=[ cat_i[0] for cat_i,dist_i in results ]
         dist_k=[ dist_i[0] for cat_i,dist_i in results]          
-        #return cats_k,dist_k
         min_i=np.argmin(dist_k)
         return cats_k[min_i]
 
@@ -33,13 +32,13 @@ class SingleDTW(object):
         distance=np.array(distance)
         dist_inds=distance.argsort()[0:k]
         distance_k=distance[dist_inds]
-        print(distance_k.dtype)
+        #print(distance_k.dtype)
         distance_k*=self.scale
         #print(distance_k.shape)
         cats_k =[ int(self.cats[i])-1
                   for i in dist_inds]
-        print(distance_k)
-        print(cats_k)
+        #print(distance_k)
+        #print(cats_k)
         return cats_k,distance_k
 
     def dataset_scale(self):
@@ -48,9 +47,15 @@ class SingleDTW(object):
               for action_j in self.actions]
         return np.array(pair_dist).mean()
 
-def make_ensemble_dtw(dataset_path,nn_paths,scales,prep_type="time"):
-    single_cls=[make_single_dtw(nn_path_i,dataset_path,scale_i,prep_type) 
-                  for nn_path_i,scale_i in zip(nn_paths,scales)]
+def make_ensemble_dtw(dataset_paths,nn_paths,scales,prep_type="time"):
+    def get_single(i,type_i):
+        nn_path_i=nn_paths[type_i]
+        dataset_path_i=dataset_paths[type_i]
+        scale_i=scales[i]
+        return make_single_dtw(nn_path_i,dataset_path_i,scale_i,prep_type=type_i) 
+    single_cls=[get_single(i,type_i)
+                  for i,type_i in enumerate(dataset_paths.keys())]
+                  #for nn_path_i,scale_i in zip(nn_paths,scales)]
     return EnsembleDTW(single_cls)                
 
 def make_single_dtw(nn_path,dataset_path,scale,prep_type="time",action_type='even'):
@@ -64,10 +69,13 @@ def make_single_dtw(nn_path,dataset_path,scale,prep_type="time",action_type='eve
     return SingleDTW(conv,conv_actions,cats,scale)
 
 if __name__ == "__main__":
-    nn_paths=["../dataset1/exp1/nn_full","../dataset1/exp1/nn_trivial"]
-    scales=[0.3,1.0]
+    nn_paths={ 'time':"../dataset1/exp1/nn_data_1"}#,
+               #'proj':'../dataset1/exp2/nn_worst'}
+    dataset_paths={'time':'../dataset1/exp1/full_dataset'}#,
+                   #'proj':'../dataset1/exp2/cats'}
+    scales=[1.0,1.0]
     dataset_path="../dataset1/exp1/full_dataset"
-    ensemble_cls=make_ensemble_dtw(dataset_path,nn_paths,scales)
+    ensemble_cls=make_ensemble_dtw(dataset_paths,nn_paths,scales)
     #single_dtw=make_single_dtw(nn_path,dataset_path)
     #actions=ensemble.feat_seq.read_actions(dataset_path)
     ensemble.test_model(ensemble_cls,dataset_path)
