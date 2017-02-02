@@ -24,17 +24,17 @@ def make_ensemble(conf):
     return Ensemble(simple_cls)
 
 def check_model(model,actions):
-    print(type(actions[0]))	
+    #print(type(actions[0]))	
     y_true=[int(action_i.cat)-1 for action_i in actions]
     y_pred=[model.get_category(action_i)
               for action_i in actions]
     #print(utils.data.find_errors(y_pred,test))
     seq.check_prediction(y_pred,y_true)
 
-def test_model(model,action_path):
-    actions=read_actions(action_path)
-    s_actions= utils.actions.select_actions(actions)
-    check_model(model,s_actions)
+def test_model(model,action_path,action_selection=None):
+    actions=read_actions(action_path,action_selection=action_selection)
+    #s_actions= utils.actions.select_actions(actions)
+    check_model(model,actions)
 
 def read_actions(cat_path,action_type='cp_dataset', action_selection=None):
     action_reader=utils.actions.ReadActions(action_type,norm=True)
@@ -42,7 +42,10 @@ def read_actions(cat_path,action_type='cp_dataset', action_selection=None):
     if(len(actions)==0):
         raise Exception("No actions found in: "+ cat_path)
     if(action_selection!=None):
-        return utils.actions.select_actions(actions,action_selection)
+        selected_actions=utils.actions.select_actions(actions,action_selection)
+        if(len(actions)==0):
+            raise Exception("No actions selected "+ action_selection)
+        return selected_actions
     return actions
 
 if __name__ == "__main__":

@@ -51,11 +51,14 @@ def make_multi_nn(dataset_paths,nn_paths):
         raise("type:dataset_paths dict required")
     if(type(nn_paths)!=dict):
         raise("type:nn_paths dict required")
-    datasets={type_i:make_actions_dict(path_i)
-                for type_i,path_i in dataset_paths.items()}
+    datasets=make_datasets(dataset_paths)
     nnetworks={type_i:make_single_cls(conv_path=path_pair_i[0],lstm_path=path_pair_i[1],prep_type=type_i)
                   for type_i,path_pair_i in nn_paths.items()}
     return MultiNNEnsemble(datasets,nnetworks)
+
+def make_datasets(dataset_paths,s_action='odd'):
+    return {type_i:make_actions_dict(path_i,s_action)
+                for type_i,path_i in dataset_paths.items()}
 
 def make_actions_dict(path_i,s_action='odd'):
     actions=ensemble.read_actions(path_i,action_selection=s_action)
