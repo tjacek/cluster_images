@@ -86,9 +86,9 @@ class ReadActions(object):
 
 def select_actions(actions,action_type='odd'):
     if(action_type=='odd'):
-        action_id=0
-    else:
         action_id=1
+    else:
+        action_id=0
     select=utils.selection.SelectModulo(action_id)
     acts=[ action_i
            for action_i in actions
