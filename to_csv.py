@@ -6,6 +6,10 @@ class GetCSV(object):
         self.braces= re.compile('(\[)|(\])')
         self.postfix= re.compile('(\.)(.)+')
 
+    def all(self):
+        for path_i in paths:
+            self(path_i)
+
     def __call__(self,filename):
         csv=''
         with open(filename) as f:
