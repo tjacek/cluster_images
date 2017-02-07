@@ -46,6 +46,13 @@ class Path(object):
         self.items[-1]=name
         return self
 
+    def get_postfix(self):
+        name=self.get_name()
+        name_split=name.split(".")
+        if(len(name_split) < 2):
+            raise Exception("no postfix in " + name)
+        return name_split[1]
+    
     def add(self,str_path):
         strs=str_path.split("/")
         for str_i in strs:
