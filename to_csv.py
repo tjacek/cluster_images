@@ -1,4 +1,5 @@
 import re
+import utils.dirs
 
 class GetCSV(object):
     def __init__(self):
@@ -6,9 +7,11 @@ class GetCSV(object):
         self.braces= re.compile('(\[)|(\])')
         self.postfix= re.compile('(\.)(.)+')
 
-    def all(self):
-        for path_i in paths:
-            self(path_i)
+    def to_dir(self,dir_path):
+        all_paths=utils.dirs.all_files(dir_path)
+        for path_i in all_paths:
+            if(path_i.get_postfix()=='txt'):
+                self(str(path_i))
 
     def __call__(self,filename):
         csv=''
@@ -33,6 +36,7 @@ class GetCSV(object):
         return self.regex.search(line)!=None
 
 if __name__ == "__main__":
-    path='Documents/artykul/podsumowanie/nast_selekcja_dtw.txt'
+    path='Documents/artykul/podsumowanie/' 
+    #nast_selekcja_dtw.txt'
     get_csv=GetCSV()
-    get_csv(path)
+    get_csv.to_dir(path)
