@@ -6,6 +6,8 @@ class GetCSV(object):
         self.regex =re.compile('([0-9]|(\[)|(\])|(\.)|(\s))+')
         self.braces= re.compile('(\[)|(\])')
         self.postfix= re.compile('(\.)(.)+')
+        self.text_line=re.compile('([a-z]+,)+[a-z]+')
+        self.avg=re.compile('avg / total')#('[a-z]+(\s)*/[a-z]+(\s)*')
 
     def to_dir(self,dir_path):
         all_paths=utils.dirs.all_files(dir_path)
@@ -24,16 +26,29 @@ class GetCSV(object):
         output_file.write(csv)
 
     def get_csv(self,line):
-    	print(line)
+    	#print(line)
         if(self.check_line(line)):
+            if(re.search(self.avg,line)!=None):
+                print(line)
+                line=re.sub(self.avg,'',line)
+                csv_line=self.get_csv_line(line)
+                csv_line='avg/total,'+csv_line
+                return csv_line
             line=re.sub(self.braces,'',line)
-            return ",".join(line.split()) +'\n'
+            csv_line=self.get_csv_line(line)
+            #print(csv_line)
+            if(re.match(self.text_line,csv_line)!=None):
+                csv_line='category,'+csv_line
+            return csv_line
         else:
             return None	
 
     def check_line(self,line):
         #return re.search(self.regex,line)!=None
         return self.regex.search(line)!=None
+
+    def get_csv_line(self,line):
+        return ",".join(line.split()) +'\n'
 
 if __name__ == "__main__":
     path='Documents/artykul/podsumowanie/' 
