@@ -50,6 +50,10 @@ class GetCSV(object):
     def get_csv_line(self,line):
         return ",".join(line.split()) +'\n'
 
+class GetConfusion(object):
+    def __init__(self,n_cats):
+        self.n_cats=n_cats
+
 if __name__ == "__main__":
     path='Documents/artykul/podsumowanie/' 
     #nast_selekcja_dtw.txt'
