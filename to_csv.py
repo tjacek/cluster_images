@@ -54,6 +54,10 @@ class GetConfusion(object):
     def __init__(self,n_cats):
         self.n_cats=n_cats
 
+    def is_cm_line(self,line):
+        splited_line=line.split()
+        return len(splited_line)==self.n_cats
+
 if __name__ == "__main__":
     path='Documents/artykul/podsumowanie/' 
     #nast_selekcja_dtw.txt'
