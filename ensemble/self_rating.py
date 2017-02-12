@@ -16,24 +16,27 @@ class HighRatedFrames(object):
 
 
 class CatCriterion(object):
-    def __init__(self, convnet):
+    def __init__(self, convnet, cats_ids=None):
         self.convnet=convnet
         self.COUNTER=0
+        self.cats_ids=cats_ids
 
     def __call__(self,frame_x,correct_cat):
     	frame_x.name=str(frame_x.name)
     	img4D=self.convnet.preproc.apply(frame_x)
         correct_cat=int(correct_cat)-1
         cat=self.convnet.get_category(img4D)[0]	
+        if(self.cats_ids!=None):
+            cat=self.cats_ids[cat]
         if(correct_cat!=cat):
             print(correct_cat)
             print(cat)
             self.COUNTER+=1.0
-            print(self.COUNTER)
+            print("counter " + str(self.COUNTER))
             return 0.0
         return 1.0
 
-class ConvnetCriterion(object):
+class DispCriterion(object):
     def __init__(self, convnet):
         self.convnet=convnet
 
@@ -43,16 +46,17 @@ class ConvnetCriterion(object):
         print(value)
         return value
 
-def make_high_rated_frames(nn_path,threshold=0.9,prep_type="time"):
+def make_high_rated_frames(nn_path,threshold=0.9,prep_type="time", cats_ids=None):
     conv=ensemble.feat_seq.read_convnet(nn_path,prep_type)
-    crit=CatCriterion(conv)
+    crit=CatCriterion(conv,cats_ids)
     return HighRatedFrames(crit,threshold)
 
 if __name__ == "__main__":
-    nn_path="../dataset1/exp2/nn_full"
-    dataset_path="../dataset1/exp2/train_full"
-    output_path="../dataset1/exp2/train_self"
-    high_rated=make_high_rated_frames(nn_path,prep_type='proj')
+    nn_path="../dataset1/exp1b/old/nn_trivial"
+    dataset_path="../dataset1/exp1b/train_trivial"
+    output_path="../dataset1/exp1b/train_self"
+    trivial={0:4,1:10,2:11,3:12,4:13,5:14,6:15,7:16}
+    high_rated=make_high_rated_frames(nn_path,prep_type='time',cats_ids=trivial)
     actions=ensemble.feat_seq.read_actions(dataset_path)
     new_actions=[ action_i(high_rated) 
                  for action_i in actions]
