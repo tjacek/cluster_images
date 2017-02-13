@@ -53,6 +53,10 @@ class GetCSV(object):
 class GetConfusion(object):
     def __init__(self,n_cats):
         self.n_cats=n_cats
+        self.regex =re.compile('(\[)+([0-9]|(\s))+(\])+')
+
+    def get_csv(self):
+        if(self.check_line(line)):
 
     def is_cm_line(self,line):
         splited_line=line.split()
