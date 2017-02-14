@@ -19,5 +19,5 @@ def easy_make_seq(conf_path,new_feat=True,weight=1.00):
     make_seq_files(conf_path, new_feat, not new_feat,weight)
 
 if __name__ == "__main__":
-    conf_path="conf/1exp1.cfg"
+    conf_path="conf/1exp1b.cfg"
     easy_make_seq(conf_path, new_feat=True)

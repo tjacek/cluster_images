@@ -30,6 +30,18 @@ def check_model(model,test_dataset):
     print(utils.data.find_errors(y_pred,test))
     check_prediction(y_pred,y_true)
 
+def check_distribution(odel,test_dataset):
+    x=test_dataset['x']
+    y_true=test_dataset['y']
+    mask=test_dataset['mask']
+    y_pred=[model.get_category(x_i,mask[i])
+              for i,x_i in enumerate(x)]
+    dists=[model.get_distribution(x_i,mask[i])
+              for i,x_i in enumerate(x)]
+    correct=[ y_true_i==y_pred_i
+              for y_true_i,y_pred_i in zip(y_true,y_pred)]
+              
+
 def train_model(model,dataset,epochs=10000):
     x=get_batches(dataset['x'])
     y=get_batches(dataset['y'])
@@ -58,11 +70,11 @@ def get_batches(x,batch_size=6):
                for i in range(n_batches)]
 
 if __name__ == "__main__":
-    path='../dataset1/exp2/seq/'
-    nn_path='../dataset1/exp2/lstm_full'
+    path='../dataset1/exp1b/seq/'
+    nn_path='../dataset1/exp1b/lstm_full'
     dataset=to_dataset.seq_dataset(path)
     new_dataset=to_dataset.masked_dataset(dataset)
-    test,train=split.person_dataset(new_dataset)
-    model=make_model(train,False,n_epochs=450)
+    train,test=split.person_dataset(new_dataset)
+    model=make_model(train,False,n_epochs=10)
     model.get_model().save(nn_path)    
     check_model(model,test)
