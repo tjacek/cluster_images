@@ -40,7 +40,9 @@ def check_distribution(odel,test_dataset):
               for i,x_i in enumerate(x)]
     correct=[ y_true_i==y_pred_i
               for y_true_i,y_pred_i in zip(y_true,y_pred)]
-              
+    for i,corr_true in enumerate(correct):
+        if(corr_true):
+            print(dists[i])          
 
 def train_model(model,dataset,epochs=10000):
     x=get_batches(dataset['x'])
@@ -75,6 +77,6 @@ if __name__ == "__main__":
     dataset=to_dataset.seq_dataset(path)
     new_dataset=to_dataset.masked_dataset(dataset)
     train,test=split.person_dataset(new_dataset)
-    model=make_model(train,False,n_epochs=10)
+    model=make_model(train,False,n_epochs=0)
     model.get_model().save(nn_path)    
     check_model(model,test)
