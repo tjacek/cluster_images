@@ -40,9 +40,16 @@ def check_distribution(model,test_dataset):
               for i,x_i in enumerate(x)]
     correct=[ y_true_i==y_pred_i
               for y_true_i,y_pred_i in zip(y_true,y_pred)]
-    for i,corr_true in enumerate(correct):
-        if(corr_true):
-            print(dists[i])          
+    
+    gini_correct=[np.linalg.norm(dists[i],ord=2)
+                    for i,corr_true in enumerate(correct)
+                      if(not corr_true)]
+    gini_incorrect=[np.linalg.norm(dists[i],ord=2)
+                      for i,corr_true in enumerate(correct)
+                        if(corr_true)]
+
+    print(np.average(gini_correct))          
+    print(np.average(gini_incorrect))          
 
 def train_model(model,dataset,epochs=10000):
     x=get_batches(dataset['x'])
@@ -73,7 +80,7 @@ def get_batches(x,batch_size=6):
 
 if __name__ == "__main__":
     path='../dataset1/exp1b/seq/'
-    nn_path='../dataset1/exp1/lstm_full'
+    nn_path='../dataset1/exp1/lstm_self'
     dataset=to_dataset.seq_dataset(path)
     new_dataset=to_dataset.masked_dataset(dataset)
     train,test=split.person_dataset(new_dataset)
