@@ -30,7 +30,7 @@ def check_model(model,test_dataset):
     print(utils.data.find_errors(y_pred,test))
     check_prediction(y_pred,y_true)
 
-def check_distribution(odel,test_dataset):
+def check_distribution(model,test_dataset):
     x=test_dataset['x']
     y_true=test_dataset['y']
     mask=test_dataset['mask']
@@ -73,10 +73,11 @@ def get_batches(x,batch_size=6):
 
 if __name__ == "__main__":
     path='../dataset1/exp1b/seq/'
-    nn_path='../dataset1/exp1b/lstm_full'
+    nn_path='../dataset1/exp1/lstm_full'
     dataset=to_dataset.seq_dataset(path)
     new_dataset=to_dataset.masked_dataset(dataset)
     train,test=split.person_dataset(new_dataset)
     model=make_model(train,False,n_epochs=0)
     model.get_model().save(nn_path)    
-    check_model(model,test)
+    #check_model(model,test)
+    check_distribution(model,test)
