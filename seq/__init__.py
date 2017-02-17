@@ -41,15 +41,21 @@ def check_distribution(model,test_dataset):
     correct=[ y_true_i==y_pred_i
               for y_true_i,y_pred_i in zip(y_true,y_pred)]
     
-    gini_correct=[np.linalg.norm(dists[i],ord=2)
-                    for i,corr_true in enumerate(correct)
-                      if(not corr_true)]
-    gini_incorrect=[np.linalg.norm(dists[i],ord=2)
-                      for i,corr_true in enumerate(correct)
-                        if(corr_true)]
-
-    print(np.average(gini_correct))          
-    print(np.average(gini_incorrect))          
+    def L2(dists_i):
+        return np.linalg.norm(dists_i,ord=2) 
+    #ginis=[np.linalg.norm(dists_i,ord=2) 
+    #        for dists_i in dists]
+    dist_correct=[L2(dist_i)
+                    for i,dist_i in enumerate(dists)
+                      if(correct[i])]
+    dist_incorrect=[L2(dist_i)
+                      for i,dist_i in enumerate(dists)
+                        if(not correct[i])]
+    #n_max=[np.max(dist)
+    #                for i,gini_i in enumerate(ginis)
+    #                  if(correct[i])]
+    print(np.average(dist_correct))          
+    print(np.average(dist_incorrect))          
 
 def train_model(model,dataset,epochs=10000):
     x=get_batches(dataset['x'])
@@ -79,7 +85,7 @@ def get_batches(x,batch_size=6):
                for i in range(n_batches)]
 
 if __name__ == "__main__":
-    path='../dataset1/exp1b/seq/'
+    path='../dataset1/exp1/seq/'
     nn_path='../dataset1/exp1/lstm_self'
     dataset=to_dataset.seq_dataset(path)
     new_dataset=to_dataset.masked_dataset(dataset)
