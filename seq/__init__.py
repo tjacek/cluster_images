@@ -40,22 +40,26 @@ def check_distribution(model,test_dataset):
               for i,x_i in enumerate(x)]
     correct=[ y_true_i==y_pred_i
               for y_true_i,y_pred_i in zip(y_true,y_pred)]
-    
-    def L2(dists_i):
-        return np.linalg.norm(dists_i,ord=2) 
+     
     #ginis=[np.linalg.norm(dists_i,ord=2) 
     #        for dists_i in dists]
     dist_correct=[L2(dist_i)
                     for i,dist_i in enumerate(dists)
                       if(correct[i])]
-    dist_incorrect=[L2(dist_i)
-                      for i,dist_i in enumerate(dists)
-                        if(not correct[i])]
+
     #n_max=[np.max(dist)
     #                for i,gini_i in enumerate(ginis)
     #                  if(correct[i])]
     print(np.average(dist_correct))          
     print(np.average(dist_incorrect))          
+
+def filter_dist(dist,cond):
+    return [dist_i
+             for i,dist_i in enumerate(dists)
+                if(cond(dist,i))]
+
+def L2(dists_i):
+    return np.linalg.norm(dists_i,ord=2)
 
 def train_model(model,dataset,epochs=10000):
     x=get_batches(dataset['x'])
