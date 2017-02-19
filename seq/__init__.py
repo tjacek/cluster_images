@@ -30,6 +30,13 @@ def check_model(model,test_dataset):
     print(utils.data.find_errors(y_pred,test))
     check_prediction(y_pred,y_true)
 
+class CorrectCond(object):
+    def __init__(self, correct):
+        self.correct=correct
+        
+    def __call__(self,dist,i):
+        return self.correct[i]
+
 def check_distribution(model,test_dataset):
     x=test_dataset['x']
     y_true=test_dataset['y']
