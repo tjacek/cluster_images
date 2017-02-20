@@ -31,11 +31,15 @@ def check_model(model,test_dataset):
     check_prediction(y_pred,y_true)
 
 class CorrectCond(object):
-    def __init__(self, correct):
+    def __init__(self, correct,seek_value=True):
         self.correct=correct
-        
+        self.seek_value=seek_value
+
     def __call__(self,dist,i):
-        return self.correct[i]
+        if(self.seek_value):
+            return self.correct[i]
+        else:
+            return (not self.correct[i])
 
 def check_distribution(model,test_dataset):
     x=test_dataset['x']
