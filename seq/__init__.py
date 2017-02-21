@@ -51,16 +51,10 @@ def check_distribution(model,test_dataset):
               for i,x_i in enumerate(x)]
     correct=[ y_true_i==y_pred_i
               for y_true_i,y_pred_i in zip(y_true,y_pred)]
-     
-    #ginis=[np.linalg.norm(dists_i,ord=2) 
-    #        for dists_i in dists]
+
     dist_correct=[L2(dist_i)
                     for i,dist_i in enumerate(dists)
                       if(correct[i])]
-
-    #n_max=[np.max(dist)
-    #                for i,gini_i in enumerate(ginis)
-    #                  if(correct[i])]
     print(np.average(dist_correct))          
     print(np.average(dist_incorrect))          
 
