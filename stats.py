@@ -6,6 +6,11 @@ def action_stats(actions):
     show_stats(actions_len)
     dim_stats(actions)
 
+def basic_stats(actions):
+    actions_len=extract_data(actions)
+    print("Number of actions %d \n" % len(actions_len) ) 
+    print("Number of frames %d \n" % sum(actions_len) ) 
+
 def show_stats(actions_len):
     avg_act=np.average(actions_len)#float(sum(actions_len))/float(len(actions_len))
     max_act=max(actions_len)
@@ -35,6 +40,8 @@ def extract_data(actions,fun=len):
     return [fun(action_i) for action_i in actions]
 
 if __name__ == "__main__": 
-    action_path="../dataset7/cats2/"
-    actions=utils.actions.read_actions(action_path)
-    action_stats(actions)
+    action_path="../dataset2/exp1/cats"
+
+    read_actions=utils.actions.ReadActions('basic_dataset')
+    actions=read_actions(action_path)
+    basic_stats(actions)
