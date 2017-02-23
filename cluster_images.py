@@ -14,12 +14,10 @@ def cluster_images(conf_path):
     extractor=select_extractor(conf_dict)
     imgset=[ extractor(img_i) for img_i in data ]
     cls_alg=select_imgs.clustering.DbscanAlg()
-    #cls_alg=select_imgs.clustering.KMeansAlg(20)#(5)
     labels=cls_alg(imgset)
     unorm_data=utils.imgs.unorm(data)
     clusters=select_imgs.split_cls(labels,unorm_data)
     select_imgs.save_cls(out_path,clusters)
-    #print(type(labels))
 
 if __name__ == "__main__":
     conf_path="conf/dataset3.cfg"
