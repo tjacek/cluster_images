@@ -20,12 +20,15 @@ class CatCriterion(object):
         self.convnet=convnet
         self.COUNTER=0
         self.cats_ids=cats_ids
+        self.names={'carry':0,'clapHands':1,'pickUp':2,
+                    'pull':3,'push':4,'sitDown':5,
+                    'standUp':6,'throw':7,'walk':8,'waveHands':9}
 
     def __call__(self,frame_x,correct_cat):
     	frame_x.name=str(frame_x.name)
     	img4D=self.convnet.preproc.apply(frame_x)
         
-        correct_cat=int(correct_cat)#-1
+        correct_cat= self.get_cats(correct_cat)#int(correct_cat)#-1
         cat=self.convnet.get_category(img4D)[0]	
         if(self.cats_ids!=None):
             correct_cat=self.cats_ids[correct_cat]
@@ -37,6 +40,12 @@ class CatCriterion(object):
             print("counter " + str(self.COUNTER))
             return 0.0
         return 1.0
+
+    def get_cats(self,raw_cats):
+        if(type(raw_cats)==str):
+            cat=self.names[raw_cats]
+        correct_cat=int(cat)
+        return correct_cat    
 
 class DispCriterion(object):
     def __init__(self, convnet):
@@ -56,15 +65,15 @@ def make_high_rated_frames(nn_path,threshold=0.9,prep_type="time", cats_ids=None
     return HighRatedFrames(crit,threshold)
 
 if __name__ == "__main__":
-    nn_path="../dataset1/exp1b/old/nn_trivial"
-    dataset_path="../dataset1/exp1b/train_trivial"
-    output_path="../dataset1/exp1b/train_self"
+    nn_path="../dataset2/exp1b/nn_full"
+    dataset_path="../dataset2/exp1b/train"
+    output_path="../dataset2/exp1b/train_self"
     trivial={4:0,9:1,10:2,11:3,12:4,13:5,14:6,15:7,16:8}
-    high_rated=make_high_rated_frames(nn_path,prep_type='time',cats_ids=trivial)
+    high_rated=make_high_rated_frames(nn_path,prep_type='time')#,cats_ids=trivial)
     
     #x,y=imgs.to_dataset(imgset,extract_cat,preproc)
     
-    actions=ensemble.feat_seq.read_actions(dataset_path)
+    actions=ensemble.feat_seq.read_actions(dataset_path,action_type='basic_dataset')
     for action_i in actions:
         print(action_i.cat)
     new_actions=[ action_i(high_rated) 
