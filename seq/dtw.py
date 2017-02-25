@@ -10,10 +10,12 @@ import utils.data
 
 @paths.path_args
 def use_dtw(dataset_path):
-    dataset=seq_dataset(path)
-    test,train=split.person_dataset(dataset)
+    dataset=seq_dataset(path,dataset_format='cp_dataset')
+    print(dataset.keys())
+    print(dataset['y'])
+
+    train,test=split.person_dataset(dataset)
     y_pred=wrap(train,test)
-    print(utils.data.find_errors(y_pred,test))
     seq.check_prediction(y_pred,test['y'])
 
 @clock
@@ -27,13 +29,20 @@ def knn(new_x,train_dataset,k=1):
     distance=np.array(distance)
     dist_inds=distance.argsort()[0:k]
     y=   train_dataset['y']
+    
+    #k_dist=get_k_distances(distance,dist_inds)
+    #print(k_dist)
     nearest=[y[i] for i in dist_inds]
     print(train_dataset['x'][0].shape)
     print(nearest)
+    print(dist_inds)
     count =Counter(nearest)
     new_cat=count.most_common()[0][0]
     print(new_cat)
     return new_cat
+
+def get_k_distances(distances,dist_inds):
+    return [distances[i]  for i in dist_inds]
 
 def dtw_metric(s,t):
     n=len(s)
@@ -48,6 +57,8 @@ def dtw_metric(s,t):
         for j in range(1,m+1):
             cost=d1(s[i-1],t[j-1])
             dwt[i,j]=cost+min([dwt[i-1][j],dwt[i][j-1],dwt[i-1][j-1]])
+    #print(n)
+    #print(m)
     return dwt[n][m]
 
 def d1(v,d):
@@ -59,5 +70,5 @@ def d2(v,u):
     return dist
 
 if __name__ == "__main__":
-    path='../dane5/seq/'
+    path='../dataset1/AS1/seq/'
     use_dtw(path)

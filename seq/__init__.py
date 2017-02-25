@@ -94,12 +94,12 @@ def get_batches(x,batch_size=6):
                for i in range(n_batches)]
 
 if __name__ == "__main__":
-    path='../dataset1/exp1/seq/'
-    nn_path='../dataset1/exp1/lstm_self'
+    path='../dataset1/AS1/seq'
+    nn_path='../dataset1/AS1/lstm_as1'
     dataset=to_dataset.seq_dataset(path)
     new_dataset=to_dataset.masked_dataset(dataset)
     train,test=split.person_dataset(new_dataset)
-    model=make_model(train,False,n_epochs=0)
+    model=make_model(train,False,n_epochs=150)
     model.get_model().save(nn_path)    
-    #check_model(model,test)
-    check_distribution(model,test)
+    check_model(model,test)
+    #check_distribution(model,test)
