@@ -8,6 +8,7 @@ import utils.data
 import utils.text
 import utils.paths 
 import utils.selection 
+import re
 
 class Action(object):
     def __init__(self,name,img_seq,cat=None,person=None):
@@ -26,7 +27,7 @@ class Action(object):
         return len(self.img_seq)
     
     def __call__(self,func):
-        return Action(self.name,func(self),
+        return Action(self.name,func(self.img_seq),
                        self.cat,self.person)
 
     def transform(self,fun):
@@ -42,10 +43,25 @@ class Action(object):
         [img_i.save(full_outpath,i) 
          for i,img_i in enumerate(self.img_seq)]
 
+def time_frames(img_seq):
+    print(type(img_seq[0]))
+    n=len(img_seq)-1
+    def unify_helper(img_i,img_j):
+        img_i=img_i.get_orginal()
+        img_j=img_j.get_orginal()
+
+        united_img=np.array([img_i, img_j])
+        new_x=united_img.shape[0]*united_img.shape[1]
+        new_y=united_img.shape[2]
+        img2D=united_img.reshape((new_x,new_y))
+        return utils.imgs.Image(img_i.name,img2D)
+
+    return [ unify_helper(img_seq[i], img_seq[i+1])
+              for i in range(n)]
+
 @utils.paths.path_args
 def cp_dataset(action_dir):
-    #if(type(action_dir)==str):
-    #    action_dir=utils.p
+    raise Exception("Error")
     name=action_dir.get_name()
     names=name.split('_')
     if(len(names)>3):
@@ -57,13 +73,29 @@ def cp_dataset(action_dir):
         return name,cat,person
     raise Exception("Wrong dataset format " + name +" " + str(len(names)))
 
+@utils.paths.path_args
 def basic_dataset(action_dir):
     name=action_dir.get_name()
     cat=action_dir[-2]
     person=utils.text.get_person(name)
     return name,cat,person
 
-FORMAT_DIR={'cp_dataset':cp_dataset,'basic_dataset':basic_dataset}
+@utils.paths.path_args
+def cropped_dataset(action_dir):
+    name=action_dir.get_name()
+    names=name.split('_')
+    cat=names[-3]
+    person=names[-2]
+    cat=cat.replace('a','')
+    person=int(person.replace('s',''))
+    print(cat)
+    print(person)
+    #cat=action_dir[-2]
+    #person=utils.text.get_person(name)
+    return name,cat,person
+
+FORMAT_DIR={'cp_dataset':cp_dataset,'basic_dataset':basic_dataset,
+            'cropped_dataset':cropped_dataset}
 
 class ReadActions(object):
     def __init__(self, dataset_format,norm=False):
@@ -75,6 +107,8 @@ class ReadActions(object):
         
     def __call__(self,action_path):
         action_dirs=dirs.bottom_dirs(action_path)
+        #for action_i in action_dirs:
+        #    print(str(action_i))
         actions=[self.parse_action(action_dir_i) 
                    for action_dir_i in action_dirs]
         return actions
@@ -116,9 +150,14 @@ def apply_to_imgs(fun,actions):
 
 
 if __name__ == "__main__":
-    in_path="../dataset1/exp1/full_dataset"
-    out_path="../dataset1/exp1/cats"
-    read_actions=ReadActions(cp_dataset)
+    in_path="../dataset3/preproc/time_frames"
+    out_path="../dataset3/preproc/train_full"
+    
+    read_actions=utils.actions.ReadActions('cropped_dataset')
     actions=read_actions(in_path)
+    print( type(actions[0].img_seq[0]))
+    #transformed_actions=[ action_i(time_frames)
+    #                       for action_i in actions]
+    #save_actions(transformed_actions,out_path)
     s_actions=select_actions(actions)
     save_actions(s_actions,out_path)
