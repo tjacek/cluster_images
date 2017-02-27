@@ -12,6 +12,7 @@ import utils
 import utils.imgs as imgs
 import utils.text as text
 import utils.data as data
+import utils.paths
 import deep.reader
 
 class Convet(deep.NeuralNetwork):
@@ -36,6 +37,12 @@ class Convet(deep.NeuralNetwork):
         dist=self.pred(img)
         return [tools.dist_to_category(dist_i) 
                     for dist_i in dist]
+
+    def get_distribution(self,x):
+        img4D=self.preproc.apply(x)
+        x.name=str(x.name)
+        img_x=self.pred(img4D).flatten()
+        return img_x
 
 def compile_convnet(params,preproc):
     in_layer,out_layer,hid_layer,all_layers=build_model(params)
@@ -112,27 +119,32 @@ def default_params():
     return {"input_shape":(None,2,60,60),"num_filters":16,"n_hidden":100,
               "filter_size":(5,5),"pool_size":(4,4),"p":0.5, "l1_reg":0.001}
 
-def get_model(preproc,nn_path=None,compile=True,l1_reg=True):
+def get_model(preproc,nn_path=None,compile=True,l1_reg=True,model_p=0.1):
     if(nn_path==None):
         compile=True
     if(compile):
         params=default_params()
+        old_shape=params['input_shape']
+        params['input_shape']=(old_shape[0],preproc.dim,old_shape[2],old_shape[3])
         params['n_cats']= data.get_n_cats(y)
         return compile_convnet(params,preproc)
-    else:
+    else:  
         nn_reader=deep.reader.NNReader(preproc)
-        return nn_reader(nn_path,0.1)
+        return nn_reader(nn_path,model_p)
 
 if __name__ == "__main__":
-    img_path='../dataset1/exp1/train_trivial'
-    nn_path='../dataset1/exp1/nn_trivial'
+    img_path='../dataset1/AS3/train_select'
+    nn_path='../dataset1/AS3/nn_select'
     preproc=tools.ImgPreproc2D()
     imgset=imgs.make_imgs(img_path,norm=True)
+    
     print("read")
     print(len(imgset))
-    x,y=imgs.to_dataset(imgset,data.ExtractCat(),preproc)
+    extract_cat=data.ExtractCat()
+    x,y=imgs.to_dataset(imgset,extract_cat,preproc)
+    #print(extract_cat.dir.items())
     print(x.shape)
     print(y.shape)
-    model=get_model(preproc,nn_path,compile=False)
+    model=get_model(preproc,nn_path,compile=False,model_p=0.0)
     train.test_super_model(x,y,model,num_iter=100)
     model.get_model().save(nn_path)
