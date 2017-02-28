@@ -59,9 +59,30 @@ def time_frames(img_seq):
     return [ unify_helper(img_seq[i], img_seq[i+1])
               for i in range(n)]
 
+def proj_frames(img_depth):
+    max_z=np.amax(img)
+    img_depth*=(50.0)/max_
+    img_zx=np.zeros(img_depth.shape)
+    for (x_i, y_i), element in np.ndenumerate(img_depth):
+        if(element!=0):
+            img_y[x_i][int(element)]=50.0
+    img_xy=np.zeros(img_depth.shape)
+    img_xy[ img_zx!=0.0]=50.0
+
+def diff_frames(img_seq):
+    n=len(img_seq)-1
+    def diff_helper(img_i,img_j):
+        print(type(img_i))
+        print(type(img_j))
+        img_diff=img_i-img_j
+        img_diff[img_diff!=0.0]=100.0
+        return utils.imgs.Image(img_i.name,img_diff)
+    return [ diff_helper(img_seq[i], img_seq[i+1])
+             for i in range(n)]
+
+
 @utils.paths.path_args
 def cp_dataset(action_dir):
-    raise Exception("Error")
     name=action_dir.get_name()
     names=name.split('_')
     if(len(names)>3):
@@ -150,14 +171,14 @@ def apply_to_imgs(fun,actions):
 
 
 if __name__ == "__main__":
-    in_path="../dataset3/preproc/time_frames"
-    out_path="../dataset3/preproc/train_full"
+    in_path="../dataset1/exp2/cats"
+    out_path="../dataset1/exp2/diff"
     
-    read_actions=utils.actions.ReadActions('cropped_dataset')
+    read_actions=utils.actions.ReadActions('cp_dataset')
     actions=read_actions(in_path)
     print( type(actions[0].img_seq[0]))
-    #transformed_actions=[ action_i(time_frames)
-    #                       for action_i in actions]
-    #save_actions(transformed_actions,out_path)
-    s_actions=select_actions(actions)
-    save_actions(s_actions,out_path)
+    transformed_actions=[ action_i(diff_frames)
+                           for action_i in actions]
+    save_actions(transformed_actions,out_path)
+    #s_actions=select_actions(actions)
+    #save_actions(s_actions,out_path)
