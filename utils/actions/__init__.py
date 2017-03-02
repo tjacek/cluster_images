@@ -58,3 +58,16 @@ def apply_to_imgs(fun,actions):
     return [[fun(img_i)
               for img_i in act_i.img_seq]
                 for act_i in actions]
+
+if __name__ == "__main__":
+    in_path="../dataset1/exp2/cats"
+    out_path="../dataset1/exp2/diff"
+    
+    read_actions=utils.actions.ReadActions('cp_dataset')
+    actions=read_actions(in_path)
+    print( type(actions[0].img_seq[0]))
+    transformed_actions=[ action_i(diff_frames)
+                           for action_i in actions]
+    save_actions(transformed_actions,out_path)
+    #s_actions=select_actions(actions)
+    #save_actions(s_actions,out_path)
