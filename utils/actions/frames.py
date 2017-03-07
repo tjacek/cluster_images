@@ -10,6 +10,16 @@ import utils.paths
 import utils.selection 
 import re
 
+def diff_frames(img_seq,threshold=0.0,scale=1.0):
+    n=len(img_seq)-1
+    def diff_helper(i):
+        diff_img=np.abs(img_seq[i]-img_seq[i+1])
+        diff_img[ diff_img>threshold]=1.0
+        diff_img[ diff_img<=threshold]=0.0
+        return scale*diff_img
+    return [  diff_helper(i)
+              for i in range(n)]
+
 def time_frames(img_seq):
     print(type(img_seq[0]))
     n=len(img_seq)-1
@@ -36,15 +46,15 @@ def proj_frames(img_depth):
     img_xy=np.zeros(img_depth.shape)
     img_xy[ img_zx!=0.0]=50.0
 
-def diff_frames(img_seq):
-    n=len(img_seq)-1
-    def diff_helper(img_i,img_j):
-        img_i=img_i.get_orginal()
-        img_j=img_j.get_orginal()
-        print(type(img_i))
-        print(type(img_j))
-        img_diff=img_i-img_j
-        img_diff[img_diff!=0.0]=100.0
-        return utils.imgs.Image(img_i.name,img_diff)
-    return [ diff_helper(img_seq[i], img_seq[i+1])
-             for i in range(n)]
+#def diff_frames(img_seq):
+#    n=len(img_seq)-1
+#    def diff_helper(img_i,img_j):
+#        img_i=img_i.get_orginal()
+#        img_j=img_j.get_orginal()
+#        print(type(img_i))
+#        print(type(img_j))
+#        img_diff=img_i-img_j
+#        img_diff[img_diff!=0.0]=100.0
+#        return utils.imgs.Image(img_i.name,img_diff)
+#    return [ diff_helper(img_seq[i], img_seq[i+1])
+#             for i in range(n)]

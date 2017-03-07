@@ -1,5 +1,5 @@
 import re
-import files 
+import paths.files 
 
 def get_person(name):
     raw=name.split('_')[0]

@@ -1,5 +1,12 @@
-import files
+import paths.files
 import shutil
+
+class SelectModulo(object):
+    def __init__(self, m=0):
+        self.m=m
+
+    def __call__(self,n):
+        return  (n % 2)==self.m    
 
 def select_data(in_path,out_path,prefix="bin"):
     files.make_dir(out_path)

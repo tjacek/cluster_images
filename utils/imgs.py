@@ -1,8 +1,8 @@
 import numpy as np
 import cv2
 import paths
-import dirs
-from dirs import dir_arg, ApplyToFiles
+import paths.dirs
+from paths.dirs import dir_arg, ApplyToFiles
 
 class Image(np.ndarray):
     def __new__(cls,name,input_array,org_dim=None):
@@ -27,7 +27,7 @@ class Image(np.ndarray):
         return np.reshape(self,self.org_dim)
 
     def save(self,out_path,i=None):
-        if(i):
+        if(i!=None):
             filename= 'img' +str(i)+'.jpg'#self.name
         else:
             filename=self.name.get_name()
@@ -67,7 +67,7 @@ def rescale(in_path,out_path,new_dim=(60,60)):
     cv2.imwrite(str(out_path),new_img)
 
 def make_imgs(in_path,norm=True,transform=None):
-    img_dirs=dirs.all_files(in_path)
+    img_dirs=paths.dirs.all_files(in_path)
     imgset=[read_img(path_i)
           for path_i in img_dirs]
     if(norm):

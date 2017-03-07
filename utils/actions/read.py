@@ -1,13 +1,14 @@
 import sys,os
 sys.path.append(os.path.abspath('../cluster_images'))
 import numpy as np
-import utils.dirs as dirs
-import utils.files as files
+import utils.paths.dirs as dirs
+import utils.paths.files as files
 import utils.imgs as imgs
 import utils.data
 import utils.text
 import utils.paths 
 import utils.selection 
+import utils.actions
 import re
 
 @utils.paths.path_args
@@ -66,7 +67,7 @@ class ReadActions(object):
     def parse_action(self,action_dir):
         name,cat,person=self.dataset_format(action_dir)
         img_seq=imgs.make_imgs(action_dir,norm=self.norm)
-        return Action(name,img_seq,cat,person)
+        return utils.actions.Action(name,img_seq,cat,person)
 
 @utils.paths.path_args
 def save_actions(actions,outpath):
