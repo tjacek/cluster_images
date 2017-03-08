@@ -41,8 +41,9 @@ def diff_frames(img_seq,threshold=0.15):
 def bound_frames(img_seq):
     nonzero= utils.actions.bound.nonzero_frames(img_seq)
     points=  utils.actions.bound.simple_bbox(nonzero)
-    print(points)
-    return [nonzero]
+    extract_box=utils.actions.bound.ExtractBox(points)
+    return [ extract_box(img_i)
+              for img_i in img_seq]
 
 def time_frames(img_seq):
     print(type(img_seq[0]))

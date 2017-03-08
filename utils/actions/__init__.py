@@ -10,7 +10,7 @@ import utils.paths
 import utils.selection 
 import utils.actions.read
 import re
-from utils.actions.frames import diff_frames
+from utils.actions.frames import diff_frames,motion_frames
 
 class Action(object):
     def __init__(self,name,img_seq,cat=None,person=None):
@@ -62,13 +62,13 @@ def apply_to_imgs(fun,actions):
                 for act_i in actions]
 
 if __name__ == "__main__":
-    in_path="../dataset1/AS1/cats"
-    out_path="../dataset1/AS1/diff"
+    in_path="../dataset1/preproc/depth_"
+    out_path="../dataset1/preproc/bound"
     
-    read_actions=utils.actions.read.ReadActions('cp_dataset')
+    read_actions=utils.actions.read.ReadActions('cp_dataset',False)
     actions=read_actions(in_path)
     print( type(actions[0].img_seq[0]))
-    transformed_actions=[ action_i(diff_frames)
+    transformed_actions=[ action_i(utils.actions.frames.bound_frames)
                            for action_i in actions]
     utils.actions.read.save_actions(transformed_actions,out_path)
     #s_actions=select_actions(actions)
