@@ -8,17 +8,41 @@ import utils.data
 import utils.text
 import utils.paths 
 import utils.selection 
-import re
+import utils.actions.bound 
 
-def diff_frames(img_seq,threshold=0.0,scale=1.0):
+import re
+import cv2
+
+def motion_frames(img_seq,tau=5.0,scale=20):
+    diff_seq=diff_frames(img_seq)
+    diff_seq=[tau*diff_i
+                for diff_i in diff_seq]
+    n=len(diff_seq)-1        
+    def motion_helper(img_i,img_j):
+        motion_img=np.zeros(img_j.shape)
+        img_i[img_j!=0]=0.0
+        motion_img[img_i!=0]=img_i[img_i!=0]-1
+        motion_img[img_j!=0]=img_j[img_j!=0]
+        return utils.imgs.Image(img_i.name,motion_img,img_i.org_dim)
+    return [ scale*motion_helper( diff_seq[i],diff_seq[i+1])
+              for i in range(n) ]
+
+def diff_frames(img_seq,threshold=0.15):
     n=len(img_seq)-1
     def diff_helper(i):
         diff_img=np.abs(img_seq[i]-img_seq[i+1])
+        #print(diff_img.is_normal())
         diff_img[ diff_img>threshold]=1.0
         diff_img[ diff_img<=threshold]=0.0
-        return scale*diff_img
+        return diff_img
     return [  diff_helper(i)
               for i in range(n)]
+
+def bound_frames(img_seq):
+    nonzero= utils.actions.bound.nonzero_frames(img_seq)
+    points=  utils.actions.bound.simple_bbox(nonzero)
+    print(points)
+    return [nonzero]
 
 def time_frames(img_seq):
     print(type(img_seq[0]))
@@ -45,16 +69,3 @@ def proj_frames(img_depth):
             img_y[x_i][int(element)]=50.0
     img_xy=np.zeros(img_depth.shape)
     img_xy[ img_zx!=0.0]=50.0
-
-#def diff_frames(img_seq):
-#    n=len(img_seq)-1
-#    def diff_helper(img_i,img_j):
-#        img_i=img_i.get_orginal()
-#        img_j=img_j.get_orginal()
-#        print(type(img_i))
-#        print(type(img_j))
-#        img_diff=img_i-img_j
-#        img_diff[img_diff!=0.0]=100.0
-#        return utils.imgs.Image(img_i.name,img_diff)
-#    return [ diff_helper(img_seq[i], img_seq[i+1])
-#             for i in range(n)]
