@@ -45,6 +45,10 @@ class Action(object):
         [img_i.save(full_outpath,i) 
          for i,img_i in enumerate(self.img_seq)]
 
+def new_action(old_action,new_seq):
+    return Action(old_action.name,new_seq,
+                      old_action.cat,old_action.person)
+
 def select_actions(actions,action_type='odd'):
     if(action_type=='odd'):
         action_id=1
@@ -62,13 +66,13 @@ def apply_to_imgs(fun,actions):
                 for act_i in actions]
 
 if __name__ == "__main__":
-    in_path="../dataset1/preproc/depth_"
-    out_path="../dataset1/preproc/bound"
+    in_path="../dataset1/preproc/proj_xz_"
+    out_path="../dataset1/preproc/diff_xz"
     
     read_actions=utils.actions.read.ReadActions('cp_dataset',False)
     actions=read_actions(in_path)
     print( type(actions[0].img_seq[0]))
-    transformed_actions=[ action_i(utils.actions.frames.bound_frames)
+    transformed_actions=[ action_i(utils.actions.frames.motion_frames)
                            for action_i in actions]
     utils.actions.read.save_actions(transformed_actions,out_path)
     #s_actions=select_actions(actions)
