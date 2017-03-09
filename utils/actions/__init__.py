@@ -49,6 +49,12 @@ def new_action(old_action,new_seq):
     return Action(old_action.name,new_seq,
                       old_action.cat,old_action.person)
 
+def apply_select(in_path,out_path,dataset_format='cp_dataset'):
+    read_actions=utils.actions.read.ReadActions(dataset_format,False)
+    actions=read_actions(in_path)
+    s_actions=select_actions(actions)
+    utils.actions.read.save_actions(s_actions,out_path)
+
 def select_actions(actions,action_type='odd'):
     if(action_type=='odd'):
         action_id=1
@@ -60,20 +66,16 @@ def select_actions(actions,action_type='odd'):
              if select(action_i.person)]
     return acts
 
-def apply_to_imgs(fun,actions):
-    return [[fun(img_i)
-              for img_i in act_i.img_seq]
-                for act_i in actions]
 
 if __name__ == "__main__":
-    in_path="../dataset1/preproc/proj_xz_"
-    out_path="../dataset1/preproc/diff_xz"
-    
-    read_actions=utils.actions.read.ReadActions('cp_dataset',False)
-    actions=read_actions(in_path)
-    print( type(actions[0].img_seq[0]))
-    transformed_actions=[ action_i(utils.actions.frames.motion_frames)
-                           for action_i in actions]
-    utils.actions.read.save_actions(transformed_actions,out_path)
+    in_path="../dataset1/preproc/unified"
+    out_path="../dataset1/preproc/train"
+    apply_select(in_path,out_path)
+    #read_actions=utils.actions.read.ReadActions('cp_dataset',False)
+    #actions=read_actions(in_path)
+    #print( type(actions[0].img_seq[0]))
+    #transformed_actions=[ action_i(utils.actions.frames.motion_frames)
+    #                       for action_i in actions]
+    #utils.actions.read.save_actions(transformed_actions,out_path)
     #s_actions=select_actions(actions)
     #save_actions(s_actions,out_path)
