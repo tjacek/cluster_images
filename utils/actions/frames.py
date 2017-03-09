@@ -61,12 +61,26 @@ def time_frames(img_seq):
     return [ unify_helper(img_seq[i], img_seq[i+1])
               for i in range(n)]
 
-def proj_frames(img_depth):
-    max_z=np.amax(img)
-    img_depth*=(50.0)/max_
-    img_zx=np.zeros(img_depth.shape)
-    for (x_i, y_i), element in np.ndenumerate(img_depth):
-        if(element!=0):
-            img_y[x_i][int(element)]=50.0
-    img_xy=np.zeros(img_depth.shape)
-    img_xy[ img_zx!=0.0]=50.0
+def proj_xz_frames(img_seq):
+    z_max=max_frames(img_seq)+2
+    def proj_helper(img_i):
+        print(img_i.name)
+        img_i=img_i.get_orginal()
+        proj_xz=np.zeros( (img_i.shape[0],z_max))
+        for (x, y), z in np.ndenumerate(img_i):
+            z=np.floor(z)
+            proj_xz[x][z]=100.0
+        return utils.imgs.Image(img_i.name,proj_xz)
+    return [proj_helper(img_i) 
+               for img_i in img_seq]
+
+def proj_xy_frames(img_seq):
+    def proj_helper(img_i):
+        img_i[img_i!=0]=100.0
+        return img_i
+    return [proj_helper(img_i) 
+               for img_i in img_seq]
+
+def max_frames(img_seq):
+    return max([np.amax(img_i)
+                  for img_i in img_seq])
