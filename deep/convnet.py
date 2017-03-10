@@ -133,8 +133,8 @@ def get_model(preproc,nn_path=None,compile=True,l1_reg=True,model_p=0.1):
         return nn_reader(nn_path,model_p)
 
 if __name__ == "__main__":
-    img_path='../dataset1/AS3/train_select'
-    nn_path='../dataset1/AS3/nn_select'
+    img_path='../dataset4/AS2/train'
+    nn_path='../dataset4/AS2/nn_as2'
     preproc=tools.ImgPreproc2D()
     imgset=imgs.make_imgs(img_path,norm=True)
     
@@ -145,6 +145,6 @@ if __name__ == "__main__":
     #print(extract_cat.dir.items())
     print(x.shape)
     print(y.shape)
-    model=get_model(preproc,nn_path,compile=False,model_p=0.0)
+    model=get_model(preproc,nn_path,compile=False,model_p=0.1)
     train.test_super_model(x,y,model,num_iter=100)
     model.get_model().save(nn_path)

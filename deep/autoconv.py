@@ -4,7 +4,7 @@ import lasagne,pickle
 import numpy as np
 import theano
 import theano.tensor as T
-import utils.files as files
+import utils.paths.files as files
 import utils.imgs as imgs
 import deep,convnet
 from lasagne.regularization import regularize_layer_params, l2, l1
@@ -27,7 +27,6 @@ class ConvAutoencoder(deep.NeuralNetwork):
         img4D=self.preproc.apply(in_img)
         raw_rec=self.__reconstructed__(img4D)
         img2D=tools.postproc3D(raw_rec)
-        print(img2D.shape)
         return imgs.Image(in_img.name,img2D,in_img.org_dim)
 
     def __call__(self,in_img):
@@ -35,7 +34,7 @@ class ConvAutoencoder(deep.NeuralNetwork):
         return self.__prediction__(img4D).flatten()
 
 def default_parametrs():
-    return {"num_input":(None,3,60,60),"num_hidden":300,"batch_size":100,
+    return {"num_input":(None,2,60,60),"num_hidden":200,"batch_size":100,
             "num_filters":16,"filter_size":(5,5),"pool_size":(4,4)}  
 
 def compile_conv_ae(hyper_params,preproc):
@@ -54,8 +53,6 @@ def compile_conv_ae(hyper_params,preproc):
 def build_conv_ae(hyper_params):
     num_hidden=hyper_params["num_hidden"]
     input_shape = hyper_params["num_input"]
-    #print(input_shape)
-    #print("@@@@@@@@@@@@@@@@@@@@@")
     n_filters = hyper_params["num_filters"]
     filter_size2D = hyper_params["filter_size"]
     pool_size2D =  hyper_params["pool_size"]
@@ -85,9 +82,10 @@ def build_conv_ae(hyper_params):
     pool_layer2=lasagne.layers.ReshapeLayer(flat_layer2,(pool_size))
 
     conv_layer2=lasagne.layers.Upscale2DLayer(pool_layer2, pool_size2D)
-    
+    #input_shape
+    n_chans=input_shape[1]
     out_layer= lasagne.layers.TransposedConv2DLayer(
-            conv_layer2, num_filters=3, filter_size=filter_size2D,
+            conv_layer2, num_filters=n_chans, filter_size=filter_size2D,
             nonlinearity=None,#lasagne.nonlinearities.rectify,
             W=lasagne.init.GlorotUniform())
     
@@ -96,14 +94,14 @@ def build_conv_ae(hyper_params):
     return hidden,out_layer,in_var#l_hid,l_out,in_var
 
 if __name__ == "__main__": 
-    path_dir="../dane2/proj"
-    ae_path="../dane2/conv_ae"
-    preproc=tools.ImgPreproc()
+    path_dir="../dane4/scaled"
+    ae_path="../dane4/conv_ae"
+    preproc=tools.ImgPreproc2D()
     imgset=imgs.make_imgs(path_dir,norm=True,transform=preproc)
     print(imgset.shape)
     nn_reader=deep.reader.NNReader()
-    model= nn_reader.read(ae_path,nn_reader)
+    model= nn_reader(ae_path,nn_reader)
     
     #model=compile_conv_ae(default_parametrs(),preproc)
-    model=deep.train.test_unsuper_model(imgset,model,num_iter=100)
+    model=deep.train.test_unsuper_model(imgset,model,num_iter=300)
     model.get_model().save(ae_path)

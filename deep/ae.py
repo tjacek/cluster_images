@@ -4,7 +4,7 @@ import lasagne,pickle
 import numpy as np
 import theano
 import theano.tensor as T
-import utils.files as files
+import utils.paths.files as files
 import utils.imgs as imgs
 import deep,convnet
 from lasagne.regularization import regularize_layer_params, l2, l1
