@@ -8,7 +8,7 @@ import deep
 import ae
 import autoconv
 import utils.imgs as imgs
-import utils.dirs as dirs
+import utils.paths.dirs as dirs
 import deep.reader
 
 class ImgPreproc(object):
@@ -31,7 +31,9 @@ class ImgPreproc(object):
                 for img_i in imgset]
 
 class ImgPreproc2D(ImgPreproc):
-  
+    def __init__(self):
+        self.dim=2
+
     def apply(self,in_img):
         org_img=in_img.get_orginal()
         img3D=imgs.split_img(org_img,scale=2)
@@ -51,7 +53,9 @@ class ImgPreproc2D(ImgPreproc):
                 for img_i in imgset]
 
 class ImgPreprocProj(ImgPreproc):
-  
+    def __init__(self):
+        self.dim=3
+
     def apply(self,in_img):
         org_img=in_img.get_orginal()
         img3D=imgs.split_img(org_img,scale=3)
