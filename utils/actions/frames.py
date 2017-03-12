@@ -9,9 +9,34 @@ import utils.text
 import utils.paths 
 import utils.selection 
 import utils.actions.bound 
-
+from utils.actions.unify import rescale 
 import re
 import cv2
+
+class TimeFrames(object):
+    def __init__(self, new_dim=None):
+        self.new_dim=new_dim
+
+    def __call__(self,img_seq):
+        print(type(img_seq[0]))
+        n=len(img_seq)-1
+        def unify_helper(img_i,img_j):
+            img_i=img_i.get_orginal()
+            img_j=img_j.get_orginal()
+            if(self.new_dim!=None):
+                img_i=rescale(img_i,self.new_dim)
+                img_j=rescale(img_j,self.new_dim)
+            united_img=np.array([img_i, img_j])
+            new_x=united_img.shape[0]*united_img.shape[1]
+            new_y=united_img.shape[2]
+            img2D=united_img.reshape((new_x,new_y))
+            return utils.imgs.Image(img_i.name,img2D)
+        print(len(img_seq))
+        new_seq=[ unify_helper(img_seq[i], img_seq[i+1])
+                 for i in range(n)]
+        print(len(new_seq))
+        #print([str(img_i.name) for img_i in new_seq])
+        return new_seq
 
 def motion_frames(img_seq,tau=5.0,scale=20):
     diff_seq=diff_frames(img_seq)
@@ -44,22 +69,6 @@ def bound_frames(img_seq):
     extract_box=utils.actions.bound.ExtractBox(points)
     return [ extract_box(img_i)
               for img_i in img_seq]
-
-def time_frames(img_seq):
-    print(type(img_seq[0]))
-    n=len(img_seq)-1
-    def unify_helper(img_i,img_j):
-        img_i=img_i.get_orginal()
-        img_j=img_j.get_orginal()
-
-        united_img=np.array([img_i, img_j])
-        new_x=united_img.shape[0]*united_img.shape[1]
-        new_y=united_img.shape[2]
-        img2D=united_img.reshape((new_x,new_y))
-        return utils.imgs.Image(img_i.name,img2D)
-
-    return [ unify_helper(img_seq[i], img_seq[i+1])
-              for i in range(n)]
 
 def proj_xz_frames(img_seq):
     z_max=max_frames(img_seq)+2

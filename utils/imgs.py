@@ -9,8 +9,8 @@ class Image(np.ndarray):
         if(org_dim==None):
             org_dim=[input_array.shape[0],input_array.shape[1]]
         input_array=input_array.astype(float) 
-        input_array=input_array.flatten()
-        obj = np.asarray(input_array).view(cls) 
+        #input_array=input_array.flatten()
+        obj = np.asarray(input_array).view(cls)
         obj.name=paths.Path(name)
         obj.org_dim=org_dim
         return obj
@@ -33,7 +33,16 @@ class Image(np.ndarray):
             filename=self.name.get_name()
         full_name=out_path.append(filename,copy=True)
         img2D=self.get_orginal()
+        #print(str(full_name))
         cv2.imwrite(str(full_name),img2D)
+
+    def is_normal(self):
+        return not (np.amax(self)>1.0)
+
+def new_img(old_img,new_img,org_dim=None):
+    if(org_dim!=None):
+        return  Image(old_img.name,new_img,org_dim)
+    return Image(old_img.name,new_img)
 
 def img_arg(func):
     def inner_func(img_i):

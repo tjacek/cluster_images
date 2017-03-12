@@ -49,12 +49,13 @@ FORMAT_DIR={'cp_dataset':cp_dataset,'basic_dataset':basic_dataset,
             'cropped_dataset':cropped_dataset}
 
 class ReadActions(object):
-    def __init__(self, dataset_format,norm=False):
+    def __init__(self, dataset_format,norm=False,as_dict=False):
         if(type(dataset_format)==str):
             self.dataset_format=FORMAT_DIR[dataset_format]
         else:
             self.dataset_format=dataset_format
         self.norm=norm
+        self.as_dict=as_dict
         
     def __call__(self,action_path):
         action_dirs=dirs.bottom_dirs(action_path)
@@ -62,6 +63,9 @@ class ReadActions(object):
         #    print(str(action_i))
         actions=[self.parse_action(action_dir_i) 
                    for action_dir_i in action_dirs]
+        if(self.as_dict):
+            actions={ action_i.name:action_i
+                      for action_i in actions}
         return actions
 
     def parse_action(self,action_dir):
