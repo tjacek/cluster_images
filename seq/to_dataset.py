@@ -4,15 +4,42 @@ import numpy as np
 from sets import Set
 import seq
 import utils
-import utils.dirs as dirs
-import utils.files as files
+import utils.paths.dirs as dirs
+import utils.paths.files as files
 import utils.actions
+import utils.actions.read
 import utils.data as data
 import utils.text
 
-def seq_dataset(in_path):
+class SeqDataset(object):
+    def __init__(self, seq_dict):     
+        self.seq_dict=seq_dict
+    
+    def __getitem__(self,key):
+        return self.seq_dict[key]
+
+    def __setitem__(self,key,value):
+        self.seq_dict[key]=value
+
+    def __len__(self):
+       return len(self.seq_dict['y'])
+    
+    def items(self):
+        return self.seq_dict.items()
+    
+    def params(self):
+        return self.seq_dict['params'].keys()
+
+    def is_masked(self):
+        return ('mask' in self.seq_dict['params'])
+
+
+def seq_dataset(in_path,dataset_format='cp_dataset'):
+    action_reader=utils.actions.read.ReadActions(dataset_format)
+    #actions=action_reader(in_path)
+
     all_paths=dirs.all_files(in_path)
-    seqs=[ parse_seq(path_i)
+    seqs=[ parse_seq(path_i,action_reader,False)
            for path_i in all_paths]
     names=[ seq_i.cat+'_'+seq_i.name
             for seq_i in seqs]   
@@ -25,15 +52,16 @@ def seq_dataset(in_path):
               for seq_i in seqs]       
     dataset=data.make_dataset(x,y,persons)
     dataset['names']=names
-    return dataset
+    return SeqDataset(dataset)
 
-def parse_seq(path_i,flat=True):
+def parse_seq(path_i,action_reader,flat=True):
+    #utils.actions.ReadActions(path_i)
     if(flat):
         name=path_i.get_name()
         cat=path_i[-2]
         person=utils.text.get_person(name)
     else:
-        name,cat,person=utils.actions.cp_dataset(path_i)
+        name,cat,person= action_reader.dataset_format(path_i)#utils.actions.cp_dataset(path_i)
     lines=files.read_file(str(path_i))
     assert(len(lines)>0)
     parsed_data=parse_text(lines)
@@ -61,7 +89,7 @@ def masked_dataset(dataset):
     new_dataset={'x':x_masked,'y':dataset['y'],'mask':mask,
                  'persons':dataset['persons'],'params':params,
                  'names':names}
-    return new_dataset
+    return  SeqDataset(new_dataset)
 
 def make_mask(x,n_batch,max_seq):
     mask = np.zeros((n_batch, max_seq),dtype=float)
