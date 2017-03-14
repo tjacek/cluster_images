@@ -59,6 +59,8 @@ class ReadActions(object):
         
     def __call__(self,action_path):
         action_dirs=dirs.bottom_dirs(action_path)
+        if(len(action_dirs)==0):
+            raise Exception("No actions in dir: " + str(action_path))
         #for action_i in action_dirs:
         #    print(str(action_i))
         actions=[self.parse_action(action_dir_i) 
@@ -73,8 +75,11 @@ class ReadActions(object):
         img_seq=imgs.make_imgs(action_dir,norm=self.norm)
         return utils.actions.Action(name,img_seq,cat,person)
 
+#class SaveActions(object):
+#    def __init__(self,unorm):
+
 @utils.paths.path_args
-def save_actions(actions,outpath):
+def save_actions(actions,outpath,unorm=False):
     dirs.make_dir(outpath)
     print(dir(utils.data))
     extr_cats=utils.data.ExtractCat(parse_cat=lambda a:a.cat)
@@ -85,4 +90,4 @@ def save_actions(actions,outpath):
         dirs.make_dir(cat_dir_i)
     for action_i in actions:
         cat_path_i=outpath.append(action_i.cat,copy=True)
-        action_i.save(cat_path_i)
+        action_i.save(cat_path_i,unorm)
