@@ -29,6 +29,7 @@ def basic_dataset(action_dir):
     name=action_dir.get_name()
     cat=action_dir[-2]
     person=utils.text.get_person(name)
+    name=cat+'/'+name
     return name,cat,person
 
 @utils.paths.path_args
@@ -50,6 +51,8 @@ FORMAT_DIR={'cp_dataset':cp_dataset,'basic_dataset':basic_dataset,
 
 class ReadActions(object):
     def __init__(self, dataset_format,norm=False,as_dict=False):
+        if(type(dataset_format)==utils.paths.Path):
+            dataset_format=str(dataset_format)
         if(type(dataset_format)==str):
             self.dataset_format=FORMAT_DIR[dataset_format]
         else:

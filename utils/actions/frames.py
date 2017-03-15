@@ -9,13 +9,14 @@ import utils.text
 import utils.paths 
 import utils.selection 
 import utils.actions.bound 
-from utils.actions.unify import rescale 
+from utils.actions.unify import Rescale 
 import re
 import cv2
 
 class TimeFrames(object):
     def __init__(self, new_dim=None):
         self.new_dim=new_dim
+        self.rescale=Rescale(new_dim)
 
     def __call__(self,img_seq):
         print(type(img_seq[0]))
@@ -24,8 +25,8 @@ class TimeFrames(object):
             img_i=img_i.get_orginal()
             img_j=img_j.get_orginal()
             if(self.new_dim!=None):
-                img_i=rescale(img_i,self.new_dim)
-                img_j=rescale(img_j,self.new_dim)
+                img_i=self.rescale(img_i)
+                img_j=self.rescale(img_j)
             united_img=np.array([img_i, img_j])
             new_x=united_img.shape[0]*united_img.shape[1]
             new_y=united_img.shape[2]
@@ -35,22 +36,26 @@ class TimeFrames(object):
         new_seq=[ unify_helper(img_seq[i], img_seq[i+1])
                  for i in range(n)]
         print(len(new_seq))
-        #print([str(img_i.name) for img_i in new_seq])
         return new_seq
 
-def motion_frames(img_seq,tau=5.0,scale=20):
-    diff_seq=diff_frames(img_seq)
-    diff_seq=[tau*diff_i
+class MotionFrames(object):
+    def __init__(self,tau=5.0,scale=20):
+        self.tau=tau
+        self.scale=scale
+
+    def __call__(self,img_seq):
+        diff_seq=diff_frames(img_seq)
+        diff_seq=[self.tau*diff_i
                 for diff_i in diff_seq]
-    n=len(diff_seq)-1        
-    def motion_helper(img_i,img_j):
-        motion_img=np.zeros(img_j.shape)
-        img_i[img_j!=0]=0.0
-        motion_img[img_i!=0]=img_i[img_i!=0]-1
-        motion_img[img_j!=0]=img_j[img_j!=0]
-        return utils.imgs.Image(img_i.name,motion_img,img_i.org_dim)
-    return [ scale*motion_helper( diff_seq[i],diff_seq[i+1])
-              for i in range(n) ]
+        n=len(diff_seq)-1        
+        def motion_helper(img_i,img_j):
+            motion_img=np.zeros(img_j.shape)
+            img_i[img_j!=0]=0.0
+            motion_img[img_i!=0]=img_i[img_i!=0]-1
+            motion_img[img_j!=0]=img_j[img_j!=0]
+            return utils.imgs.Image(img_i.name,motion_img,img_i.org_dim)
+        return [ self.scale*motion_helper( diff_seq[i],diff_seq[i+1])
+                   for i in range(n) ]
 
 def diff_frames(img_seq,threshold=0.15):
     n=len(img_seq)-1
@@ -69,6 +74,11 @@ def bound_frames(img_seq):
     extract_box=utils.actions.bound.ExtractBox(points)
     return [ extract_box(img_i)
               for img_i in img_seq]
+
+def bound_local(img_seq):
+    n=len(img_seq)-1
+    return [utils.actions.bound.nonzero_double(img_seq[i],img_seq[i+1],True) 
+             for i in range(n)]
 
 def proj_xz_frames(img_seq):
     z_max=max_frames(img_seq)+2
