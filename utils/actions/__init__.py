@@ -53,10 +53,10 @@ def new_action(old_action,new_seq):
     return Action(old_action.name,new_seq,
                       old_action.cat,old_action.person)
 
-def apply_select(in_path,out_path,dataset_format='cp_dataset'):
+def apply_select(in_path,out_path,action_type='even',dataset_format='cp_dataset'):
     read_actions=utils.actions.read.ReadActions(dataset_format,False)
     actions=read_actions(in_path)
-    s_actions=select_actions(actions)
+    s_actions=select_actions(actions,action_type)
     utils.actions.read.save_actions(s_actions,out_path)
 
 def transform_actions(in_path,out_path,transformation,seq_transform=True,dataset_format='cp_dataset'):
@@ -92,8 +92,8 @@ if __name__ == "__main__":
     #bound_frames=utils.actions.frames.bound_local #(new_dim=(60,60))
     #bound_frames=utils.actions.unify.Rescale(new_dim=(60,60))#(new_dim=(60,60))
     #transform_actions(in_path,out_path,bound_frames,seq_transform=False,dataset_format='basic_dataset')
-    in_path='../dataset2/exp4/full'
-    out_path='../dataset2/exp4/train'
-    apply_select(in_path,out_path,dataset_format='basic_dataset')
+    in_path='../dataset2a/exp2/full'
+    out_path='../dataset2a/exp2/train'
+    apply_select(in_path,out_path,action_type='even',dataset_format='basic_dataset')
 
     
