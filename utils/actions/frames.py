@@ -71,6 +71,30 @@ def diff_frames(img_seq,threshold=0.1):
     return [  diff_helper(i)
               for i in range(n)]
 
+class BoundFrames(object):
+    def __init__(self,all_frames=True):
+        self.all_frames=all_frames
+        self.extract_box=None
+
+    def __call__(self,img_seq):
+        if(self.all_frames):
+            nonzero= utils.actions.bound.nonzero_frames(img_seq)
+            self.extract_box=self.make_extract_box(nonzero)
+        return [ self.get_box(img_i) 
+                  for img_i in img_seq]
+        
+    def get_box(self,img_i):
+        if(self.extract_box==None):
+            extract_box_i=self.make_extract_box(img_i)
+        else:
+            extract_box_i=self.extract_box
+        return extract_box_i(img_i)
+
+    def make_extract_box(self,nonzero):
+        points=  utils.actions.bound.simple_bbox(nonzero)
+        extract_box=utils.actions.bound.ExtractBox(points)
+        return extract_box
+
 def bound_frames(img_seq):
     #print(type(img_seq))
     #print([img_i.get_orginal() for img_i in img_seq])
@@ -80,10 +104,24 @@ def bound_frames(img_seq):
     return [ extract_box(img_i)
               for img_i in img_seq]
 
-def bound_local(img_seq):
-    n=len(img_seq)-1
-    return [utils.actions.bound.nonzero_double(img_seq[i],img_seq[i+1],True) 
-             for i in range(n)]
+class BoundLocal(object):
+    def __init__(self,new_dim=None):
+        if(new_dim!=None):
+            self.rescale=Rescale(new_dim)
+        else:
+            self.rescale=None
+
+    def __call__(self,img_seq):
+        n=len(img_seq)-1
+        
+        new_seq=[bound_frames([img]) 
+                   for i in range(n)]
+        #new_seq=[utils.actions.bound.nonzero_double(img_seq[i],img_seq[i+1],True) 
+        #           for i in range(n)]
+        if(self.rescale!=None):
+            new_seq=[self.rescale(img_i) 
+                       for img_i in new_seq]
+        return new_seq
 
 
 class ProjFrames(object):
