@@ -13,6 +13,8 @@ from utils.actions.unify import Rescale
 import re
 import cv2
 
+DEFAULT_DEPTH_VALUE=100.0
+
 class TimeFrames(object):
     def __init__(self, new_dim=None):
         self.new_dim=new_dim
@@ -57,14 +59,14 @@ class MotionFrames(object):
         return [ self.scale*motion_helper( diff_seq[i],diff_seq[i+1])
                    for i in range(n) ]
 
-def diff_frames(img_seq,threshold=0.0):
+def diff_frames(img_seq,threshold=0.1):
     n=len(img_seq)-1
     def diff_helper(i):
 
         diff_img=np.abs(img_seq[i]-img_seq[i+1])
         #print(diff_img.is_normal())
-        diff_img[ diff_img>=threshold]=1.0
-        #diff_img[ diff_img<threshold]=0.0
+        diff_img[ diff_img>=threshold]=DEFAULT_DEPTH_VALUE
+        diff_img[ diff_img<threshold]=0.0
         return diff_img
     return [  diff_helper(i)
               for i in range(n)]
@@ -96,7 +98,7 @@ class ProjFrames(object):
             proj_xz=self.get_clean_img( img_i,z_max)
             for (x, y), z in np.ndenumerate(img_i):
                 i,j=self.get_index(x,y,z)
-                proj_xz[i][j]=100.0
+                proj_xz[i][j]=DEFAULT_DEPTH_VALUE
             return utils.imgs.Image(img_i.name,proj_xz)
         return [proj_helper(img_i) 
                    for img_i in img_seq]
