@@ -4,10 +4,10 @@ class Path(object):
     def __init__(self, text):
         if(type(text)==Path):
             text=str(text)
-        else:
-            text=re.sub(r'(//)+','/',text)
+        assert(type(text)==str)
         self.items=[]
-        self.add(str(text))
+        for text_i in text.split('/'):
+            self << text_i
 
     def __getitem__(self,i):
         return self.items[i]
@@ -15,41 +15,53 @@ class Path(object):
     def __len__(self):
         return len(self.items)
 
-    def __add__(self, other):
-        copy=self.copy()
-        if(type(other)==list):
-            copy.append(other)
-        if(type(other)==Path):
-            copy.append(other.items)
-        if(type(other)==str):
-            copy.append(other)
-        return copy
+    def __lshift__(self,item_i):
+        item_i=clean_item(item_i)
+        self.items.append(item_i)
+
+    def __add__(self,other):
+        return self.append(other,copy=True)
 
     def __str__(self):
-        s="/".join(self.items)	
-        s=re.sub(r'(//)+','/',s)
-        return s
-
-    def exchange(self,old,new):
-        str_path=str(self)
-        str_path=str_path.replace(old,new)
-        return Path(str_path)
-
-    def replace(self,other_path):
-        new_path=self.copy()
-        name=other_path.get_name()
-        new_path.append(name)
-        return new_path
+        return "/".join(self.items)  
 
     def get_name(self):
         return self.items[-1]
-
+    
     def set_name(self,name,copy=False):
         if(copy):
             new_path=self.copy()
         else:
             new_path=self    
-        new_path.items[-1]=name
+        new_path.items[-1]=clean_item(name)
+        return new_path
+    
+    def copy(self): 
+        str_path=str(self)
+        return Path(str_path)
+
+    def append(self,new_items,copy=False):
+        if(type(new_items)==Path):
+            new_items=new_items.items#str(new_items)
+        if(type(new_items)==str):
+            new_items=new_items.split("/")
+        assert(type(new_items)==list)
+        extended_path=self.get_path(copy)
+        for str_i in new_items:
+            if(str_i!=''):
+                extended_path << str_i
+        return extended_path
+
+    def get_path(self,copy=False):
+        if(copy):
+            return self.copy()
+        else:
+            return self
+
+    def replace(self,other_path):
+        new_path=self.copy()
+        name=other_path.get_name()
+        new_path << (name)
         return new_path
 
     def get_postfix(self):
@@ -57,40 +69,24 @@ class Path(object):
         name_split=name.split(".")
         if(len(name_split) < 2):
             raise Exception("no postfix in " + name)
-        return name_split[1]
-    
-    def add(self,str_path):
-        strs=str_path.split("/")
-        for str_i in strs:
-            if(str_i!=''):
-                self.append(str_i)
-    
-    def append(self,items,copy=False):
-        if(copy):
-            path_i=self.copy()
-        else:
-            path_i=self
-        if(type(items)==str):
-            items=[items]
-        for item_i in items:
-    	    item=item_i.replace("/","")
-            path_i.items.append(item)
-        return path_i
-
-    def copy(self):	
-        str_path=str(self)
-        return Path(str_path)
+        return name_split[1]    
 
     def first(self,k):
         new_path=self.copy()
         new_path.items=self.items[0:len(self)-k]
         return new_path
 
+def clean_item(item_i):
+    if(type(item_i)==Path):
+        item_i=item_i.get_name()
+    item_i=re.sub(r'(//)+','/',item_i)
+    return item_i
+
 def get_paths(path,filename):
     if(type(path)==str):
         path=Path(path)
     path=path.copy()
-    path.add(filename)
+    path.append(filename)
     return path
 
 def path_args(func):
