@@ -29,7 +29,7 @@ def basic_dataset(action_dir):
     name=action_dir.get_name()
     cat=action_dir[-2]
     person=utils.text.get_person(name)
-    name=cat+'/'+name
+    #name=c+name
     return name,cat,person
 
 @utils.paths.path_args
@@ -69,13 +69,14 @@ class ReadActions(object):
         actions=[self.parse_action(action_dir_i) 
                    for action_dir_i in action_dirs]
         if(self.as_dict):
-            actions={ action_i.name:action_i
+            actions={ action_i.cat+'_' +action_i.name:action_i
                       for action_i in actions}
         return actions
 
     def parse_action(self,action_dir):
         name,cat,person=self.dataset_format(action_dir)
         img_seq=imgs.make_imgs(action_dir,norm=self.norm)
+        assert len(img_seq)>0
         return utils.actions.Action(name,img_seq,cat,person)
 
 #class SaveActions(object):

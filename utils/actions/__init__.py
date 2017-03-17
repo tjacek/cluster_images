@@ -40,6 +40,7 @@ class Action(object):
     
     @utils.paths.path_args
     def save(self,outpath,unorm=False):
+        print(outpath)
         full_outpath=outpath.append(self.name,copy=True)
         dirs.make_dir(full_outpath)
         if(unorm):
@@ -87,13 +88,13 @@ def show_actions(actions):
     print([len(action_i) for action_i in actions])
 
 if __name__ == "__main__":
-    #in_path="../dataset2/preproc/diff"
-    #out_path="../dataset2/preproc/proj_xz"
-    #bound_frames=utils.actions.frames.bound_local #(new_dim=(60,60))
+    in_path="../dataset2a/preproc/basic/cats"
+    out_path="../dataset2a/preproc/basic/time"
+    bound_frames=utils.actions.frames.BoundFrames(False) #utils.actions.frames.ProjFrames(False) 
     #bound_frames=utils.actions.unify.Rescale(new_dim=(60,60))#(new_dim=(60,60))
-    #transform_actions(in_path,out_path,bound_frames,seq_transform=False,dataset_format='basic_dataset')
-    in_path='../dataset2a/exp2/full'
-    out_path='../dataset2a/exp2/train'
-    apply_select(in_path,out_path,action_type='even',dataset_format='basic_dataset')
+    transform_actions(in_path,out_path,bound_frames,seq_transform=True,dataset_format='basic_dataset')
+    #in_path='../dataset2a/exp2/full'
+    #out_path='../dataset2a/exp2/train'
+    #apply_select(in_path,out_path,action_type='even',dataset_format='basic_dataset')
 
     

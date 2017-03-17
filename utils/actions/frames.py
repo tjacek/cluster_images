@@ -13,7 +13,7 @@ from utils.actions.unify import Rescale
 import re
 import cv2
 
-DEFAULT_DEPTH_VALUE=100.0
+DEFAULT_DEPTH_VALUE=100
 
 class TimeFrames(object):
     def __init__(self, new_dim=None):
@@ -62,7 +62,6 @@ class MotionFrames(object):
 def diff_frames(img_seq,threshold=0.1):
     n=len(img_seq)-1
     def diff_helper(i):
-
         diff_img=np.abs(img_seq[i]-img_seq[i+1])
         #print(diff_img.is_normal())
         diff_img[ diff_img>=threshold]=DEFAULT_DEPTH_VALUE
@@ -95,33 +94,14 @@ class BoundFrames(object):
         extract_box=utils.actions.bound.ExtractBox(points)
         return extract_box
 
-def bound_frames(img_seq):
-    #print(type(img_seq))
-    #print([img_i.get_orginal() for img_i in img_seq])
-    nonzero= utils.actions.bound.nonzero_frames(img_seq)
-    points=  utils.actions.bound.simple_bbox(nonzero)
-    extract_box=utils.actions.bound.ExtractBox(points)
-    return [ extract_box(img_i)
-              for img_i in img_seq]
-
-class BoundLocal(object):
-    def __init__(self,new_dim=None):
-        if(new_dim!=None):
-            self.rescale=Rescale(new_dim)
-        else:
-            self.rescale=None
-
-    def __call__(self,img_seq):
-        n=len(img_seq)-1
+def bound_local(img_seq):
+    n=len(img_seq)-1
         
-        new_seq=[bound_frames([img]) 
-                   for i in range(n)]
-        #new_seq=[utils.actions.bound.nonzero_double(img_seq[i],img_seq[i+1],True) 
-        #           for i in range(n)]
-        if(self.rescale!=None):
-            new_seq=[self.rescale(img_i) 
-                       for img_i in new_seq]
-        return new_seq
+    #new_seq=[bound_frames([img]) 
+    #               for i in range(n)]
+    new_seq=[utils.actions.bound.nonzero_double(img_seq[i],img_seq[i+1],True) 
+                   for i in range(n)]     
+    return new_seq
 
 
 class ProjFrames(object):
