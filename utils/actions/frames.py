@@ -71,11 +71,14 @@ def diff_frames(img_seq,threshold=0.1):
               for i in range(n)]
 
 class BoundFrames(object):
-    def __init__(self,all_frames=True,clean=None,morph=False):
+    def __init__(self,all_frames=True,clean=None,smooth_img=False):
         self.all_frames=all_frames
         self.extract_box=None
         self.clean=clean
-        self.morph=morph
+        if(smooth_img):
+            self.smooth=SmoothImg()
+        else:
+            self.smooth=None
 
     def __call__(self,img_seq):
         if(self.all_frames):
@@ -93,8 +96,8 @@ class BoundFrames(object):
         else:
             extract_box_i=self.extract_box
         bounded_img=extract_box_i(img_i)
-        if(self.morph):
-            bounded_img=morph_img(bounded_img)
+        if(self.smooth!=None):
+            bounded_img=self.smooth(bounded_img)
         return bounded_img
 
     def make_extract_box(self,nonzero):
@@ -102,9 +105,20 @@ class BoundFrames(object):
         extract_box=utils.actions.bound.ExtractBox(points)
         return extract_box
 
-def morph_img(img_i):
-    dil_img = cv2.dilate(img_i,(50,50),iterations = 1)
-    return utils.imgs.Image(img_i.name,dil_img)
+class SmoothImg(object):
+    def __init__(self, kern=(3,3)):
+        self.kern = kern
+    
+    def __call__(self,raw_img):
+        smooth_img=cv2.blur(raw_img,self.kern)
+        smooth_img=smooth_img.astype(np.uint8)
+        ret,binary_img=cv2.threshold(smooth_img,1,255,cv2.THRESH_BINARY)
+        binary_img[binary_img!=0]=DEFAULT_DEPTH_VALUE
+        return utils.imgs.Image(raw_img.name,binary_img)
+
+#def morph_img(img_i):
+#    dil_img = cv2.dilate(img_i,(50,50),iterations = 1)
+#    return utils.imgs.Image(img_i.name,dil_img)
 
 def bound_local(img_seq):
     n=len(img_seq)-1
@@ -128,20 +142,22 @@ class ProjFrames(object):
             img_i=img_i.get_orginal()
             proj_xz=self.get_clean_img( img_i,z_max,z_min)
             for (x, y), z in np.ndenumerate(img_i):
-                i,j=self.get_index(x,y,z)
-                proj_xz[i][j]=DEFAULT_DEPTH_VALUE
+                if(z!=0):
+                    #z-=z_min
+                    i,j=self.get_index(x,y,z)
+                    proj_xz[i][j]=DEFAULT_DEPTH_VALUE
             return utils.imgs.Image(img_i.name,proj_xz)
         return [proj_helper(img_i) 
                    for img_i in img_seq]
 
     def get_clean_img(self, img_i,z_max,z_min):
-        delta=z_max-z_min
+        #delta=z_max-z_min
         #print('min %f ' % z_min)
         #print('delta %f ' % delta)
         if(self.zx):
-            return np.zeros( (img_i.shape[0],delta))
+            return np.zeros( (img_i.shape[0],z_max))
         else:
-            return np.zeros( (img_i.shape[1],delta,))
+            return np.zeros( (img_i.shape[1],z_max))
 
     def get_index(self,x,y,z):
         z=np.floor(z)
@@ -151,7 +167,7 @@ class ProjFrames(object):
             return y,z
 
 def upper_bound(img_seq,shift=3):
-    max_z=max([np.amax(img_i)
+    max_z=max([np.amax(img_i)#.item()
                   for img_i in img_seq])
     max_z+=shift
     return max_z

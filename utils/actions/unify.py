@@ -8,17 +8,21 @@ import utils.actions.read
 import utils.paths
 import utils.paths.dirs
 
+
+def trans_img(x):    
+    return x.T.copy()
+
 class UnifyActions(object):
     def __init__(self,dataset_format='cp_dataset',new_dim=(60,60)):
         self.read_actions=utils.actions.read.ReadActions(dataset_format,norm=False,as_dict=True)    
         self.rescale=Rescale(new_dim)
 
     def __call__(self,in_path_x,in_path_y,out_path):
-        all_actions= self.preproc_actions([in_path_x,in_path_y], [True,True])
+        all_actions= self.preproc_actions([in_path_x,in_path_y], [True,True],[False,True])
         self.unify(all_actions,out_path)
 
-    def append(self,in_path_x,in_path_y,out_path,norm=[False,True]):
-        all_actions= self.preproc_actions([in_path_x,in_path_y], [False,True])
+    def append(self,in_path_x,in_path_y,out_path):
+        all_actions= self.preproc_actions([in_path_x,in_path_y], [False,True],[False,False])
         self.unify(all_actions,out_path)
 
     def unify(self,all_actions,out_path):
@@ -27,22 +31,37 @@ class UnifyActions(object):
         new_actions=unify_datasets(actions_x,actions_y)
         utils.actions.read.save_actions(new_actions,out_path)
 
-    def preproc_actions(self,paths,scaled):
-        return [ self.preproc_single_action(path_i,scaled_i)
-                 for path_i,scaled_i in zip(paths,scaled)]
+    def preproc_actions(self,paths,scaled,trans):
+        def preproc_helper(i):
+            actions=self.read_actions(paths[i])
+            if(scaled[i]):
+                actions=dict_action_tranform(actions,self.rescale)
+            if(trans[i]):
 
-    def preproc_single_action(self,path_i,scaled_i):
-        print(str(path_i))
-        actions=self.read_actions(path_i)
-        for name_i,action_i in actions.items():
-            print(action_i.cat) 
-        #if(len(actions)==0):
-        #    raise Exception("No actions in dir: " +str(path_i))
-        print(actions.keys())
-        if(scaled_i):
-            actions={ name_i:action_i.transform(self.rescale)
-                      for name_i,action_i in actions.items()}
-        return actions
+                actions=dict_action_tranform(actions,trans_img)
+            return actions
+        size=len(paths)
+        return [ preproc_helper(i)
+                 for i in range(size)]
+
+    #def preproc_single_action(self,path_i,scaled_i,trans_i):
+    #    print(str(path_i))
+    #    actions=self.read_actions(path_i)
+    #    print(actions.keys())
+    #    def prepare_helper(img_i):
+    #        if(scaled_i):
+    #            img_i=self.rescale(img_i)
+    #        if(img_i):
+    #            img_i=img_i.T
+    #        return img_i    
+    #    actions={ name_i:action_i.transform(prepare_helper)
+    #                  for name_i,action_i in actions.items()}
+    #    return actions
+
+
+def dict_action_tranform(actions,helper):
+    return { name_i:action_i.transform(helper)
+                for name_i,action_i in actions.items()}
 
 def unify_datasets(actions_x,actions_y):
     actions_names=actions_x.keys()
@@ -76,7 +95,7 @@ def proj_unify(time_path,xz_path,yz_path,out_path,
     utils.paths.dirs.make_dir(tmp_path)
     unify_actions=UnifyActions(dataset_format)
     unify_actions(xz_path,yz_path,tmp_path)
-    #unify_actions.append(tmp_path,time_path,out_path)
+    unify_actions.append(tmp_path,time_path,out_path)
 
 if __name__ == "__main__":
     time_path="../dataset2a/preproc/basic/time"

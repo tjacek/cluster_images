@@ -33,7 +33,13 @@ class Action(object):
                        self.cat,self.person)
 
     def transform(self,fun):
-        new_seq=[fun(img_i)
+        def img_dec(img_i):
+            new_img=fun(img_i)
+            if(type(new_img)==utils.imgs.Image):
+                return new_img
+            else:
+                return utils.imgs.Image(img_i.name,new_img)
+        new_seq=[img_dec(img_i)
                   for img_i in self.img_seq]         
         return Action(self.name,new_seq,
                       self.cat,self.person)
@@ -88,13 +94,13 @@ def show_actions(actions):
     print([len(action_i) for action_i in actions])
 
 if __name__ == "__main__":
-    in_path="../dataset2a/preproc/basic/cats"
-    out_path="../dataset2a/preproc/basic/time"
-    bound_frames=utils.actions.frames.BoundFrames(False) #utils.actions.frames.ProjFrames(False) 
-    #bound_frames=utils.actions.unify.Rescale(new_dim=(60,60))#(new_dim=(60,60))
+    in_path="../dataset2a/preproc/basic/proj_yz"
+    out_path="../dataset2a/preproc/basic/yz"
+    #bound_frames=utils.actions.frames.ProjFrames(False) 
+    bound_frames=utils.actions.frames.BoundFrames(False,20,smooth_img=True) #utils.actions.frames.ProjFrames(False) 
     transform_actions(in_path,out_path,bound_frames,seq_transform=True,dataset_format='basic_dataset')
-    #in_path='../dataset2a/exp2/full'
-    #out_path='../dataset2a/exp2/train'
-    #apply_select(in_path,out_path,action_type='even',dataset_format='basic_dataset')
+    #in_path='../dataset2a/preproc/unified'
+    #out_path='../dataset2a/preproc/train'
+    #apply_select(in_path,out_path,action_type='odd',dataset_format='basic_dataset')
 
     
