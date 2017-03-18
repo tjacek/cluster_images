@@ -71,9 +71,11 @@ def diff_frames(img_seq,threshold=0.1):
               for i in range(n)]
 
 class BoundFrames(object):
-    def __init__(self,all_frames=True):
+    def __init__(self,all_frames=True,clean=None,morph=False):
         self.all_frames=all_frames
         self.extract_box=None
+        self.clean=clean
+        self.morph=morph
 
     def __call__(self,img_seq):
         if(self.all_frames):
@@ -83,16 +85,26 @@ class BoundFrames(object):
                   for img_i in img_seq]
         
     def get_box(self,img_i):
+        if(self.clean!=None):
+            #for k in range(self.clean):
+            img_i[:,0:self.clean]=0
         if(self.extract_box==None):
             extract_box_i=self.make_extract_box(img_i)
         else:
             extract_box_i=self.extract_box
-        return extract_box_i(img_i)
+        bounded_img=extract_box_i(img_i)
+        if(self.morph):
+            bounded_img=morph_img(bounded_img)
+        return bounded_img
 
     def make_extract_box(self,nonzero):
         points=  utils.actions.bound.simple_bbox(nonzero)
         extract_box=utils.actions.bound.ExtractBox(points)
         return extract_box
+
+def morph_img(img_i):
+    dil_img = cv2.dilate(img_i,(50,50),iterations = 1)
+    return utils.imgs.Image(img_i.name,dil_img)
 
 def bound_local(img_seq):
     n=len(img_seq)-1
@@ -105,15 +117,16 @@ def bound_local(img_seq):
 
 
 class ProjFrames(object):
-    def __init__(self,zx=True):
+    def __init__(self,zx=True,clean=None):
         self.zx=zx
 
     def __call__(self,img_seq):
-        z_max=max_frames(img_seq)+2
+        z_max=upper_bound(img_seq)
+        z_min=lower_bound(img_seq)
         def proj_helper(img_i):
             print(img_i.name)
             img_i=img_i.get_orginal()
-            proj_xz=self.get_clean_img( img_i,z_max)
+            proj_xz=self.get_clean_img( img_i,z_max,z_min)
             for (x, y), z in np.ndenumerate(img_i):
                 i,j=self.get_index(x,y,z)
                 proj_xz[i][j]=DEFAULT_DEPTH_VALUE
@@ -121,11 +134,14 @@ class ProjFrames(object):
         return [proj_helper(img_i) 
                    for img_i in img_seq]
 
-    def get_clean_img(self, img_i,z_max):
+    def get_clean_img(self, img_i,z_max,z_min):
+        delta=z_max-z_min
+        #print('min %f ' % z_min)
+        #print('delta %f ' % delta)
         if(self.zx):
-            return np.zeros( (img_i.shape[0],z_max))
+            return np.zeros( (img_i.shape[0],delta))
         else:
-            return np.zeros( (img_i.shape[1],z_max,))
+            return np.zeros( (img_i.shape[1],delta,))
 
     def get_index(self,x,y,z):
         z=np.floor(z)
@@ -134,6 +150,18 @@ class ProjFrames(object):
         else:
             return y,z
 
-def max_frames(img_seq):
-    return max([np.amax(img_i)
+def upper_bound(img_seq,shift=3):
+    max_z=max([np.amax(img_i)
                   for img_i in img_seq])
+    max_z+=shift
+    return max_z
+
+def lower_bound(img_seq,shift=3):
+    min_z=min([np.amin(img_i[np.nonzero(img_i)]).item()
+                  for img_i in img_seq])
+    #print("&&&&&&&&&&&&&&&&&&")
+    #print(min_z)
+    min_z-=shift
+    if(min_z<0):
+        min_z=0
+    return min_z
