@@ -5,6 +5,12 @@ import utils.conf
 import cats
 import preproc
 
+def unify_feats(conf_paths,weights,out_path,img_path):
+    make_feat_files(conf_paths,weights)
+    feat_path=out_path+'/feat.txt'
+    combine_feat(conf_paths,feat_path)
+    make_combined_seq(feat_path,img_path)
+
 def make_feat_files(conf_paths,weights=None):
     if(weights==None):
         for conf_path_i in conf_paths:
@@ -25,11 +31,7 @@ def make_combined_seq(feat_path,img_path):
     conf_path={'feat_path':feat_path,'img_path':img_path}
     cats.easy_make_seq(conf_path, new_feat=False)
 
-def unify_feats(conf_paths,weights,out_path,img_path):
-    make_feat_files(conf_paths,weights)
-    feat_path=out_path+'/feat.txt'
-    combine_feat(conf_paths,feat_path)
-    make_combined_seq(feat_path,img_path)
+
 
 if __name__ == "__main__":
     conf_paths=['conf/1exp1.cfg','conf/1exp2.cfg']	
