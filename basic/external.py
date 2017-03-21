@@ -2,9 +2,9 @@ import sys,os
 sys.path.append(os.path.abspath('../cluster_images'))
 import numpy as np
 import utils.timer
-import utils.dirs as dirs
+import utils.paths.dirs as dirs
 import utils.imgs as imgs
-import utils.files as files
+import utils.paths.files as files
 import utils.paths
 import basic.reduction as redu
 import basic.combine

@@ -1,7 +1,7 @@
 import sys,os
 sys.path.append(os.path.abspath('../cluster_images'))
 import numpy as np 
-import utils.dirs
+import utils.paths.dirs
 import utils.imgs
 import utils.paths
 import deep.reader
@@ -11,18 +11,60 @@ class CombinedFeatures(object):
     def __init__(self, extractors):
         self.extractors = extractors
 
-    def __call__(self,img_i):
+    def __call__(self,img_i,name=False):
         feats=[extr_i(img_i) 
     	        for extr_i in self.extractors]
     	feats=np.concatenate(feats)
-    	return feats
+    	if(name):
+            print(img_i.name)
+            return img_i.name,feats
+        else:
+            return feats
 
-def build_combined(in_path,preproc=None):
-    all_paths=utils.dirs.all_files(in_path)
-    nn_reader=deep.reader.NNReader()
-    extractors=[nn_reader(nn_path_i,preproc,drop_p=0.0)
+def build_combined(all_paths,preproc='proj'):
+    #all_paths=utils.dirs.all_files(in_path)
+    nn_reader=deep.reader.NNReader(preproc)
+    extractors=[nn_reader(nn_path_i,drop_p=0.0)
                   for nn_path_i in all_paths]
     return CombinedFeatures(extractors)
+
+class NewPathDict(object):
+    def __init__(self,raw_dict=None):
+        if(raw_dict==None):
+            items=[]
+        elif(type(raw_dict)==dict):
+            items=raw_dict.items()
+        elif(type(items)==list):
+            items=raw_dict
+        else:
+            raise Exception("Wrong type " + str(type(raw_dict)))
+        self.raw_dict=dict([(self.name(key_i),value_i)
+                            for key_i,value_i in items])
+
+    def __setitem__(self, key, item):
+        self.raw_dict[ self.name(key)]=item
+        self.raw_dict[key] = item
+
+    #@utils.paths.str_arg
+    def __getitem__(self, key):
+        key=str(key)
+        if(key in self.raw_dict):
+            return self.raw_dict[key]
+        new_key=self.name(key)
+        return self.raw_dict[new_key]
+    
+    def name(self,key):
+        if(type(key)!=str):
+            key=str(key)
+        key_elements=key.split('/')
+        return key_elements[-1]+'_'+key_elements[-2]
+
+    def items(self):
+        return self.raw_dict.items()
+    
+    def keys(self):
+        return self.raw_dict.keys()
+
 
 def unify_text_features(in_path):
     all_paths=utils.dirs.all_files(in_path)
