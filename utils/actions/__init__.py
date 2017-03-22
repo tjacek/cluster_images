@@ -28,22 +28,27 @@ class Action(object):
     def __len__(self):
         return len(self.img_seq)
     
-    def __call__(self,func):
-        return Action(self.name,func(self.img_seq),
+    def __call__(self,fun):
+        img_dec=self.get_img_dec(fun)
+        return Action(self.name,fun(self.img_seq),
                        self.cat,self.person)
 
     def transform(self,fun):
+        img_dec=self.get_img_dec(fun)
+        new_seq=[img_dec(img_i)
+                  for img_i in self.img_seq]         
+        return Action(self.name,new_seq,
+                      self.cat,self.person)
+    
+    def get_img_dec(self,fun):
         def img_dec(img_i):
             new_img=fun(img_i)
             if(type(new_img)==utils.imgs.Image):
                 return new_img
             else:
                 return utils.imgs.Image(img_i.name,new_img)
-        new_seq=[img_dec(img_i)
-                  for img_i in self.img_seq]         
-        return Action(self.name,new_seq,
-                      self.cat,self.person)
-    
+        return img_dec
+
     @utils.paths.path_args
     def save(self,outpath,unorm=False):
         print(outpath)
@@ -97,10 +102,10 @@ if __name__ == "__main__":
     in_path="../dataset2a/preproc/basic/proj_yz"
     out_path="../dataset2a/preproc/basic/yz"
     #bound_frames=utils.actions.frames.ProjFrames(False) 
-    bound_frames=utils.actions.frames.BoundFrames(False,20,smooth_img=True) #utils.actions.frames.ProjFrames(False) 
-    transform_actions(in_path,out_path,bound_frames,seq_transform=True,dataset_format='basic_dataset')
-    #in_path='../dataset2a/preproc/unified'
-    #out_path='../dataset2a/preproc/train'
-    #apply_select(in_path,out_path,action_type='odd',dataset_format='basic_dataset')
+    #bound_frames=utils.actions.frames.BoundFrames(False,20,smooth_img=True) #utils.actions.frames.ProjFrames(False) 
+    #transform_actions(in_path,out_path,bound_frames,seq_transform=True,dataset_format='basic_dataset')
+    in_path='../dataset1a/exp2/full'#preproc/unified'
+    out_path='../dataset1a/exp2/train' #/preproc/train'
+    apply_select(in_path,out_path,action_type='odd',dataset_format='basic_dataset')
 
     
