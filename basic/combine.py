@@ -8,12 +8,17 @@ import deep.reader
 import basic.external
 
 class CombinedFeatures(object):
-    def __init__(self, extractors):
+    def __init__(self, extractors,weights=None):
         self.extractors = extractors
+        self.weights=weights
 
     def __call__(self,img_i,name=False):
-        feats=[extr_i(img_i) 
-    	        for extr_i in self.extractors]
+        if(self.weights!=None):
+            feats=[ weight_i * extr_i(img_i) 
+                     for weight_i,extr_i in zip(self.weights,self.extractors)] 
+        else:
+            feats=[extr_i(img_i) 
+    	             for extr_i in self.extractors]
     	feats=np.concatenate(feats)
     	if(name):
             print(img_i.name)
@@ -21,12 +26,12 @@ class CombinedFeatures(object):
         else:
             return feats
 
-def build_combined(all_paths,preproc='proj'):
+def build_combined(all_paths,preproc='proj',weights=None):
     #all_paths=utils.dirs.all_files(in_path)
     nn_reader=deep.reader.NNReader(preproc)
     extractors=[nn_reader(nn_path_i,drop_p=0.0)
                   for nn_path_i in all_paths]
-    return CombinedFeatures(extractors)
+    return CombinedFeatures(extractors,weights)
 
 class NewPathDict(object):
     def __init__(self,raw_dict=None):
