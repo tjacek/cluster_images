@@ -13,9 +13,9 @@ import re
 
 @utils.paths.path_args
 def cp_dataset(action_dir):
-    name=action_dir.get_name()
+    name=action_dir.get_name()   
     names=name.split('_')
-    if(len(names)>3):
+    if(len(names)==4):
         cat=names[0].replace('a','')
         person=int(names[1].replace('s',''))
         print(cat)
@@ -27,10 +27,12 @@ def cp_dataset(action_dir):
 @utils.paths.path_args
 def basic_dataset(action_dir):
     name=action_dir.get_name()
-    cat=action_dir[-2]
-    person=utils.text.get_person(name)
+    if(len(names)==2):
+        cat=action_dir[-2]
+        person=utils.text.get_person(name)
     #name=c+name
-    return name,cat,person
+        return name,cat,person
+    raise Exception("Wrong dataset format " + name +" " + str(len(names)))        
 
 @utils.paths.path_args
 def cropped_dataset(action_dir):
@@ -79,13 +81,10 @@ class ReadActions(object):
         assert len(img_seq)>0
         return utils.actions.Action(name,img_seq,cat,person)
 
-#class SaveActions(object):
-#    def __init__(self,unorm):
-
 @utils.paths.path_args
 def save_actions(actions,outpath,unorm=False):
     dirs.make_dir(outpath)
-    print(dir(utils.data))
+    print(type(outpath))
     extr_cats=utils.data.ExtractCat(parse_cat=lambda a:a.cat)
     for action_i in actions:
         extr_cats(action_i)
