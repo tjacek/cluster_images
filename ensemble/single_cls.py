@@ -11,31 +11,35 @@ import utils.actions
 import ensemble
 
 class SingleCls(object):
-    def __init__(self,feat_seq,lstm,max_seq,seq_dim):
+    def __init__(self,feat_seq,lstm,max_seq,seq_dim,disp=False):
         self.feat_seq=feat_seq
         self.lstm=lstm
         self.max_seq=max_seq
         self.seq_dim=seq_dim
+        self.disp=disp
 
-    def gini_weighted(self,action):
-        dist=self(action)
-        gini_weight=ensemble.dispersion.gini_index_simple(dist)
-        return gini_weight*dist
-        
     def __call__(self,action):
         seq_feats=self.feat_seq(action)
+        mask,masked_feats=self.get_masked_seq(seq_feats)
+        dist= self.lstm.get_distribution(masked_feats,mask)
+        if(self.disp):
+            quality_factor = np.linalg.norm(dist)
+            cat=np.argmax(dist)
+            print("quality %f %d" % quality_factor,cat)
+            dist=quality_factor*dist
+        return dist
+
+    def get_category(self,action):
+        return np.argmax(self(action))
+
+    def get_masked_seq(self,seq_feats):
         seq_len=len(seq_feats)
-        #seq_dim=seq_feats[0].shape[0]
         seq_diff=self.max_seq-seq_len
         for i in range(seq_diff):
             seq_feats.append(np.zeros((self.seq_dim,)))
         masked_feats=np.array(seq_feats)
-
         mask=make_mask(seq_len,self.max_seq)
-        return self.lstm.get_distribution(masked_feats,mask)
-
-    def get_category(self,action):
-        return np.argmax(self(action))
+        return mask,masked_feats
 
 def make_mask(seq_size,max_size):
     mask=np.zeros((max_size,),dtype=float)
@@ -49,11 +53,11 @@ def masked_seq(seq_i,seq_i_len,max_seq,seq_dim):
     new_seq_i[:seq_i_len]=seq_i[:seq_i_len]
     return new_seq_i
 
-def make_single_cls(conv_path,lstm_path,with_type=False,prep_type="proj"):
+def make_single_cls(conv_path,lstm_path,with_type=False,prep_type="proj",disp=False):
     seq_feat=ensemble.feat_seq.make_feat_seq(conv_path,prep_type)
     nn_reader=deep.reader.NNReader(deep.reader.get_preproc(prep_type))
     lstm,hyperparams=nn_reader(lstm_path,drop_p=0.0,get_hyper=True)
-    single_cls=SingleCls(seq_feat,lstm,hyperparams['max_seq'],hyperparams['seq_dim'])
+    single_cls=SingleCls(seq_feat,lstm,hyperparams['max_seq'],hyperparams['seq_dim'],disp)
     if(with_type):
         return with_type,single_cls
     return single_cls

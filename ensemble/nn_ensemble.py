@@ -19,8 +19,8 @@ class SimpleNNEnsemble(object):
     def get_category(self,action_i):
         return np.argmax(self(action_i))
 
-def make_simple_nn(lstm_paths,conv_paths):
-    nn=[ make_single_cls(conv_path_i,lstm_path_i)
+def make_simple_nn(lstm_paths,conv_paths,disp=False):
+    nn=[ make_single_cls(conv_path_i,lstm_path_i,disp=disp)
          for lstm_path_i,conv_path_i in zip(lstm_paths,conv_paths)]
     return SimpleNNEnsemble(nn)
 
@@ -92,7 +92,7 @@ if __name__ == "__main__":
     conv_paths=['../ensemble/basic_nn/nn_basic','../ensemble/18_nn/nn_18','../ensemble/16_nn/nn_16']
     lstm_paths=['../ensemble/basic_nn/lstm_basic','../ensemble/18_nn/lstm_18','../ensemble/16_nn/lstm_16']
 
-    ens=make_simple_nn(lstm_paths,conv_paths)
+    ens=make_simple_nn(lstm_paths,conv_paths,True)
     #dataset_paths={'time':'../dataset1/exp1/full_dataset',
     #               'proj':'../dataset1/exp2/cats'}
     #nn_paths={'time':('../ensemble/exp1/nn_data_1' ,'../dataset1/exp1/lstm_self'),
