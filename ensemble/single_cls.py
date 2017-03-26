@@ -25,7 +25,7 @@ class SingleCls(object):
         if(self.disp):
             quality_factor = np.linalg.norm(dist)
             cat=np.argmax(dist)
-            print("quality %f %d" % quality_factor,cat)
+            print("quality %f %d" % (quality_factor,cat))
             dist=quality_factor*dist
         return dist
 
