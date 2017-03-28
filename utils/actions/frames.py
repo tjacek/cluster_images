@@ -81,6 +81,11 @@ class BoundFrames(object):
             self.smooth=None
 
     def __call__(self,img_seq):
+        if(self.clean!=None):
+            def clean_helper(img_i):
+                img_i[:,0:self.clean]=0
+                return img_i
+            img_seq=[ clean_helper(img_i) for img_i in img_seq]
         if(self.all_frames):
             nonzero= utils.actions.bound.nonzero_frames(img_seq)
             self.extract_box=self.make_extract_box(nonzero)
@@ -88,9 +93,6 @@ class BoundFrames(object):
                   for img_i in img_seq]
         
     def get_box(self,img_i):
-        if(self.clean!=None):
-            #for k in range(self.clean):
-            img_i[:,0:self.clean]=0
         if(self.extract_box==None):
             extract_box_i=self.make_extract_box(img_i)
         else:
@@ -116,15 +118,8 @@ class SmoothImg(object):
         binary_img[binary_img!=0]=DEFAULT_DEPTH_VALUE
         return utils.imgs.Image(raw_img.name,binary_img)
 
-#def morph_img(img_i):
-#    dil_img = cv2.dilate(img_i,(50,50),iterations = 1)
-#    return utils.imgs.Image(img_i.name,dil_img)
-
 def bound_local(img_seq):
     n=len(img_seq)-1
-        
-    #new_seq=[bound_frames([img]) 
-    #               for i in range(n)]
     new_seq=[utils.actions.bound.nonzero_double(img_seq[i],img_seq[i+1],True) 
                    for i in range(n)]     
     return new_seq
@@ -151,9 +146,6 @@ class ProjFrames(object):
                    for img_i in img_seq]
 
     def get_clean_img(self, img_i,z_max,z_min):
-        #delta=z_max-z_min
-        #print('min %f ' % z_min)
-        #print('delta %f ' % delta)
         if(self.zx):
             return np.zeros( (img_i.shape[0],z_max))
         else:
@@ -175,8 +167,6 @@ def upper_bound(img_seq,shift=3):
 def lower_bound(img_seq,shift=3):
     min_z=min([np.amin(img_i[np.nonzero(img_i)]).item()
                   for img_i in img_seq])
-    #print("&&&&&&&&&&&&&&&&&&")
-    #print(min_z)
     min_z-=shift
     if(min_z<0):
         min_z=0
