@@ -9,21 +9,27 @@ from utils.timer import clock
 import utils.data
 
 @paths.path_args
-def use_dtw(dataset_path):
-    dataset=seq_dataset(path,dataset_format='cp_dataset')
-    print(dataset.keys())
+def use_dtw(dataset_path,dataset_format='cp_dataset'):
+    dataset=seq_dataset(dataset_path,dataset_format)
     print(dataset['y'])
 
     train,test=split.person_dataset(dataset)
     y_pred=wrap(train,test)
     seq.check_prediction(y_pred,test['y'])
 
+#class Wrap(obj):
+
 @clock
 def wrap(train,test): 
-    return [knn(test_i,train) 
-              for test_i in test['x']]
+    def knn_helper(i,test_i):
+        name_i=train['names'][i]
+        cat_i=knn(test_i,train) 
+        return cat_i
+    return [knn_helper(test_i,train) 
+              for i,test_i in enumerate(test['x'])]
 
 def knn(new_x,train_dataset,k=1):
+    print(train_dataset.keys())
     distance=[dtw_metric(new_x,x_i) 
               for x_i in train_dataset['x']]
     distance=np.array(distance)
@@ -57,8 +63,6 @@ def dtw_metric(s,t):
         for j in range(1,m+1):
             cost=d1(s[i-1],t[j-1])
             dwt[i,j]=cost+min([dwt[i-1][j],dwt[i][j-1],dwt[i-1][j-1]])
-    #print(n)
-    #print(m)
     return dwt[n][m]
 
 def d1(v,d):
@@ -70,5 +74,6 @@ def d2(v,u):
     return dist
 
 if __name__ == "__main__":
-    path='../dataset1/AS1/seq/'
-    use_dtw(path)
+    #path='../ensemble/basic_nn/seq'
+    path='../ensemble/basic_nn/seq'
+    use_dtw(path,'cp_dataset')
