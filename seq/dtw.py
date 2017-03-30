@@ -14,19 +14,27 @@ def use_dtw(dataset_path,dataset_format='cp_dataset'):
     print(dataset['y'])
 
     train,test=split.person_dataset(dataset)
+    wrap=Wrap()
     y_pred=wrap(train,test)
     seq.check_prediction(y_pred,test['y'])
 
-#class Wrap(obj):
+class Wrap(object):
+    def __init__(self):
+        self.results={}
+    
+    @clock
+    def __call__(self,train,test): 
+        def knn_helper(i,test_i):
+            name_i=train['names'][i]
+            cat_i=knn(test_i,train) 
+            self.results[name_i]=cat_i
+            return cat_i
+        return [knn_helper(i,test_i) 
+                 for i,test_i in enumerate(test['x'])]
 
-@clock
-def wrap(train,test): 
-    def knn_helper(i,test_i):
-        name_i=train['names'][i]
-        cat_i=knn(test_i,train) 
-        return cat_i
-    return [knn_helper(test_i,train) 
-              for i,test_i in enumerate(test['x'])]
+    def show(self):
+        for key_i,value_i in self.results.items():
+            print(key_i + " %d"  % value_i)
 
 def knn(new_x,train_dataset,k=1):
     print(train_dataset.keys())
@@ -74,6 +82,6 @@ def d2(v,u):
     return dist
 
 if __name__ == "__main__":
+    path='../dataset2a/exp3/seq'
     #path='../ensemble/basic_nn/seq'
-    path='../ensemble/basic_nn/seq'
-    use_dtw(path,'cp_dataset')
+    use_dtw(path,'basic_dataset')
