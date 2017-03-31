@@ -37,15 +37,13 @@ class Wrap(object):
             print(key_i + " %d"  % value_i)
 
 def knn(new_x,train_dataset,k=1):
-    print(train_dataset.keys())
     distance=[dtw_metric(new_x,x_i) 
               for x_i in train_dataset['x']]
     distance=np.array(distance)
     dist_inds=distance.argsort()[0:k]
     y=   train_dataset['y']
     
-    #k_dist=get_k_distances(distance,dist_inds)
-    #print(k_dist)
+
     nearest=[y[i] for i in dist_inds]
     print(train_dataset['x'][0].shape)
     print(nearest)
@@ -82,6 +80,6 @@ def d2(v,u):
     return dist
 
 if __name__ == "__main__":
-    path='../dataset2a/exp3/seq'
-    #path='../ensemble/basic_nn/seq'
-    use_dtw(path,'basic_dataset')
+    #path='../dataset2a/exp3/seq'
+    path='../ensemble/10_nn/seq'
+    use_dtw(path,'cp_dataset')
