@@ -61,15 +61,24 @@ class Action(object):
         [img_i.save(full_outpath,i) 
          for i,img_i in enumerate(saved_imgs)]
 
+    @utils.paths.path_args
+    def to_text_file(self,outpath):
+        full_outpath=outpath.append(self.name,copy=True)
+        text_action=files.seq_to_string(self.img_seq)
+        files.save_string(full_outpath,text_action)
+
 def new_action(old_action,new_seq):
     return Action(old_action.name,new_seq,
                       old_action.cat,old_action.person)
 
-def apply_select(in_path,out_path,action_type='even',dataset_format='cp_dataset'):
-    read_actions=utils.actions.read.ReadActions(dataset_format,False)
+def apply_select(in_path,out_path=None,action_type='even',dataset_format='cp_dataset',norm=False):
+    read_actions=utils.actions.read.ReadActions(dataset_format,norm)
     actions=read_actions(in_path)
     s_actions=select_actions(actions,action_type)
-    utils.actions.read.save_actions(s_actions,out_path)
+    if(out_path==None):
+        return s_actions
+    else:
+        utils.actions.read.save_actions(s_actions,out_path)
 
 def transform_actions(in_path,out_path,transformation,seq_transform=True,dataset_format='cp_dataset'):
     read_actions=utils.actions.read.ReadActions(dataset_format,False)
@@ -99,13 +108,13 @@ def show_actions(actions):
     print([len(action_i) for action_i in actions])
 
 if __name__ == "__main__":
-    in_path="../dataset2a/preproc/basic/proj_yz"
-    out_path="../dataset2a/preproc/basic/yz"
+    in_path="../ensemble2/preproc/depth_"
+    out_path="../ensemble2/preproc/time"
     #bound_frames=utils.actions.frames.ProjFrames(False) 
-    #bound_frames=utils.actions.frames.BoundFrames(False,20,smooth_img=True) #utils.actions.frames.ProjFrames(False) 
-    #transform_actions(in_path,out_path,bound_frames,seq_transform=True,dataset_format='basic_dataset')
-    in_path='../dataset1a/exp2/full'#preproc/unified'
-    out_path='../dataset1a/exp2/train' #/preproc/train'
-    apply_select(in_path,out_path,action_type='odd',dataset_format='basic_dataset')
+    #bound_frames=utils.actions.frames.BoundFrames(True,None,smooth_img=False) #utils.actions.frames.ProjFrames(False) 
+    #transform_actions(in_path,out_path,bound_frames,seq_transform=True,dataset_format='cp_dataset')
+    in_path="../ensemble2/preproc/unified"#preproc/unified'
+    out_path="../ensemble2/preproc/train" #/preproc/train'
+    apply_select(in_path,out_path,action_type='odd',dataset_format='cp_dataset')
 
     

@@ -15,7 +15,7 @@ class ExtractFeatures(object):
         self.preproc=preproc
         self.features=features
 
-    def __call__(self,img_seq):
+    def __call__(self,imgs_seq):
         img_seq=[ self.preproc(img_i) for img_i in imgs_seq ]
         return [ self.features(img_i)
                  for img_i in img_seq]
@@ -40,12 +40,19 @@ class PcloudFeatures(object):
         print(all_feats)        
         return np.array(all_feats)
 
+def action_features(in_path,out_path,extractor,dataset_format='cp_dataset'):
+    read_actions=utils.actions.read.ReadActions(dataset_format,norm=True)
+    actions=read_actions(in_path)
+    new_actions=[ action_i(extractor) for action_i in actions]
+    save_actions=utils.actions.read.SaveActions(img_actions=False)
+    save_actions(new_actions,out_path)
+
 def test_transform(img_i):
     print(img_i.shape)
-    return img_i.shape[0]
+    return [img_i.shape[0],img_i.shape[1]]
 
 def make_extract():
-    return ExtractFeatures(SimplePreproc(),PcloudFeatures())
+    return ExtractFeatures(SimplePreproc(),test_transform)
 
 def get_features(img):
     print(img.shape)
@@ -138,6 +145,9 @@ def elipse_feat(img,pcloud):
 
 if __name__ == "__main__":
     in_path='../ensemble/full'
-    imgs_seq= utils.imgs.make_imgs(in_path,norm=True) 
-    extract_features=make_extract()
-    extract_features(imgs_seq)
+    out_path='../ensemble/feat'
+    extractor=make_extract()
+    action_features(in_path,out_path,extractor)
+    #imgs_seq= utils.imgs.make_imgs(in_path,norm=True) 
+    #extract_features=make_extract()
+    #extract_features(imgs_seq)

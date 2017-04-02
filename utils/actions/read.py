@@ -27,6 +27,7 @@ def cp_dataset(action_dir):
 @utils.paths.path_args
 def basic_dataset(action_dir):
     name=action_dir.get_name()
+    names=name.split('_')
     if(len(names)==2):
         cat=action_dir[-2]
         person=utils.text.get_person(name)
@@ -81,11 +82,22 @@ class ReadActions(object):
         assert len(img_seq)>0
         return utils.actions.Action(name,img_seq,cat,person)
 
-@utils.paths.path_args
-def save_actions(actions,outpath,unorm=False):
-    dirs.make_dir(outpath)
-    print(type(outpath))
-    extr_cats=utils.data.ExtractCat(parse_cat=lambda a:a.cat)
+class SaveActions(object):
+    def __init__(self,unorm=False,img_actions=True):
+        self.unorm=unorm
+        self.img_actions=img_actions
+
+    @utils.paths.path_args
+    def __call__(self,actions,outpath):
+        dirs.make_dir(outpath)
+        print(type(outpath))
+        extr_cats=utils.data.ExtractCat(parse_cat=lambda a:a.cat)
+        if(self.img_actions):
+            save_img_action(actions,outpath,self.unorm)
+        else:
+            save_text_action(actions,outpath)
+
+def save_img_action(actions,outpath,unorm=False):
     for action_i in actions:
         extr_cats(action_i)
     for name_i in extr_cats.names():
@@ -94,3 +106,7 @@ def save_actions(actions,outpath,unorm=False):
     for action_i in actions:
         cat_path_i=outpath.append(action_i.cat,copy=True)
         action_i.save(cat_path_i,unorm)
+
+def save_text_action(actions,outpath):
+    for action_i in actions:
+        action_i.to_text_file(outpath)
