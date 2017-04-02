@@ -1,10 +1,51 @@
+import sys,os
+sys.path.append(os.path.abspath('../cluster_images'))
 import cv2
 import numpy as np
-import utils.pcloud as pcloud
+import utils.pcloud #as pcloud
 import scipy.stats
 import scipy.stats.stats as st
 from sklearn.decomposition import PCA
 import utils
+import utils.imgs
+import utils.actions
+
+class ExtractFeatures(object):
+    def __init__(self,preproc,features):
+        self.preproc=preproc
+        self.features=features
+
+    def __call__(self,img_seq):
+        img_seq=[ self.preproc(img_i) for img_i in imgs_seq ]
+        return [ self.features(img_i)
+                 for img_i in img_seq]
+
+class SimplePreproc(object):
+    def __init__(self, div=3):        
+        self.div=div
+
+    def __call__(self,img_i):
+        new_size=img_i.shape[0]/self.div
+        return img_i[:][0:new_size]
+
+class PcloudFeatures(object):
+    def __init__(self, arg):
+        self.cloud_extractors=[std_features,skewness_features]
+        
+    def __call__(self,img_i):
+        points=pcloud.make_point_cloud(img_i)
+        all_feats=[]
+        for extr_i in self.cloud_extractors:
+            all_feats+=extr_i(img,points)
+        print(all_feats)        
+        return np.array(all_feats)
+
+def test_transform(img_i):
+    print(img_i.shape)
+    return img_i.shape[0]
+
+def make_extract():
+    return ExtractFeatures(SimplePreproc(),PcloudFeatures())
 
 def get_features(img):
     print(img.shape)
@@ -94,3 +135,9 @@ def elipse_feat(img,pcloud):
     best = list(result[-1])
     print(len(best))
     return best
+
+if __name__ == "__main__":
+    in_path='../ensemble/full'
+    imgs_seq= utils.imgs.make_imgs(in_path,norm=True) 
+    extract_features=make_extract()
+    extract_features(imgs_seq)
