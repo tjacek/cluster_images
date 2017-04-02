@@ -92,21 +92,14 @@ class SaveActions(object):
         dirs.make_dir(outpath)
         print(type(outpath))
         extr_cats=utils.data.ExtractCat(parse_cat=lambda a:a.cat)
-        if(self.img_actions):
-            save_img_action(actions,outpath,self.unorm)
-        else:
-            save_text_action(actions,outpath)
-
-def save_img_action(actions,outpath,unorm=False):
-    for action_i in actions:
-        extr_cats(action_i)
-    for name_i in extr_cats.names():
-        cat_dir_i=outpath.append(name_i,copy=True)
-        dirs.make_dir(cat_dir_i)
-    for action_i in actions:
-        cat_path_i=outpath.append(action_i.cat,copy=True)
-        action_i.save(cat_path_i,unorm)
-
-def save_text_action(actions,outpath):
-    for action_i in actions:
-        action_i.to_text_file(outpath)
+        for action_i in actions:
+            extr_cats(action_i)
+        for name_i in extr_cats.names():
+            cat_dir_i=outpath.append(name_i,copy=True)
+            dirs.make_dir(cat_dir_i)
+        for action_i in actions:
+            cat_path_i=outpath.append(action_i.cat,copy=True)
+            if(self.img_actions):
+                action_i.save(cat_path_i,unorm)
+            else:
+                action_i.to_text_file(cat_path_i)
