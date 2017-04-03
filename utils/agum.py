@@ -27,6 +27,15 @@ class SubsampleAction(object):
         new_action.name= self.agum_name+ '_' + new_action.name
         return new_action
 
+class OutlinersAction(object):
+    def __init__(self):
+        self.agum_name='outliners'
+
+    def __call__(self,action_i):
+        new_action=action_i.transform(lambda img_i: np.fliplr(img_i))    
+        new_action.name= self.agum_name+ '_' + new_action.name
+        return new_action
+
 @utils.paths.path_args
 def agum_actions(action_path,out_path,dataset_format='cp_dataset'):
     action_read=utils.actions.read.ReadActions(str(dataset_format))
