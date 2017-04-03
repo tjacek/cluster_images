@@ -32,7 +32,12 @@ class OutlinersAction(object):
         self.agum_name='outliners'
 
     def __call__(self,action_i):
-        new_action=action_i.transform(lambda img_i: np.fliplr(img_i))    
+        def outliner(img_i):
+            std_z=np.std(img_i)
+            mean_z=np.mean(img_i)
+            img_i[ (std_z+mean_z)>img_i]=0.0
+            return img_i
+        new_action=action_i.transform(outliner)    
         new_action.name= self.agum_name+ '_' + new_action.name
         return new_action
 
@@ -40,13 +45,14 @@ class OutlinersAction(object):
 def agum_actions(action_path,out_path,dataset_format='cp_dataset'):
     action_read=utils.actions.read.ReadActions(str(dataset_format))
     old_actions=action_read(action_path)
-    flip_action=FlipAction()
+    flip_action=OutlinersAction()
     new_actions=[ flip_action(action_i)
                   for action_i in old_actions]
     all_actions=old_actions+new_actions
-    utils.actions.read.save_actions(all_actions,out_path)
+    save_actions= utils.actions.read.SaveActions()
+    save_actions(all_actions,out_path)
 
 if __name__ == "__main__":
-    in_path='../dataset2a/exp3/train'
-    out_path='../dataset2a/exp3/train_agum'
-    agum_actions(in_path,out_path,'basic_dataset')
+    in_path='../ensemble/train'
+    out_path='../ensemble/train_agum'
+    agum_actions(in_path,out_path,'cp_dataset')
