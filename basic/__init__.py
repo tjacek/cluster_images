@@ -29,14 +29,19 @@ class SimplePreproc(object):
         return img_i[:][0:new_size]
 
 class PcloudFeatures(object):
-    def __init__(self, arg):
-        self.cloud_extractors=[std_features,skewness_features]
+    def __init__(self):
+        self.cloud_extractors=[area_feat,std_features,center,
+                OutlinersExtractor(0),OutlinersExtractor(1), OutlinersExtractor(2)]
+        #center,z_outliners,corl_features]
+        #[area_feat,std_features,skewness_features,corl_features]
+        #[pca_features,area_feat]#[std_features,skewness_features,area_feat]
         
     def __call__(self,img_i):
-        points=pcloud.make_point_cloud(img_i)
+        print(img_i.name)
+        points=utils.pcloud.make_point_cloud(img_i)
         all_feats=[]
         for extr_i in self.cloud_extractors:
-            all_feats+=extr_i(img,points)
+            all_feats+=extr_i(img_i,points)
         print(all_feats)        
         return np.array(all_feats)
 
@@ -52,7 +57,7 @@ def test_transform(img_i):
     return [img_i.shape[0],img_i.shape[1]]
 
 def make_extract():
-    return ExtractFeatures(SimplePreproc(),test_transform)
+    return ExtractFeatures(SimplePreproc(),PcloudFeatures())
 
 def get_features(img):
     print(img.shape)
@@ -76,7 +81,7 @@ def extr_features(img,pcloud):
     return extr
 
 def center(img,pcloud):
-    return list(pcloud.center_of_mass())
+    return pcloud.center_of_mass(True)
 
 def std_features(img,pcloud):
     points=pcloud.get_numpy()
@@ -128,6 +133,35 @@ def area_feat(img,pcloud):
     all_points=float(np.prod(img.shape))
     return [nonzero_points/all_points]
 
+class OutlinersExtractor(object):
+    def __init__(self,dim=2):
+        if(dim>2):
+            raise Exception("Too high dim %d" % dim)
+        self.dim=dim
+
+    def __call__(self,img,pcloud):
+        z_selector=self.get_selector(pcloud)
+        outliner_pcloud=pcloud.select(z_selector)
+        outliner_size=len(outliner_pcloud)
+        if(outliner_size==0):
+            return [-1,-1,-1]#,0]
+        rela_size= self.relative_size(outliner_pcloud,pcloud)
+        feat=std_features(img,outliner_pcloud)+[rela_size]
+        return feat
+
+    def get_selector(self,pcloud):
+        points=pcloud.get_numpy()
+        all_std=np.std(points,axis=0)
+        z_std=all_std[self.dim]
+        center=pcloud.center_of_mass()
+        z_center=center[self.dim]
+        threshold=z_center+z_std
+        def point_selector(point_i):
+            return point_i[self.dim]>threshold
+        return point_selector
+
+    def relative_size(self,pcloud_out,pcloud_full):
+        return float(len(pcloud_out))/ float(len(pcloud_full))
 
 def elipse_feat(img,pcloud):
     

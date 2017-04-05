@@ -4,9 +4,9 @@ class Pcloud(object):
     def __init__(self,points):
         self.points=np.array(points)
         self.len=len(points)
-        self.dims=self.points.shape[1]
-        #self.points=points
-        #self.dims=points[0].shape[0]
+        print(self.points.shape)
+        if(self.len!=0):
+            self.dims=self.points.shape[1]
        
     def __getitem__(self,index):
         return self.points[index]
@@ -17,12 +17,25 @@ class Pcloud(object):
     def __len__(self):
         return self.len 
 
+    def is_empty(self):
+        return len(self)==0
+
+    def select(self,selector):
+        new_points=[ point_i 
+                       for point_i in list(self.points)
+                         if selector(point_i)]
+        return Pcloud(new_points)
+
     def get_numpy(self):
-        return self.points#np.array(self.points)
+        return self.points#self.points
 
-    def center_of_mass(self):
-        return np.mean(self.points,axis=0)
-
+    def center_of_mass(self,as_list=False):
+        center=np.mean(self.points,axis=0)
+        if(as_list):
+            return list(center)
+        else:
+            return center
+            
     def max(self,dim):
         index=np.argmax(self.points[:,dim],axis=0)
         print(index)
@@ -33,7 +46,7 @@ class Pcloud(object):
         return self.points[index]
 
 def make_point_cloud(img,dim3D=True):
-    img=img.get_orginal()
+    img=img#.get_orginal()
     points=[]
     if(dim3D):
         for (x, y), element in np.ndenumerate(img):
