@@ -1,6 +1,6 @@
 import deep
 import utils.imgs as imgs 
-import utils.dirs,utils.files
+import utils.paths.dirs,utils.paths.files
 import utils.data as data
 import deep.reader 
 import deep.tools 
@@ -27,11 +27,11 @@ def make_features(conf_dict,weight=0.0):
 
 def select_extractor(conf_dict):
     extractor_type=conf_dict['extractor']
-    preproc3D=select_preproc(conf_dict)
+    preproc=select_preproc(conf_dict)
 
     if(extractor_type=='deep'):
         nn_path=conf_dict['nn_path']
-        nn_reader=deep.reader.NNReader(preproc3D)
+        nn_reader=deep.reader.NNReader(preproc)
         extractor=nn_reader(nn_path)
     elif extractor_type=='text':
         text_path=conf_dict['text_path']
@@ -53,6 +53,8 @@ def select_preproc(conf_dict):
         return deep.tools.ImgPreprocProj()
     elif preproc=='time':    
         return deep.tools.ImgPreproc2D()
+    elif preproc=='1D':
+        return deep.tools.ImgPreproc1D()
     raise Exception("No preproc")
 
 if __name__ == "__main__":

@@ -31,6 +31,8 @@ class Convet(deep.NeuralNetwork):
 
     def __call__(self,in_img):
         img4D=self.preproc.apply(in_img)
+
+        #print(img4D.shape)
         return self.__features__(img4D).flatten()
     
     def get_category(self,img):
@@ -116,14 +118,15 @@ def get_updates(loss,out_layer):
     return updates
 
 def default_params():
-    return {"input_shape":(None,2,60,60),"num_filters":16,"n_hidden":100,
+    return {"input_shape":(None,3,60,60),"num_filters":16,"n_hidden":100,
               "filter_size":(5,5),"pool_size":(4,4),"p":0.5, "l1_reg":0.001}
 
-def get_model(preproc,nn_path=None,compile=True,l1_reg=True,model_p=0.1):
+def get_model(preproc,nn_path=None, params=None, compile=True,l1_reg=True,model_p=0.1):
     if(nn_path==None):
         compile=True
     if(compile):
-        params=default_params()
+        if(params==None):
+            params=default_params()
         old_shape=params['input_shape']
         params['input_shape']=(old_shape[0],preproc.dim,old_shape[2],old_shape[3])
         params['n_cats']= data.get_n_cats(y)
@@ -133,9 +136,13 @@ def get_model(preproc,nn_path=None,compile=True,l1_reg=True,model_p=0.1):
         return nn_reader(nn_path,model_p)
 
 if __name__ == "__main__":
-    img_path='../dataset4/AS2/train'
-    nn_path='../dataset4/AS2/nn_as2'
-    preproc=tools.ImgPreproc2D()
+    img_path='../bad_methods/two/train'#'../ensemble/hard_nn/train'
+    nn_path='../bad_methods/two/nn_full'#'../ensemble/hard_nn/nn_hard_self'
+    
+    img_path='../bad_methods/one/train'
+    nn_path='../bad_methods/one/nn_full'
+
+    preproc=tools.ImgPreproc1D()
     imgset=imgs.make_imgs(img_path,norm=True)
     
     print("read")
@@ -145,6 +152,6 @@ if __name__ == "__main__":
     #print(extract_cat.dir.items())
     print(x.shape)
     print(y.shape)
-    model=get_model(preproc,nn_path,compile=False,model_p=0.1)
-    train.test_super_model(x,y,model,num_iter=100)
+    model=get_model(preproc,nn_path,compile=False,model_p=0.0)
+    train.test_super_model(x,y,model,num_iter=1)
     model.get_model().save(nn_path)
