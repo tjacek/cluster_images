@@ -1,23 +1,26 @@
 import paths.files
 import shutil
+import utils.actions
 
 class SelectModulo(object):
-    def __init__(self, m=0):
+    def __init__(self,m=0):
         self.m=m
 
-    def __call__(self,n):
-        return  (n % 2)==self.m    
+    def __call__(self,action):
+        if(type(action)==utils.actions.Action):
+            n=action.person
+        return (n % 2)==self.m
 
-def select_data(in_path,out_path,prefix="bin"):
-    files.make_dir(out_path)
-    all_files=files.get_files(in_path)
-    prefix_files=[f for f in all_files 
-	                if files.extract_prefix(f)==prefix]
-    in_prefix_files=files.append_path(in_path,prefix_files)
-    out_prefix_files=files.append_path(out_path,prefix_files)
-    for in_file,out_file in zip(in_prefix_files,out_prefix_files):
-        shutil.copyfile(in_file, out_file)
-        print(in_file)
+class SelectPerson(object):
+    def __init__(self, n_person,neg):
+        self.n=n_person
+        self.neg=neg
+        
+    def __call__(self,action):
+        bool_value=(self.n==action.person)
+        if(self.neg):
+            bool_value=not bool_value
+        return bool_value    
     
 if __name__ == "__main__":
     path="../dataset/"
