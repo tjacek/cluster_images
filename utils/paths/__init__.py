@@ -2,6 +2,8 @@ import re
 
 class Path(object):
     def __init__(self, text):
+        if(type(text)==list):
+            text='/'.join(text)
         if(type(text)==Path):
             text=str(text)
         assert(type(text)==str)
@@ -58,6 +60,11 @@ class Path(object):
         else:
             return self
 
+    def exchange(self,old,new):
+        str_path=str(self)
+        str_path=str_path.replace(old,new) #We use string method
+        return Path(str_path)
+
     def replace(self,other_path):
         new_path=self.copy()
         name=other_path.get_name()
@@ -75,6 +82,14 @@ class Path(object):
         new_path=self.copy()
         new_path.items=self.items[0:len(self)-k]
         return new_path
+
+    def subpaths(self):
+        sub_paths=[]
+        current_path=[]
+        for item_i in self.items:
+            current_path.append(item_i)
+            sub_paths.append(Path(current_path))
+        return sub_paths
 
 def clean_item(item_i):
     if(type(item_i)==Path):
