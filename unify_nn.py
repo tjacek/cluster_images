@@ -20,7 +20,6 @@ def make_unified_feats(nn_paths,img_path,preproc='proj',weights=None):
     feat_dir=dict([ combine_nn(img_i,True)
                     for img_i in imgset])     
     feat_dict=basic.combine.NewPathDict(feat_dir)
-    #return basic.external.save_features(out_path,feat_dict)
     return feat_dict
 
 @dirs.apply_to_dirs
@@ -83,15 +82,11 @@ if __name__ == "__main__":
     #nn_paths=[ Path('../dataset2a/exp3/nn_full_100'), 
     #           Path('../dataset2a/exp3/nn_select')]           
     
-    nn_paths=[ Path('../dataset1a/exp1/nn_full'), 
-               Path('../dataset1a/exp1/nn_18')] 
+    #nn_paths=[ Path('../ensemble/10_nn/nn_10'), 
+    #           Path('../ensemble/basic_nn/nn_basic')] 
+    nn_paths=[ Path('../ensemble/basic_nn/nn_basic'), 
+               Path('../ensemble/10_nn/nn_10')] 
 
-    img_path=Path('../dataset1a/exp1/full')
-    out_path=Path('../dataset1a/unified/seq')
-    unify(nn_paths,img_path,out_path,weights=[1.0,2.0])
-
-    #conf_paths=['conf/1exp1.cfg','conf/1exp2.cfg']	
-    #weights=[1.0,1.0]
-    #out_path='../dataset1/exp3'
-    #img_path='../dataset1/exp3/cats'
-    #unify_feats(conf_paths,weights,out_path,img_path)
+    img_path=Path('../dataset1a/AS3/full') #'../ensemble/full')
+    out_path=Path('../dataset1a/AS3/seq')#'../ensemble/seq')
+    unify(nn_paths,img_path,out_path,weights=[1.0,1.0])
