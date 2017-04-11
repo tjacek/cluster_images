@@ -33,6 +33,32 @@ class SeqDataset(object):
     def is_masked(self):
         return ('mask' in self.seq_dict['params'])
 
+    def to_instances(self):
+        n=len(self)
+        return [ self.get_instance(j) 
+                  for j in range(n)]
+
+    def get_instance(self,j):
+        data_keys=[ key_i 
+                      for key_i,value_i in self.items()
+                        if(type(value_i)!=dict)]
+        instance={ key_i:self.seq_dict[key_i][j] 
+                    for key_i in data_keys}
+        return instance
+
+def from_instances(instances,params):
+    keys=instances[0].keys()
+    dataset={ key_i:assemble_instances(key_i,instances)
+                for key_i in keys}
+    dataset['params']=params
+    return SeqDataset(dataset)    
+
+def assemble_instances(key,instances, numpy_key='x'):
+    value=[ instance_i[key]
+            for instance_i in instances ]
+    if(key==numpy_key):
+        return np.array(value)
+    return value    
 
 def seq_dataset(in_path,dataset_format='cp_dataset'):
     action_reader=utils.actions.read.ReadActions(dataset_format)

@@ -2,7 +2,7 @@
 import sys,os
 sys.path.append(os.path.abspath('../cluster_images'))
 import utils
-import utils.files as files
+import utils.paths.files as files
 import numpy as np
 import split,to_dataset
 import deep.lstm
@@ -10,13 +10,14 @@ from sklearn.metrics import classification_report,confusion_matrix
 import utils.data
 import deep.reader
 
-def make_model(train_dataset,make=True,n_epochs=0):
+def make_model(train_dataset,make=True,n_epochs=0,p=0.5):
     if(make):
         hyper_params=deep.lstm.get_hyper_params(train_dataset)
+        hyper_params['p']=p
         model=deep.lstm.compile_lstm(hyper_params)
     else:
         nn_reader=deep.reader.NNReader()
-        model= nn_reader(nn_path,0.5)
+        model= nn_reader(nn_path,p)
     if(n_epochs!=0):
         return train_model(model,train_dataset,epochs=n_epochs)
     return model
@@ -94,12 +95,15 @@ def get_batches(x,batch_size=6):
                for i in range(n_batches)]
 
 if __name__ == "__main__":
-    path='../dataset1/AS1/seq'
-    nn_path='../dataset1/AS1/lstm_as1'
-    dataset=to_dataset.seq_dataset(path)
+    path='../dataset2a/exp2/seq'
+    nn_path='../dataset2a/exp2/lstm_full'
+    #path='../ensemble/feat'
+    #nn_path='../ensemble/lstm'
+    dataset=to_dataset.seq_dataset(path,dataset_format='basic_dataset')
+    print(dataset.params())
     new_dataset=to_dataset.masked_dataset(dataset)
     train,test=split.person_dataset(new_dataset)
-    model=make_model(train,False,n_epochs=150)
+    model=make_model(train,False,n_epochs=20,p=0.5)
     model.get_model().save(nn_path)    
     check_model(model,test)
     #check_distribution(model,test)
