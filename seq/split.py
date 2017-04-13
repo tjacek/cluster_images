@@ -29,8 +29,4 @@ def get_modulo_dataset():
 
 def get_equal_dataset(k=1):
     selector=lambda person_i: person_i==k
-    #def selector(person_i):
-        #print(person_i)
-        #print(person_i==k)
-    #    return person_i==k
     return SplitDataset('persons', selector)
