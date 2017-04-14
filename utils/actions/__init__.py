@@ -71,14 +71,21 @@ def new_action(old_action,new_seq):
     return Action(old_action.name,new_seq,
                       old_action.cat,old_action.person)
 
-def apply_select(in_path,out_path=None,action_type='even',dataset_format='cp_dataset',norm=False):
+def apply_select(in_path,out_path=None,selector=None, 
+                 dataset_format='cp_dataset',norm=False):
+    if(selector==None):
+        selector=utils.selection.SelectModulo()
     read_actions=utils.actions.read.ReadActions(dataset_format,norm)
     actions=read_actions(in_path)
-    s_actions=select_actions(actions,action_type)
+    s_actions=acts=[ action_i
+                      for action_i in actions
+                        if selector(action_i)]
+    #select_actions(actions,action_type)
     if(out_path==None):
         return s_actions
     else:
-        utils.actions.read.save_actions(s_actions,out_path)
+        save_actions=utils.actions.read.SaveActions()
+        save_actions(s_actions,out_path)
 
 def transform_actions(in_path,out_path,transformation,seq_transform=True,dataset_format='cp_dataset'):
     read_actions=utils.actions.read.ReadActions(dataset_format,False)
@@ -90,31 +97,24 @@ def transform_actions(in_path,out_path,transformation,seq_transform=True,dataset
     else:
         transformed_actions=[ action_i.transform(transformation)
                               for action_i in actions]
-    #show_actions(transformed_actions)
-    utils.actions.read.save_actions(transformed_actions,out_path)
-
-def select_actions(actions,action_type='odd'):
-    if(action_type=='odd'):
-        action_id=1
-    else:
-        action_id=0
-    select=utils.selection.SelectModulo(action_id)
-    acts=[ action_i
-           for action_i in actions
-             if select(action_i.person)]
-    return acts
+   
+    save_actions=utils.actions.read.SaveActions()
+    save_actions(transformed_actions,out_path)
 
 def show_actions(actions):
     print([len(action_i) for action_i in actions])
 
 if __name__ == "__main__":
-    in_path="../ensemble2/preproc/depth_"
-    out_path="../ensemble2/preproc/time"
+    in_path="../ensemble2/preproc/basic/time"
+    out_path="../ensemble2/preproc/basic/kkllone_frame"
     #bound_frames=utils.actions.frames.ProjFrames(False) 
     #bound_frames=utils.actions.frames.BoundFrames(True,None,smooth_img=False) #utils.actions.frames.ProjFrames(False) 
-    #transform_actions(in_path,out_path,bound_frames,seq_transform=True,dataset_format='cp_dataset')
-    in_path="../ensemble2/preproc/unified"#preproc/unified'
-    out_path="../ensemble2/preproc/train" #/preproc/train'
-    apply_select(in_path,out_path,action_type='odd',dataset_format='cp_dataset')
+    #rescale=utils.actions.unify.Rescale()
+    #transform_actions(in_path,out_path,rescale,seq_transform=False,dataset_format='cp_dataset')
+    
+    in_path="../cross/full"#preproc/unified'
+    out_path="../cross/5_set/train_5" #/preproc/train'
+    selector=utils.selection.SelectPerson(5,True)
+    apply_select(in_path,out_path, selector,dataset_format='cp_dataset')
 
     
