@@ -18,9 +18,9 @@ def cp_dataset(action_dir):
     if(len(names)==4):
         cat=names[0].replace('a','')
         person=int(names[1].replace('s',''))
-        print(cat)
-        print(person)
-        print(name)
+        #print(cat)
+        #print(person)
+        #print(name)
         return name,cat,person
     raise Exception("Wrong dataset format " + name +" " + str(len(names)))
 
@@ -53,7 +53,7 @@ FORMAT_DIR={'cp_dataset':cp_dataset,'basic_dataset':basic_dataset,
             'cropped_dataset':cropped_dataset}
 
 class ReadActions(object):
-    def __init__(self, dataset_format,norm=False,as_dict=False):
+    def __init__(self, dataset_format,img_seq=True,norm=False,as_dict=False,):
         if(type(dataset_format)==utils.paths.Path):
             dataset_format=str(dataset_format)
         if(type(dataset_format)==str):
@@ -62,7 +62,8 @@ class ReadActions(object):
             self.dataset_format=dataset_format
         self.norm=norm
         self.as_dict=as_dict
-        
+        self.img_seq=img_seq
+
     def __call__(self,action_path):
         action_dirs=dirs.bottom_dirs(action_path)
         if(len(action_dirs)==0):
@@ -78,9 +79,12 @@ class ReadActions(object):
 
     def parse_action(self,action_dir):
         name,cat,person=self.dataset_format(action_dir)
-        img_seq=imgs.make_imgs(action_dir,norm=self.norm)
+        if(self.img_seq):
+            data_seq=imgs.make_imgs(action_dir,norm=self.norm)
+        else:
+            data_seq=read_text_action(action_dir)
         assert len(img_seq)>0
-        return utils.actions.Action(name,img_seq,cat,person)
+        return utils.actions.Action(name,data_seq,cat,person)
 
 class SaveActions(object):
     def __init__(self,unorm=False,img_actions=True):
@@ -100,6 +104,11 @@ class SaveActions(object):
         for action_i in actions:
             cat_path_i=outpath.append(action_i.cat,copy=True)
             if(self.img_actions):
-                action_i.save(cat_path_i,unorm)
+                action_i.save(cat_path_i,self.unorm)
             else:
                 action_i.to_text_file(cat_path_i)
+
+def read_text_action(input_path):
+    lines=paths.files.read_file(input_path,lines=True)
+    return [paths.files.string_to_vector(line_i)
+                for line_i in lines]
