@@ -67,6 +67,10 @@ class Action(object):
         text_action=files.seq_to_string(self.img_seq)
         files.save_string(full_outpath,text_action)
 
+    def to_pairs(self):
+        return [ (self.cat,img_i)
+                 for img_i in self.img_seq]
+
 def new_action(old_action,new_seq):
     return Action(old_action.name,new_seq,
                       old_action.cat,old_action.person)
@@ -112,9 +116,9 @@ if __name__ == "__main__":
     #rescale=utils.actions.unify.Rescale()
     #transform_actions(in_path,out_path,rescale,seq_transform=False,dataset_format='cp_dataset')
     
-    in_path="../cross/full"#preproc/unified'
-    out_path="../cross/5_set/train_5" #/preproc/train'
-    selector=utils.selection.SelectPerson(5,True)
+    in_path="../cross/10_set/train_10"#preproc/unified'
+    out_path="../cross/10_set/train_select" #/preproc/train'
+    selector=utils.selection.SelectSet(['17','18'],'cat') #SelectPerson(5,True)
     apply_select(in_path,out_path, selector,dataset_format='cp_dataset')
 
     
