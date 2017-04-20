@@ -1,3 +1,7 @@
+import numpy as np
+import utils.actions
+from sklearn.feature_selection import SelectFromModel
+
 def action_pairs(actions):
     pairs=[]
     for action_i in actions:
@@ -11,3 +15,6 @@ def to_dataset(pairs):
         for pair_i in pairs]
     X=np.array(X)
     return X,y	
+
+if __name__ == "__main__":
+
