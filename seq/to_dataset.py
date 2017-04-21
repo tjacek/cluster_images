@@ -27,6 +27,9 @@ class SeqDataset(object):
     def items(self):
         return self.seq_dict.items()
     
+    def keys(self):
+        return self.seq_dict.keys()
+
     def params(self):
         return self.seq_dict['params'].keys()
 
@@ -62,7 +65,6 @@ def assemble_instances(key,instances, numpy_key='x'):
 
 def seq_dataset(in_path,dataset_format='cp_dataset'):
     action_reader=utils.actions.read.ReadActions(dataset_format)
-    #actions=action_reader(in_path)
 
     all_paths=dirs.all_files(in_path)
     seqs=[ parse_seq(path_i,action_reader,False)
@@ -81,13 +83,12 @@ def seq_dataset(in_path,dataset_format='cp_dataset'):
     return SeqDataset(dataset)
 
 def parse_seq(path_i,action_reader,flat=True):
-    #utils.actions.ReadActions(path_i)
     if(flat):
         name=path_i.get_name()
         cat=path_i[-2]
         person=utils.text.get_person(name)
     else:
-        name,cat,person= action_reader.dataset_format(path_i)#utils.actions.cp_dataset(path_i)
+        name,cat,person= action_reader.dataset_format(path_i)
     lines=files.read_file(str(path_i))
     assert(len(lines)>0)
     parsed_data=parse_text(lines)
