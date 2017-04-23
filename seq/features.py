@@ -8,10 +8,6 @@ import utils.paths.files as files
 import utils.pcloud as pcloud
 import basic
 import basic.external as ext
-        
-#def transform_external(in_file,out_file,short_names,dataset_format='cp_dataset'):
-#    extractor=ext.read_external(str(in_path),short_names) 
-#    action_reader=utils.actions.read.ReadActions(dataset_format)
 
 @paths.path_args
 def extract_features(in_path,ext_path,out_path,
