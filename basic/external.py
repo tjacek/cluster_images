@@ -9,7 +9,7 @@ import utils.paths
 import basic.reduction as redu
 import basic.combine
 
-class ExternalFeats():
+class ExternalFeats(object):
     def __init__(self, raw_dict,short_name=False):
         self.raw_dict = raw_dict
         self.short_name=short_name
@@ -67,15 +67,17 @@ def save_features(out_path,feat_dict):
     files.save_string(out_path,text_dict)
 
 def global_reduce(data,transform):
-    names=dict([ (data_i.name,i) 
-                  for i,data_i in enumerate(data)])
+    names={ data_i.name:i 
+                  for i,data_i in enumerate(data)}
     data_prim=transform(data)
-    feat_dict=dict([(name_i,data_prim[i])
-                      for name_i,i in names.items()])
+    feat_dict={ name_i:data_prim[i]
+                    for name_i,i in names.items()}
     return feat_dict#basic.combine.PathDict(feat_dict)
 
 def local_reduce(data,transform): 
     print("%%%%%%%%%%%%%%%%%%%%%%%")
+    #print(type(transform))
+    #print(type(transform.preproc))
     feat_dict={ img_i.name:transform(img_i)
                 for img_i in data
                   if img_i!=None}
