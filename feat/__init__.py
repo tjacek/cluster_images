@@ -2,6 +2,14 @@ import numpy as np
 import utils.actions
 from sklearn.feature_selection import SelectFromModel
 
+def lasso_model(X,y):
+    clf = linear_model.Lasso(alpha=0.1)
+    clf.fit(X,y)
+    #lsvc = LinearSVC(C=0.01, penalty="l1", dual=False).fit(X, y)
+    model = SelectFromModel(clf, prefit=True)
+    return model
+#    X_new = model.transform(X)
+
 def action_pairs(actions):
     pairs=[]
     for action_i in actions:
