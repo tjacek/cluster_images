@@ -67,9 +67,13 @@ class Action(object):
         text_action=files.seq_to_string(self.img_seq)
         files.save_string(full_outpath,text_action)
 
-    def to_pairs(self):
-        return [ (self.cat,img_i)
-                 for img_i in self.img_seq]
+    def to_pairs(self,index=None):
+        if(index==None):
+            return [ (self.cat,img_i)
+                      for img_i in self.img_seq]
+        else:
+            return [ (self.cat,img_i,index)
+                      for img_i in self.img_seq]
 
 def new_action(old_action,new_seq):
     return Action(old_action.name,new_seq,
@@ -84,7 +88,6 @@ def apply_select(in_path,out_path=None,selector=None,
     s_actions=acts=[ action_i
                       for action_i in actions
                         if selector(action_i)]
-    #select_actions(actions,action_type)
     if(out_path==None):
         return s_actions
     else:
@@ -94,7 +97,6 @@ def apply_select(in_path,out_path=None,selector=None,
 def transform_actions(in_path,out_path,transformation,seq_transform=True,dataset_format='cp_dataset'):
     read_actions=utils.actions.read.ReadActions(dataset_format,False)
     actions=read_actions(in_path)
-    #show_actions(actions)
     if(seq_transform):
         transformed_actions=[ action_i(transformation)
                            for action_i in actions]

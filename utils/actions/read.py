@@ -53,13 +53,8 @@ FORMAT_DIR={'cp_dataset':cp_dataset,'basic_dataset':basic_dataset,
             'cropped_dataset':cropped_dataset}
 
 class ReadActions(object):
-    def __init__(self, dataset_format,img_seq=True,norm=False,as_dict=False,):
-        if(type(dataset_format)==utils.paths.Path):
-            dataset_format=str(dataset_format)
-        if(type(dataset_format)==str):
-            self.dataset_format=FORMAT_DIR[dataset_format]
-        else:
-            self.dataset_format=dataset_format
+    def __init__(self, dataset_format,img_seq=True,norm=False,as_dict=False):
+        self.dataset_format=get_dataset_format(dataset_format)
         self.norm=norm
         self.as_dict=as_dict
         self.img_seq=img_seq
@@ -83,7 +78,7 @@ class ReadActions(object):
             data_seq=imgs.make_imgs(action_dir,norm=self.norm)
         else:
             data_seq=read_text_action(action_dir)
-        assert len(img_seq)>0
+        assert len(data_seq)>0
         return utils.actions.Action(name,data_seq,cat,person)
 
 class SaveActions(object):
@@ -107,6 +102,27 @@ class SaveActions(object):
                 action_i.save(cat_path_i,self.unorm)
             else:
                 action_i.to_text_file(cat_path_i)
+
+class NewActions(object):
+    def __init__(self,dataset_format):
+        self.dataset_format=get_dataset_format(dataset_format)
+
+    def __call__(self,actions):
+        print(type(actions))
+        return [ self.parse_action(name_i,data_i)
+                  for name_i,data_i in actions.items()]
+
+    def parse_action(self,name_i,seq_i):
+        name,cat,person=self.dataset_format(name_i)
+        return utils.actions.Action(name,str(cat),str(person),seq_i)
+
+def get_dataset_format(dataset_format):
+    if(type(dataset_format)==utils.paths.Path):
+            dataset_format=str(dataset_format)
+    if(type(dataset_format)==str):
+        return FORMAT_DIR[dataset_format]
+    else:
+        return dataset_format
 
 def read_text_action(input_path):
     lines=paths.files.read_file(input_path,lines=True)

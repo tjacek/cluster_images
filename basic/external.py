@@ -38,6 +38,9 @@ class ExternalFeats(object):
         #print(self.raw_dict.keys())
         #raise Exception("Key not found:"+name)
 
+    def items(self):
+        return self.raw_dict.items()
+
     def names(self):
         return self.raw_dict.keys()
 
@@ -70,6 +73,7 @@ class ExternalFeats(object):
         if(ordered):
             actions={ action_i:order_action(value_i)
                        for action_i,value_i in actions.items()}
+        print(actions.keys())
         return actions
 
     def get_actions_names(self):

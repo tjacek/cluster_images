@@ -47,7 +47,8 @@ class Path(object):
             new_items=new_items.items#str(new_items)
         if(type(new_items)==str):
             new_items=new_items.split("/")
-        assert(type(new_items)==list)
+        if(type(new_items)!=list):
+            raise Exception("Wrong type " + str(type(new_items)))
         extended_path=self.get_path(copy)
         for str_i in new_items:
             if(str_i!=''):
@@ -76,7 +77,13 @@ class Path(object):
         name_split=name.split(".")
         if(len(name_split) < 2):
             raise Exception("no postfix in " + name)
-        return name_split[1]    
+        return name_split[1]
+
+    def get_dir(self):
+        str_path=str(self)
+        path_name=self.get_name()
+        dir_path=str_path.replace(path_name,'')
+        return dir_path    
 
     def first(self,k):
         new_path=self.copy()

@@ -1,7 +1,7 @@
 import sys,os
 sys.path.append(os.path.abspath('../cluster_images'))
 import numpy as np
-import utils.actions
+import utils.actions,utils.actions.read
 import basic.external
 from sklearn.feature_selection import SelectFromModel
 
@@ -30,5 +30,13 @@ def to_dataset(pairs):
 
 if __name__ == "__main__":
     in_path='../ensemble/basic_nn/feat.txt'
+    out_path='../ensemble/basic_nn/seq2'
     feat_dict=basic.external.read_external(in_path)
-    print(feat_dict.divided_by_action())
+    action_dict=feat_dict.divided_by_action()
+    new_actions=utils.actions.read.NewActions('cp_dataset')
+    actions=new_actions(action_dict)
+    save_actions=utils.actions.read.SaveActions(img_actions=False)
+    save_actions(actions,out_path)
+
+
+    #print(feat_dict.divided_by_action())
