@@ -14,40 +14,54 @@ class ExternalFeats(object):
         self.raw_dict = raw_dict
         self.short_name=short_name
 
+    def __getitem__(self,key):
+        new_key=self.get_name(path_i)
+        return self.raw_dict[new_key]
+
     def __call__(self,img_i):
         if(type(img_i)==str):
             return self.raw_dict[img_i]
+        return self[img_i.name]
+        #if(self.short_name):
+        #    name=str(img_i.name.get_name())
+        #else:
+        #    name=str(img_i.name)
+        #if(name in self.raw_dict):        
+        #    return self.raw_dict[name]
         
-        if(self.short_name):
-            name=str(img_i.name.get_name())
-        else:
-            name=str(img_i.name)
-        if(name in self.raw_dict):        
-            return self.raw_dict[name]
-        
-        new_key=name.split('/')[-1]
-        if(new_key in self.raw_dict):
-            return self.raw_dict[new_key]
-        print(self.raw_dict.keys())
-        raise Exception("Key not found:"+name)
+        #new_key=name.split('/')[-1]
+        #if(new_key in self.raw_dict):
+        #    return self.raw_dict[new_key]
+        #print(self.raw_dict.keys())
+        #raise Exception("Key not found:"+name)
 
     def names(self):
         return self.raw_dict.keys()
 
     def short_names(self):
-        self.raw_dict=dict([ (utils.paths.Path(key_i).get_name(),value_i)
-                           for key_i,value_i in self.raw_dict.items()])
-        return self
+        return { self.get_name(key_i):value_i
+                           for key_i,value_i in self.raw_dict.items()}
         
     def filter_names(self,keys):
         return [key_i  
                   for key_i in keys
                     if key_i in self.raw_dict.keys()]
 
-@utils.timer.clock
-def transform_features(in_path,out_path,extractor):
+    def get_name(self,path_i):
+        if(self.short_name==False):
+            return str(path_i)
+        if(type(path_i)==str):
+            path_i=utils.paths.Path(path_i)
+        return path_i.get_name()
+
+def make_external_feat(in_path):
     text=files.read_file(in_path,lines=False)
     feat_dict=files.txt_to_dict(text)
+    return feat_dict
+
+@utils.timer.clock
+def transform_features(in_path,out_path,extractor):
+    feat_dict=make_external_feat(in_path)
     data=[imgs.Image(name_i,np.expand_dims(vec_i,1))
             for name_i,vec_i in feat_dict.items()]
     external_features(out_path,data,extractor,array_extr=True)
@@ -84,7 +98,7 @@ def local_reduce(data,transform):
     return feat_dict#basic.combine.PathDict(feat_dict)
 
 def read_external(in_path,short_name=False):
-    text='\n'.join(files.read_file(in_path))
+    text=files.read_file(in_path,lines=False)
     feat_dict=files.txt_to_dict(text)
     get_features=ExternalFeats(feat_dict,short_name)
     return get_features
