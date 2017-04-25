@@ -1,5 +1,8 @@
+import sys,os
+sys.path.append(os.path.abspath('../cluster_images'))
 import numpy as np
 import utils.actions
+import basic.external
 from sklearn.feature_selection import SelectFromModel
 
 def lasso_model(X,y):
@@ -12,17 +15,20 @@ def lasso_model(X,y):
 
 def action_pairs(actions):
     pairs=[]
-    for action_i in actions:
-        pairs+=action_i.to_pairs()
+    for i,action_i in enumerate(actions):
+        pairs+=action_i.to_pairs(i)
     return pairs
 
 def to_dataset(pairs):
-    y=[ pair_i[0] 
-        for pair_i in pairs]
-    X=[ pair_i[1] 
-        for pair_i in pairs]
+    def data_helper(k):
+        return [ pair_i[k] 
+                 for pair_i in pairs]
+    y= data_helper(0)
+    X= data_helper(1)
     X=np.array(X)
     return X,y	
 
 if __name__ == "__main__":
-
+    in_path='../ensemble/basic_nn/feat.txt'
+    feat_dict=basic.external.read_external(in_path)
+    print(feat_dict.divided_by_action())

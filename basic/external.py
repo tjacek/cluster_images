@@ -6,13 +6,16 @@ import utils.paths.dirs as dirs
 import utils.imgs as imgs
 import utils.paths.files as files
 import utils.paths
+import utils.text
 import basic.reduction as redu
 import basic.combine
-
+from sets import Set
+ 
 class ExternalFeats(object):
     def __init__(self, raw_dict,short_name=False):
         self.raw_dict = raw_dict
         self.short_name=short_name
+        self.extract_action=lambda path_i:path_i.items[-2]
 
     def __getitem__(self,key):
         new_key=self.get_name(path_i)
@@ -53,6 +56,37 @@ class ExternalFeats(object):
         if(type(path_i)==str):
             path_i=utils.paths.Path(path_i)
         return path_i.get_name()
+
+    def divided_by_action(self,ordered=True):
+        action_names=self.get_actions_names()
+        actions={ action_i:[]
+                   for action_i in action_names}
+        extract_number=utils.text.ExtractNumber(use_path=True)
+        for key_i,value_i in self.raw_dict.items():
+            path_i=utils.paths.Path(key_i)
+            action_i=self.extract_action(path_i)
+            i=extract_number(path_i)
+            actions[action_i].append( (i,value_i))
+        if(ordered):
+            actions={ action_i:order_action(value_i)
+                       for action_i,value_i in actions.items()}
+        return actions
+
+    def get_actions_names(self):
+        actions=Set()
+        for key_i in self.raw_dict.keys():
+            path_i=utils.paths.Path(key_i)
+            action_i=self.extract_action(path_i)
+            actions.add(action_i) 
+        return list(actions)
+
+def order_action(action_list):
+    n=len(action_list)
+    action_set={ action_i[0]:action_i[1]
+                  for action_i in action_list }
+    return [action_set[i] 
+              for i in range(n)]
+
 
 def make_external_feat(in_path):
     text=files.read_file(in_path,lines=False)
