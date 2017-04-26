@@ -17,7 +17,7 @@ class ExternalFeats(object):
         self.short_name=short_name
         self.extract_action=lambda path_i:path_i.items[-2]
 
-    def __getitem__(self,key):
+    def __getitem__(self,path_i):
         new_key=self.get_name(path_i)
         return self.raw_dict[new_key]
 
@@ -38,8 +38,12 @@ class ExternalFeats(object):
         #print(self.raw_dict.keys())
         #raise Exception("Key not found:"+name)
 
-    def items(self):
-        return self.raw_dict.items()
+    def items(self,path=False):
+        if(path):
+            return [ (utils.paths.Path(key_i),value_i)
+                      for key_i,value_i in self.raw_dict.items()]
+        else:
+            return self.raw_dict.items()
 
     def names(self):
         return self.raw_dict.keys()
@@ -73,7 +77,6 @@ class ExternalFeats(object):
         if(ordered):
             actions={ action_i:order_action(value_i)
                        for action_i,value_i in actions.items()}
-        print(actions.keys())
         return actions
 
     def get_actions_names(self):
