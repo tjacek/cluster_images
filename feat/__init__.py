@@ -19,7 +19,6 @@ def reduce_feat(in_path,model):
 def lasso_model(X,y,transform=False):
     clf = linear_model.Lasso(alpha=0.1)
     clf.fit(X,y)
-    #lsvc = LinearSVC(C=0.01, penalty="l1", dual=False).fit(X, y)
     model = SelectFromModel(clf, prefit=True)
     if(transform):
         return model.transform(X)
@@ -67,8 +66,8 @@ def action_feat(feat_dict,out_path,dataset_format='cp_dataset'):
     save_actions(actions,out_path)
     
 if __name__ == "__main__":
-    in_path='../ensemble/basic_nn/feat.txt'
-    out_path='../ensemble/basic_nn/seq2'
+    in_path='../ensemble/hard_nn/feat.txt'
+    out_path='../ensemble/hard_nn/seq2'
     new_dict=reduce_feat(in_path,lasso_model)
     action_feat(new_dict,out_path)
     #feat_dict=basic.external.read_external(in_path)
