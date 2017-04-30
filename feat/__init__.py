@@ -3,8 +3,7 @@ sys.path.append(os.path.abspath('../cluster_images'))
 import numpy as np
 import utils.actions,utils.actions.read
 import basic.external
-from sklearn.feature_selection import SelectFromModel
-from sklearn import linear_model
+import feat.select_algs
 
 def reduce_feat(in_path,model):
     feat_dict=basic.external.read_external(in_path)
@@ -59,7 +58,7 @@ def action_feat(feat_dict,out_path,dataset_format='cp_dataset'):
 if __name__ == "__main__":
     in_path='../ensemble/hard_nn/feat.txt'
     out_path='../ensemble/hard_nn/seq2'
-    new_dict=reduce_feat(in_path,lasso_model)
+    new_dict=reduce_feat(in_path, feat.select_algs.lasso_model)
     action_feat(new_dict,out_path)
     #feat_dict=basic.external.read_external(in_path)
     #to_dataset=ToDataset()
