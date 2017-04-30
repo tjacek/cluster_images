@@ -16,15 +16,6 @@ def reduce_feat(in_path,model):
     new_feat_dict=to_feat_dict(new_X,names)
     return new_feat_dict
 
-def lasso_model(X,y,transform=False):
-    clf = linear_model.Lasso(alpha=0.1)
-    clf.fit(X,y)
-    model = SelectFromModel(clf, prefit=True)
-    if(transform):
-        return model.transform(X)
-    else:
-        return model
-
 class ToFeatDict(object):
     def __init__(self,  dataset_format=None):
         if(dataset_format==None):
