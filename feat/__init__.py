@@ -10,7 +10,7 @@ def reduce_feat(in_path,model):
     to_dataset=ToDataset()
     X,y,names=to_dataset(feat_dict)
     new_X=model(X,y,True)
-    print(new_X.shape)
+    print("New shape %d " % new_X.shape)
     to_feat_dict=ToFeatDict()
     new_feat_dict=to_feat_dict(new_X,names)
     return new_feat_dict
