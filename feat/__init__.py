@@ -10,7 +10,7 @@ def reduce_feat(in_path,model):
     to_dataset=ToDataset()
     X,y,names=to_dataset(feat_dict)
     new_X=model(X,y,True)
-    print("New shape %d " % new_X.shape)
+    print("New shape %d " % new_X.shape[1])
     to_feat_dict=ToFeatDict()
     new_feat_dict=to_feat_dict(new_X,names)
     return new_feat_dict
@@ -56,8 +56,8 @@ def action_feat(feat_dict,out_path,dataset_format='cp_dataset'):
     save_actions(actions,out_path)
     
 if __name__ == "__main__":
-    in_path='../ensemble/hard_nn/feat.txt'
-    out_path='../ensemble/hard_nn/seq2'
+    in_path='../ensemble/basic_nn/feat.txt'
+    out_path='../ensemble/basic_nn/seq2'
     new_dict=reduce_feat(in_path, feat.select_algs.lasso_model)
     action_feat(new_dict,out_path)
     #feat_dict=basic.external.read_external(in_path)
