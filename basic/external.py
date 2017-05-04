@@ -87,6 +87,10 @@ class ExternalFeats(object):
             actions.add(action_i) 
         return list(actions)
 
+    def save(self,out_path):
+        text_dict=files.dict_to_txt(self)
+        files.save_string(out_path,text_dict)
+
 def order_action(action_list):
     n=len(action_list)
     action_set={ action_i[0]:action_i[1]
@@ -116,10 +120,6 @@ def external_features(out_path,data,extractor,weight=1.0,array_extr=False):
         for key_i in feat_dict.keys():
             feat_dict[key_i]=weight*feat_dict[key_i]
     save_features(out_path,feat_dict)
-    
-def save_features(out_path,feat_dict):
-    text_dict=files.dict_to_txt(feat_dict)
-    files.save_string(out_path,text_dict)
 
 def global_reduce(data,transform):
     names={ data_i.name:i 
