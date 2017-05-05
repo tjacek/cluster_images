@@ -59,6 +59,10 @@ def unify_feat(in_paths,out_path=None):
         unified_dict.save(out_path)
     return unified_dict                   
 
+def feat_to_actions(in_path,out_path,dataset_format='cp_dataset'):
+    feat_dict=basic.external.read_external(in_path)
+    action_feat(feat_dict,out_path,dataset_format)
+
 def action_feat(feat_dict,out_path,dataset_format='cp_dataset'):
     action_dict=feat_dict.divided_by_action()
     new_actions=utils.actions.read.NewActions(dataset_format)
@@ -73,20 +77,11 @@ def default_format(dataset_format):
         return dataset_format
     
 if __name__ == "__main__":
-    in_path='../ensemble/basic_nn/feat.txt'
-    out_path='../ensemble/18_nn/seq2'
-    paths=['../ensemble/basic_nn/feat2.txt','../ensemble/18_nn/feat2.txt']
-    #new_dict=reduce_feat(in_path, feat.select_algs.lasso_model,'../ensemble/basic_nn/feat2.txt')
-    #action_feat(new_dict,out_path)
-    unify_feat(paths,out_path='../ensemble/select/feat.txt')
-   # unify_feat([],out_path=None)
-    #feat_dict=basic.external.read_external(in_path)
-    #to_dataset=ToDataset()
-    #X,y,names=to_dataset(feat_dict)
-
-    #to_feat_dict=ToFeatDict()
-    #new_feat_dict=to_feat_dict(X,names)
-
-    #key_1=feat_dict.raw_dict.keys()[0]
-    #transform_feat(in_path,out_path)
-    #print(feat_dict.divided_by_action())
+    in_path='../ensemble/14_nn/feat.txt'
+    out_path='../ensemble/14_nn/seq2'
+    paths=['../ensemble/17_nn/feat2.txt','../ensemble/18_nn/feat2.txt']
+    new_dict=reduce_feat(in_path, feat.select_algs.lasso_model,'../ensemble/14_nn/feat2.txt')
+    action_feat(new_dict,out_path)
+    #unify_feat(paths,out_path='../ensemble/select/feat.txt')
+    #feat_to_actions('../ensemble/select/feat.txt','../ensemble/select/seq')
+    

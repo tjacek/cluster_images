@@ -13,6 +13,8 @@ from sets import Set
  
 class ExternalFeats(object):
     def __init__(self, raw_dict,short_name=False):
+        if(type(raw_dict)!=dict):
+            raise Exception("Dict required")
         self.raw_dict = raw_dict
         self.short_name=short_name
         self.extract_action=lambda path_i:path_i.items[-2]
@@ -119,7 +121,8 @@ def external_features(out_path,data,extractor,weight=1.0,array_extr=False):
     if(weight!=1.0):
         for key_i in feat_dict.keys():
             feat_dict[key_i]=weight*feat_dict[key_i]
-    save_features(out_path,feat_dict)
+    feat_dict=ExternalFeats(feat_dict)
+    feat_dict.save(out_path)
 
 def global_reduce(data,transform):
     names={ data_i.name:i 
