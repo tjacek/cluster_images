@@ -14,7 +14,11 @@ class Unify(object):
     def __init__(self, preproc='proj',weights=None):
         self.preproc = preproc
         self.weights = weights
-        
+
+    def __call__(self,nn_paths,img_path,out_path):
+        feat_dict=make_unified_feats(nn_paths,img_path,self.preproc,self.weights)
+        transform_seq(img_path,out_path,feat_dict)
+
 def unify(nn_paths,img_path,out_path,preproc='proj',weights=None):
     feat_dict=make_unified_feats(nn_paths,img_path,preproc,weights)
     transform_seq(img_path,out_path,feat_dict)
