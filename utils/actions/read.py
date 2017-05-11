@@ -13,6 +13,7 @@ import re
 
 @utils.paths.path_args
 def cp_dataset(action_dir):
+    print(action_dir)
     name=action_dir.get_name()   
     names=name.split('_')
     if(len(names)==4):
@@ -60,11 +61,11 @@ class ReadActions(object):
         self.img_seq=img_seq
 
     def __call__(self,action_path):
-        action_dirs=dirs.bottom_dirs(action_path)
-        if(len(action_dirs)==0):
-            raise Exception("No actions in dir: " + str(action_path))
-        #for action_i in action_dirs:
-        #    print(str(action_i))
+        #action_dirs=dirs.bottom_dirs(action_path)
+        #print(action_dirs)
+        #if(len(action_dirs)==0):
+        #    raise Exception("No actions in dir: " + str(action_path))
+        action_dirs=self.get_dirs(action_path)
         actions=[self.parse_action(action_dir_i) 
                    for action_dir_i in action_dirs]
         if(self.as_dict):
@@ -80,6 +81,18 @@ class ReadActions(object):
             data_seq=read_text_action(action_dir)
         assert len(data_seq)>0
         return utils.actions.Action(name,data_seq,cat,person)
+
+    def get_dirs(self,action_path):
+        action_dirs=dirs.bottom_dirs(action_path)
+        if(not self.img_seq):
+            action_paths=[]
+            for action_dir_i in action_dirs:
+                action_paths+=dirs.get_files(action_dir_i,dirs=False)
+        else:
+            action_paths=action_dirs
+        if(len(action_dirs)==0):
+            raise Exception("No actions in dir: " + str(action_path))
+        return action_paths
 
 class SaveActions(object):
     def __init__(self,unorm=False,img_actions=True):
@@ -114,7 +127,7 @@ class NewActions(object):
 
     def parse_action(self,name_i,seq_i):
         name,cat,person=self.dataset_format(name_i)
-        return utils.actions.Action(name,str(cat),str(person),seq_i)
+        return utils.actions.Action(name,seq_i,str(cat),str(person))
 
 def get_dataset_format(dataset_format):
     if(type(dataset_format)==utils.paths.Path):
@@ -125,6 +138,6 @@ def get_dataset_format(dataset_format):
         return dataset_format
 
 def read_text_action(input_path):
-    lines=paths.files.read_file(input_path,lines=True)
-    return [paths.files.string_to_vector(line_i)
+    lines=utils.paths.files.read_file(input_path,lines=True)
+    return [utils.paths.files.string_to_vector(line_i)
                 for line_i in lines]
