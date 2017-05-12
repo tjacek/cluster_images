@@ -83,16 +83,21 @@ def apply_select(in_path,out_path=None,selector=None,
                  dataset_format='cp_dataset',norm=False):
     if(selector==None):
         selector=utils.selection.SelectModulo()
+    if(type(selector)==int):
+        selector=utils.selection.SelectModulo(selector)
     read_actions=utils.actions.read.ReadActions(dataset_format,norm)
     actions=read_actions(in_path)
-    s_actions=acts=[ action_i
-                      for action_i in actions
-                        if selector(action_i)]
+    s_actions=raw_select(actions,selector)
     if(out_path==None):
         return s_actions
     else:
         save_actions=utils.actions.read.SaveActions()
         save_actions(s_actions,out_path)
+
+def raw_select(actions,selector):
+    return [ action_i
+               for action_i in actions
+                 if selector(action_i)]
 
 def transform_actions(in_path,out_path,transformation,seq_transform=True,dataset_format='cp_dataset'):
     read_actions=utils.actions.read.ReadActions(dataset_format,False)
