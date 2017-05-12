@@ -19,8 +19,8 @@ class SimpleNNEnsemble(object):
     def get_category(self,action_i):
         return np.argmax(self(action_i))
 
-def make_simple_nn(lstm_paths,conv_paths,disp=False):
-    nn=[ make_single_cls(conv_path_i,lstm_path_i,disp=disp)
+def make_simple_nn(lstm_paths,conv_paths,disp=False,text_feat=False):
+    nn=[ make_single_cls(conv_path_i,lstm_path_i,disp=disp,text_feat=text_feat)
          for lstm_path_i,conv_path_i in zip(lstm_paths,conv_paths)]
     return SimpleNNEnsemble(nn)
 
@@ -89,16 +89,15 @@ def make_actions_dict(path_i,s_action='odd'):
                for action_i in actions}
 
 if __name__ == "__main__":
-    conv_paths=['../ensemble/basic_nn/nn_basic','../ensemble/18_nn/nn_18','../ensemble/16_nn/nn_16']
-    lstm_paths=['../ensemble/basic_nn/lstm_basic','../ensemble/18_nn/lstm_18','../ensemble/16_nn/lstm_16']
+    lstm_paths=['../bagging/basic_nn/lstm2',
+                '../bagging/bag1/lstm',
+                '../bagging/bag2/lstm',
+                '../bagging/bag3/lstm']
+    conv_paths=['../bagging/basic_nn/feat2.txt'
+                for i in range(len(lstm_paths))]          
 
-    ens=make_simple_nn(lstm_paths,conv_paths,True)
-    #dataset_paths={'time':'../dataset1/exp1/full_dataset',
-    #               'proj':'../dataset1/exp2/cats'}
-    #nn_paths={'time':('../ensemble/exp1/nn_data_1' ,'../dataset1/exp1/lstm_self'),
-    #          'proj':('../dataset1/exp2/old/nn_worst' ,'../dataset1/exp2/old/lstm_worst')}
-    #ens=make_multi_nn(dataset_paths,nn_paths)
+    ens=make_simple_nn(lstm_paths,conv_paths,True,True)
 
     in_path='../ensemble/full'
-    s_actions=utils.actions.apply_select(in_path,action_type='even',norm=True)
+    s_actions=utils.actions.apply_select(in_path,selector=0,norm=True)
     ensemble.check_model(ens,s_actions)

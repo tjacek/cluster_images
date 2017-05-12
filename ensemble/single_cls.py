@@ -23,9 +23,11 @@ class SingleCls(object):
         mask,masked_feats=self.get_masked_seq(seq_feats)
         dist= self.lstm.get_distribution(masked_feats,mask)
         if(self.disp):
+            print(action.name)
             quality_factor = np.linalg.norm(dist)
             cat=np.argmax(dist)
-            print("quality %f %d" % (quality_factor,cat))
+            value=dist[cat]
+            print("quality %f %f %f" % (cat,quality_factor,value))
             dist=quality_factor*dist
         return dist
 
@@ -53,14 +55,17 @@ def masked_seq(seq_i,seq_i_len,max_seq,seq_dim):
     new_seq_i[:seq_i_len]=seq_i[:seq_i_len]
     return new_seq_i
 
-def make_single_cls(conv_path,lstm_path,with_type=False,prep_type="proj",disp=False):
-    seq_feat=ensemble.feat_seq.make_feat_seq(conv_path,prep_type)
+def make_single_cls(conv_path,lstm_path,prep_type="proj",disp=False,text_feat=False):
+    seq_feat=ensemble.feat_seq.make_feat_seq(conv_path,prep_type=prep_type,text_feat=text_feat)
+    #nn_reader=deep.reader.NNReader(deep.reader.get_preproc(prep_type))
+    #lstm,hyperparams=nn_reader(lstm_path,drop_p=0.0,get_hyper=True)
+    #single_cls=SingleCls(seq_feat,lstm,hyperparams['max_seq'],hyperparams['seq_dim'],disp)
+    return get_lstm(seq_feat,lstm_path,prep_type,disp)
+
+def get_lstm(seq_feat,lstm_path,prep_type,disp):
     nn_reader=deep.reader.NNReader(deep.reader.get_preproc(prep_type))
     lstm,hyperparams=nn_reader(lstm_path,drop_p=0.0,get_hyper=True)
-    single_cls=SingleCls(seq_feat,lstm,hyperparams['max_seq'],hyperparams['seq_dim'],disp)
-    if(with_type):
-        return with_type,single_cls
-    return single_cls
+    return SingleCls(seq_feat,lstm,hyperparams['max_seq'],hyperparams['seq_dim'],disp)
 
 if __name__ == "__main__":
     conv_path='../dataset1/exp1/nn_data_1'
