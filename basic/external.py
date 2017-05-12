@@ -46,6 +46,9 @@ class ExternalFeats(object):
                       for key_i,value_i in self.raw_dict.items()]
         else:
             return self.raw_dict.items()
+    
+    def dim(self):
+        return self.raw_dict.values()[0].shape[0]
 
     def names(self):
         return self.raw_dict.keys()

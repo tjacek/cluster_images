@@ -46,6 +46,9 @@ class Convet(deep.NeuralNetwork):
         img_x=self.pred(img4D).flatten()
         return img_x
 
+    def dim(self):
+        return self.hyperparams['n_hidden']
+
 def compile_convnet(params,preproc):
     in_layer,out_layer,hid_layer,all_layers=build_model(params)
     target_var = T.ivector('targets')
@@ -136,13 +139,13 @@ def get_model(preproc,nn_path=None, params=None, compile=True,l1_reg=True,model_
         return nn_reader(nn_path,model_p)
 
 if __name__ == "__main__":
-    img_path='../bad_methods/two/train'#'../ensemble/hard_nn/train'
-    nn_path='../bad_methods/two/nn_full'#'../ensemble/hard_nn/nn_hard_self'
+    img_path='../ensemble3/easy_nn/train'
+    nn_path='../ensemble3/easy_nn/nn_easy'
     
-    img_path='../bad_methods/one/train'
-    nn_path='../bad_methods/one/nn_full'
+    #img_path='../cross/1_set/train'
+    #nn_path='../cross/1_set/nn'
 
-    preproc=tools.ImgPreproc1D()
+    preproc=tools.ImgPreprocProj()
     imgset=imgs.make_imgs(img_path,norm=True)
     
     print("read")
@@ -152,6 +155,6 @@ if __name__ == "__main__":
     #print(extract_cat.dir.items())
     print(x.shape)
     print(y.shape)
-    model=get_model(preproc,nn_path,compile=False,model_p=0.0)
-    train.test_super_model(x,y,model,num_iter=1)
+    model=get_model(preproc,nn_path,compile=True,model_p=0.5)
+    train.test_super_model(x,y,model,num_iter=1000)
     model.get_model().save(nn_path)

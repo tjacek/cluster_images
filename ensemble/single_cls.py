@@ -43,6 +43,11 @@ class SingleCls(object):
         mask=make_mask(seq_len,self.max_seq)
         return mask,masked_feats
 
+class DimError(Exception):
+    def __init__(self,dim_lstm,dim_feat):
+        message="Dimession don't match  lstm %d feat %d" % (dim_lstm,dim_feat)
+        super(ValidationError, self).__init__(message)
+
 def make_mask(seq_size,max_size):
     mask=np.zeros((max_size,),dtype=float)
     mask[:seq_size]=1.0
@@ -63,8 +68,11 @@ def make_single_cls(conv_path,lstm_path,prep_type="proj",disp=False,text_feat=Fa
     return get_lstm(seq_feat,lstm_path,prep_type,disp)
 
 def get_lstm(seq_feat,lstm_path,prep_type,disp):
+    
     nn_reader=deep.reader.NNReader(deep.reader.get_preproc(prep_type))
     lstm,hyperparams=nn_reader(lstm_path,drop_p=0.0,get_hyper=True)
+    if(seq_feat.conv.dim()!=lstm.dim()):
+        raise DimError(lstm.dim(),seq_feat.conv.dim())
     return SingleCls(seq_feat,lstm,hyperparams['max_seq'],hyperparams['seq_dim'],disp)
 
 if __name__ == "__main__":

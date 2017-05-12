@@ -24,6 +24,9 @@ class LSTM(deep.NeuralNetwork):
         mask=np.expand_dims(mask,axis=0)
         return self.predict(x,mask).flatten()
 
+    def dim(self):
+        return self.hyperparams['seq_dim']
+
 def compile_lstm(hyper_params,preproc=None):
     l_out,input_vars=make_LSTM(hyper_params)
     prediction = lasagne.layers.get_output(l_out)
