@@ -31,14 +31,12 @@ class Convet(deep.NeuralNetwork):
 
     def __call__(self,in_img):
         img4D=self.preproc.apply(in_img)
-
-        #print(img4D.shape)
         return self.__features__(img4D).flatten()
     
     def get_category(self,img):
-        dist=self.pred(img)
-        return [tools.dist_to_category(dist_i) 
-                    for dist_i in dist]
+        dist=self.get_distribution(img)
+        return np.argmax(dist)#[tools.dist_to_category(dist_i) 
+               #     for dist_i in dist]
 
     def get_distribution(self,x):
         img4D=self.preproc.apply(x)
