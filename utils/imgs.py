@@ -16,7 +16,7 @@ class Image(np.ndarray):
         return obj
 
     def __str__(self):
-        return self.name
+        return str(self.name)
 
     def __array_finalize__(self, obj):
         if obj is None: return
@@ -26,18 +26,34 @@ class Image(np.ndarray):
     def get_orginal(self):
         return np.reshape(self,self.org_dim)
 
-    def save(self,out_path,i=None):
+    def save(self,out_path,i=None,unorm=False):
         if(i!=None):
             filename= 'img' +str(i)+'.jpg'#self.name
         else:
-            filename=self.name.get_name()
+            filename= get_name(self.name)
         full_name=out_path.append(filename,copy=True)
         img2D=self.get_orginal()
         #print(str(full_name))
-        cv2.imwrite(str(full_name),img2D)
+        if(unorm):
+            save_img(full_name,img2D)
+        else:
+            cv2.imwrite(str(full_name),img2D)
 
     def is_normal(self):
         return not (np.amax(self)>1.0)
+
+def save_imgset(out_path,imgset):
+    #print(str(out_path))
+    paths.dirs.make_dir(out_path)
+    for i,img_i in enumerate(imgset):
+        print(str(img_i.name))
+        img_i.save(out_path,unorm=True)
+
+def get_name(path_i):
+    if(type(path_i)==str):
+        path_i=paths.Path(path_i)
+        return path_i.last(2)#[-2]
+    return path_i.get_name()
 
 def new_img(old_img,new_img,org_dim=None):
     if(org_dim!=None):
@@ -58,6 +74,8 @@ def read_images(paths,nomalized=True):
 @paths.path_args
 def read_img(dir_path):
     raw_img=cv2.imread(str(dir_path),cv2.IMREAD_GRAYSCALE) 
+    if(raw_img==None):
+        return None#raise Exception("No image in path " + str(dir_path))
     img_i=Image(str(dir_path),raw_img)
     return img_i
 
@@ -79,6 +97,8 @@ def make_imgs(in_path,norm=True,transform=None):
     img_dirs=paths.dirs.all_files(in_path)
     imgset=[read_img(path_i)
           for path_i in img_dirs]
+    imgset=[img_i for img_i in imgset
+                    if img_i!=None]
     if(norm):
         imgset=[ img_i/255.0
                  for img_i in imgset]
@@ -100,29 +120,30 @@ def to_dataset(imgset,extract_cat,transform=None):
     cats=[ extract_cat(img_i.name) 
             for img_i in imgset]
     if(transform):
+        print(type(transform))
         imgset=transform(imgset) 
     x=np.array(imgset,dtype=float)
     y=np.array(cats,dtype=float)
     return x,y
 
-def to_2D(imgset):
-    imgs2D=[ img_i.get_orginal()
-              for img_i in imgset]
-    conv=np.array(imgs2D)
-    conv=np.expand_dims(conv,1)
-    return conv
+#def to_2D(imgset):
+#    imgs2D=[ img_i.get_orginal()
+#              for img_i in imgset]
+#    conv=np.array(imgs2D)
+#    conv=np.expand_dims(conv,1)
+#    return conv
 
-def to_3D(imgset):
-    imgs3D=[ split_img(img_i.get_orginal())
-              for img_i in imgset]
-    vol=np.array(imgs3D)
-    return vol
+#def to_3D(imgset):
+#    imgs3D=[ split_img(img_i.get_orginal())
+#              for img_i in imgset]
+#    vol=np.array(imgs3D)
+#    return vol
 
-def to_proj(imgset):
-    imgs3D=[ split_img(img_i.get_orginal(),scale=3)
-              for img_i in imgset]
-    vol=np.array(imgs3D)
-    return vol
+#def to_proj(imgset):
+#    imgs3D=[ split_img(img_i.get_orginal(),scale=3)
+#              for img_i in imgset]
+#    vol=np.array(imgs3D)
+#    return vol
 
 def split_img(x,scale=2):
     height=x.shape[0]
