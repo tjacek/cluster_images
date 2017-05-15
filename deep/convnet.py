@@ -39,8 +39,11 @@ class Convet(deep.NeuralNetwork):
                #     for dist_i in dist]
 
     def get_distribution(self,x):
-        img4D=self.preproc.apply(x)
-        x.name=str(x.name)
+        if(len(x.shape)!=4):
+            img4D=self.preproc.apply(x)
+        else:
+            img4D=x
+        #x.name=str(x.name)
         img_x=self.pred(img4D).flatten()
         return img_x
 
@@ -137,8 +140,8 @@ def get_model(preproc,nn_path=None, params=None, compile=True,l1_reg=True,model_
         return nn_reader(nn_path,model_p)
 
 if __name__ == "__main__":
-    img_path='../ensemble3/easy_nn/train'
-    nn_path='../ensemble3/easy_nn/nn_easy'
+    img_path='../inspect/b_nn/train'
+    nn_path='../inspect/b_nn/nn_basic'
     
     #img_path='../cross/1_set/train'
     #nn_path='../cross/1_set/nn'
@@ -153,6 +156,6 @@ if __name__ == "__main__":
     #print(extract_cat.dir.items())
     print(x.shape)
     print(y.shape)
-    model=get_model(preproc,nn_path,compile=True,model_p=0.5)
-    train.test_super_model(x,y,model,num_iter=1000)
+    model=get_model(preproc,nn_path,compile=False,model_p=0.0)
+    train.test_super_model(x,y,model,num_iter=250)
     model.get_model().save(nn_path)
