@@ -47,7 +47,7 @@ def save_array(array,out_path):
     save_string(out_path,txt)
 
 def save_string(path,string):
-    file_str = open(path,'w')
+    file_str = open(str(path),'w')
     file_str.write(string)
     file_str.close()
 
@@ -57,9 +57,13 @@ def read_object(path):
     file_object.close()
     return obj
 
-def seq_to_string(seq):
-    array=[vector_to_string(elem_i) 
-            for elem_i in seq]
+def seq_to_string(seq,extra_data=None):
+    if(exta_data!=None):
+        array=[ vector_to_string(elem_i) + extra_data(i)
+                 for i,elem_i in enumerate(seq)]    
+    else:
+        array=[vector_to_string(elem_i) 
+                 for elem_i in seq]
     return '\n'.join(array)
 
 def vector_to_string(vec):
