@@ -10,19 +10,23 @@ def make_dtw_feat(dataset_path,out_path,
     train,test,all_seqs=read_seqs(dataset_path,k=k,dataset_format=dataset_format,select_type=select_type)
     
     print(all_seqs.keys())
-    seq_xy=zip(all_seqs['x'],all_seqs['y'])
+    seq_xy=get_pairs(all_seqs)
+    train_xy=get_pairs(train)
 
     def dtw_vector(x_i):
         feat_vect=[seq.dtw.dtw_metric(x_i,x_j)
-                      for x_j,y_j in seq_xy ]
+                      for x_j,y_j in train_xy ]
         print(feat_vect)
+        print(len(feat_vect))
         return feat_vect
 
-    dtw_feats=[ (y_i,dtw_vector(x_i)) 
+    dtw_feats=[ dtw_vector(x_i) 
                 for x_i,y_i in seq_xy]
 
     def extr_data(i):
-        return '#'+all_seqs['y'][i]+'#'+all_seqs['names'][i]         
+    	y_i=str(all_seqs['y'][i])
+    	person_i=str(all_seqs['persons'][i])
+        return '#'+y_i+'#'+person_i         
     feat_text= utils.paths.files.seq_to_string(dtw_feats,extr_data)
     utils.paths.files.save_string(out_path,feat_text)
 
@@ -32,8 +36,11 @@ def read_seqs(dataset_path,k=0,dataset_format='cp_dataset',select_type='modulo')
     train,test=split_dataset(dataset)
     return train,test,dataset
 
+def get_pairs(all_seqs):
+    return zip(all_seqs['x'],all_seqs['y'])
+
 if __name__ == "__main__":
     #path='../cross/1_set/u_seq'
-    path='../inspect/b_nn/seq'
+    path='../ensemble/basic_nn/seq'
     out_path='../inspect/b_nn/feat.txt'
     make_dtw_feat(path,out_path)
