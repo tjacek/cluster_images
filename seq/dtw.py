@@ -9,11 +9,13 @@ from utils.timer import clock
 import utils.data
 
 @paths.path_args
-def use_dtw(dataset_path,dataset_format='cp_dataset'):
+def use_dtw(dataset_path,k=0,dataset_format='cp_dataset',select_type='modulo'):
     dataset=seq_dataset(dataset_path,dataset_format)
-    print(dataset['y'])
-
-    train,test=split.person_dataset(dataset)
+    #inst=dataset.to_instances()
+    #dataset=seq.to_dataset.from_instances(inst,dataset['params'])
+    #print(dataset['y'])
+    split_dataset= split.get_dataset(k,select_type)
+    train,test=split_dataset(dataset) #.person_dataset(dataset)
     wrap=Wrap()
     y_pred=wrap(train,test)
     seq.check_prediction(y_pred,test['y'])
@@ -80,6 +82,7 @@ def d2(v,u):
     return dist
 
 if __name__ == "__main__":
-    #path='../dataset2a/exp3/seq'
-    path='../ensemble/10_nn/seq'
-    use_dtw(path,'cp_dataset')
+    #path='../cross/1_set/u_seq'
+    path= '../dtw_feat/simple/seq'#'../dtw_feat/u_seq'
+    #path='../ensemble/seq'
+    use_dtw(path,0,'cp_dataset')

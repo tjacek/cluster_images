@@ -41,6 +41,6 @@ def get_pairs(all_seqs):
 
 if __name__ == "__main__":
     #path='../cross/1_set/u_seq'
-    path='../ensemble/basic_nn/seq'
-    out_path='../inspect/b_nn/feat.txt'
+    path='../dtw_feat/simple/seq'
+    out_path='../dtw_feat/simple3/dataset.txt'
     make_dtw_feat(path,out_path)

@@ -5,6 +5,27 @@ import utils.actions,utils.actions.read
 import basic.external
 import feat.select_algs
 
+#def reduce_feat(build_path,in_path=None,out_path=None):
+#    X_build,y_build,names_build=get_dataset(build_path)
+#    model=feat.select_algs.LinearModel(X_build,y_build)
+#    if(in_path==None):
+#        X_in=X_build
+#        names_in=names_build
+#    else:
+#        X_in,y_in,names_in=get_dataset(in_path)
+#    new_X=model(X)
+#    to_feat_dict=ToFeatDict()
+#    new_feat_dict=to_feat_dict(new_X,names_in)
+#    if(out_path!=None):
+#        new_feat_dict.save(out_path)
+#    return new_feat_dict
+
+#def get_dataset(in_path):
+#    feat_dict=basic.external.read_external(in_path)
+#    to_dataset=ToDataset()
+#    X,y,names=to_dataset(feat_dict)
+#    return X,y,names
+
 def reduce_feat(in_path,model,out_path=None):
     feat_dict=basic.external.read_external(in_path)
     to_dataset=ToDataset()
@@ -77,11 +98,16 @@ def default_format(dataset_format):
         return dataset_format
     
 if __name__ == "__main__":
-    in_path='../ensemble/14_nn/feat.txt'
-    out_path='../ensemble/14_nn/seq2'
-    paths=['../ensemble/17_nn/feat2.txt','../ensemble/18_nn/feat2.txt']
-    new_dict=reduce_feat(in_path, feat.select_algs.lasso_model,'../ensemble/14_nn/feat2.txt')
-    action_feat(new_dict,out_path)
-    #unify_feat(paths,out_path='../ensemble/select/feat.txt')
-    #feat_to_actions('../ensemble/select/feat.txt','../ensemble/select/seq')
+    build_path='../ensemble3/_nn/build_feat.txt'
+    in_path='../ensemble3/basic_nn/feat.txt'
+    out_path='../ensemble3/easy_nn/seq2'
+    #paths=['../ensemble3/10_nn/feat2.txt','../ensemble3/17_nn/feat2.txt']
+
+    paths=[ '../inspect/combine/feat.txt', 
+               '../inspect/combine/feat2.txt'] 
+    #new_dict=reduce_feat(in_path,feat.select_algs.lasso_model,out_path='../ensemble3/basic_nn/feat2.txt')
+    #action_feat(new_dict,out_path)
+    
+    #unify_feat(paths,out_path='../inspect/combine/u_feat.txt')
+    feat_to_actions('../dtw_feat/simple4/feat.txt','../dtw_feat/simple4/seq')
     
