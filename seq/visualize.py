@@ -1,80 +1,47 @@
-import dtw
-import numpy as np
+import sys,os
+sys.path.append(os.path.abspath('../cluster_images'))
+import pandas as pd 
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
-from sklearn.manifold import MDS
-import sklearn.manifold as manifold
-import utils.data
+import utils.actions.read
+import utils.paths.dirs
 
-def visualize_dtw(instances):
-    X,y=visualize_metric(instances,dtw.dtw_metric)
-    labeled_plot(X,y)
-    print(X.shape)    
+def visualize_features(in_path,out_path,dataset_format='cp_dataset'):
+    read_actions=utils.actions.read.ReadActions(dataset_format,img_seq=False)
+    actions=read_actions(in_path)
+    action_plots=[ (action_i.name,get_features(action_i)) 
+                   for action_i in actions]
+    utils.paths.dirs.make_dir(out_path)
+    for action_plots_i in action_plots:
+        action_out_path= out_path+'/'+action_plots_i[0]
+        save_action_plots(action_out_path,action_plots_i[1])	
 
-def visualize_metric(instances,dwt_metric):
-    n_samples=len(instances)
-    similarities=get_similarity_matrix(n_samples,instances,dwt_metric)       
-    X=get_spectral(similarities)
-    y=[ seq_i.cat for seq_i in instances]
-    return X,y
+def save_action_plots(name_i,plots):
+    print(name_i)
+    utils.paths.dirs.make_dir(name_i)
+    for i,plot_i in enumerate(plots):
+        out_plot_i=name_i+'/img'+str(i)+'.png'
+        ax=plot_i.plot()
+        ax.get_figure()
+        plt.savefig(out_plot_i)
+        plt.clf()
+        plt.close()
 
-def get_similarity_matrix(n_samples,instances,dwt_metric):
-    similarities=np.zeros((n_samples,n_samples))
-    for index, x in np.ndenumerate(similarities):
-        x_i,y_i=index
-        inst_i=instances[x_i]
-        inst_j=instances[y_i]
-        similarities[x_i][x_j]=dwt_metric(inst_i,inst_j)
-    similarities=norm_x(similarities)
-    #similarities=1.0-similarities  
-    return similarities
+def get_features(action_i):
+    all_features=action_i.to_series() 
+    plots=[ get_feature_plot(feature_i)
+              for feature_i in all_features]
+    return plots
 
-def get_mds(similarities):
-    seed = np.random.RandomState(seed=3)
-    print(np.amax(similarities))
-    print(np.amin(similarities))
-    nmds = MDS(n_components=2, metric=False, max_iter=3000, eps=1e-12,
-                    dissimilarity="precomputed", random_state=seed, n_jobs=1,
-                    n_init=1)
-    pos = nmds.fit(similarities).embedding_
-    X=np.array(pos)
-    return X
+def get_feature_plot(feature):
+    if(type(feature)!=list):
+        feature=list(feature)
+    size=len(feature)
+    ts = pd.Series(feature, index=range(size))
+    return ts#ts.plot()
 
-def get_spectral(similarities):
-    seed = np.random.RandomState(seed=3)
-    se = manifold.SpectralEmbedding(n_components=2,
-                                n_neighbors=5,affinity="precomputed")
-    pos = se.fit(similarities).embedding_
-    X=np.array(pos)
-    return X
-
-class GetShape(object):
-    def __init__(self,colors='bgrcmykw', shape='ovs^p'):
-        self.colors=colors
-        self.shape=shape
-
-    def __call__(self):
-        j=index % len(self.colors)
-        s_i=index/len(self.colors)
-        s_i=s_i%len( self.shape)
-        return self.colors[j],self.shape[s_i]
-
-def labeled_plot(X,y):
-    y=np.array(utils.data.to_ints(y),dtype=int)
-    get_shape=GetShape()
-    fig, ax = plt.subplots()
-    x_0=X[:,0]
-    x_1=X[:,1]
-    n_cats=np.amax(y)+1
-    for i in range(n_cats):
-        cat_i_0=x_0[y==i]
-        cat_i_1=x_1[y==i]
-        color_i,shape_i=get_shape(i)
-        ax.scatter(cat_i_0,cat_i_1,c=color_i,marker=shape_i,label=str(i))
-    plt.legend()
-    plt.show()   
-
-def norm_x(X):
-    x_max=np.max(X)
-    X/=x_max
-    return X
+if __name__ == "__main__":
+    in_path='../../ultimate/simple3/seq'
+    out_path='../../ultimate/viz'
+    visualize_features(in_path,out_path)
