@@ -30,8 +30,9 @@ class SimplePreproc(object):
 
 class PcloudFeatures(object):
     def __init__(self):
-        self.cloud_extractors=[area_feat,std_features,center,
-                OutlinersExtractor(0),OutlinersExtractor(1), OutlinersExtractor(2)]
+        self.cloud_extractors=[area_feat,std_features,skewness_features,corl_features]#,
+        #        OutlinersExtractor(0),OutlinersExtractor(1), OutlinersExtractor(2),
+        #        OutlinersExtractor(0,True),OutlinersExtractor(1,True), OutlinersExtractor(2,True)]
         #center,z_outliners,corl_features]
         #[area_feat,std_features,skewness_features,corl_features]
         #[pca_features,area_feat]#[std_features,skewness_features,area_feat]
@@ -60,24 +61,36 @@ def make_extract():
     return ExtractFeatures(SimplePreproc(),PcloudFeatures())
 
 def get_features(img):
+    img=preproc_img(img)
+    print('Shape:')
     print(img.shape)
-    points=pcloud.make_point_cloud(img)
-    points=pcloud.unit_normalized(points)
+    points=utils.pcloud.make_point_cloud(img)
+    points=utils.pcloud.unit_normalized(points)
     #points=pcloud.normalized_cloud(points)
     if(points==None):
     	return None
-    cloud_extractors=[area_feat,skewness_features,center,std_features,
-                      extr_features]#,elipse_feat]
+    cloud_extractors=[area_feat,skewness_features,std_features,corl_features]#,center,extr_features]
+                      #extr_features]#,elipse_feat]
     all_feats=[]
     for extr_i in cloud_extractors:
         all_feats+=extr_i(img,points)
-    print(all_feats)      	
+    print(all_feats)
+    print(len(all_feats))      	
     return np.array(all_feats)
 
+def preproc_img(img_i):
+    x=img_i.shape[0]
+    y=img_i.shape[1]
+    #z= x/(x/y)   
+    return img_i[0:y]
+
 def extr_features(img,pcloud):
-    extr=list(pcloud.min(2))
-    extr+=list(pcloud.max(2))
-    print(len(extr))
+    extr=pcloud.max(0,1) 
+    extr+=pcloud.min(0,1)
+    extr+=pcloud.max(1,0) 
+    extr+=pcloud.min(1,0)
+    print('extr')
+    print(extr)
     return extr
 
 def center(img,pcloud):
@@ -114,13 +127,25 @@ def pca_features(img,pcloud):
 def corl_features(img,pcloud):
     feats=[]
     points=pcloud.get_numpy()
-    dim=pcloud.dims
-    for x_i in range(dim):
-        for y_i in range(dim):
-            if(x_i!=y_i):
-                corr_xy=scipy.stats.pearsonr(points[:,x_i],points[:,y_i])
-                feats.append(corr_xy[0])    
+    def corl_helper(x_i,y_i):
+        corr_xy=scipy.stats.pearsonr(points[:,x_i],points[:,y_i])
+        return corr_xy[0]
+    feats.append(corl_helper(0,1))    
+    feats.append(corl_helper(1,2))    
+    feats.append(corl_helper(2,0))    
     return feats
+
+
+#def corl_features(img,pcloud):
+#    feats=[]
+#    points=pcloud.get_numpy()
+#    dim=pcloud.dims
+#    for x_i in range(dim):
+#        for y_i in range(dim):
+#            if(x_i!=y_i):
+#                corr_xy=scipy.stats.pearsonr(points[:,x_i],points[:,y_i])
+#                feats.append(corr_xy[0])    
+#    return feats
 
 def height_feat(img,pcloud):
     img2D=img.get_orginal()
@@ -134,19 +159,21 @@ def area_feat(img,pcloud):
     return [nonzero_points/all_points]
 
 class OutlinersExtractor(object):
-    def __init__(self,dim=2):
+    def __init__(self,dim=2,neg=False):
         if(dim>2):
             raise Exception("Too high dim %d" % dim)
         self.dim=dim
+        self.neg=neg
 
     def __call__(self,img,pcloud):
-        z_selector=self.get_selector(pcloud)
-        outliner_pcloud=pcloud.select(z_selector)
+        point_selector=self.get_selector(pcloud)
+        outliner_pcloud=pcloud.select(point_selector)
         outliner_size=len(outliner_pcloud)
         if(outliner_size==0):
-            return [-1,-1,-1]#,0]
+            return [ -1 for  i in range(7)]
         rela_size= self.relative_size(outliner_pcloud,pcloud)
-        feat=std_features(img,outliner_pcloud)+[rela_size]
+        feat=skewness_features(img,outliner_pcloud)
+        feat+=std_features(img,outliner_pcloud)+[rela_size]
         return feat
 
     def get_selector(self,pcloud):
@@ -155,10 +182,13 @@ class OutlinersExtractor(object):
         z_std=all_std[self.dim]
         center=pcloud.center_of_mass()
         z_center=center[self.dim]
+        if(self.neg):
+            z_std*=(-1.0)
         threshold=z_center+z_std
-        def point_selector(point_i):
-            return point_i[self.dim]>threshold
-        return point_selector
+        if(self.neg):
+            return lambda point_i: point_i[self.dim]<threshold 
+        else:
+            return lambda point_i: point_i[self.dim]>threshold
 
     def relative_size(self,pcloud_out,pcloud_full):
         return float(len(pcloud_out))/ float(len(pcloud_full))

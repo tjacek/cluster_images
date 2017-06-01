@@ -15,12 +15,15 @@ class ExternalFeats(object):
     def __init__(self, raw_dict,short_name=False):
         if(type(raw_dict)!=dict):
             raise Exception("Dict required")
-        self.raw_dict = raw_dict
+        self.raw_dict = { str(key_i):value_i
+                           for key_i,value_i in raw_dict.items()}
         self.short_name=short_name
         self.extract_action=lambda path_i:path_i.items[-2]
 
     def __getitem__(self,path_i):
         new_key=self.get_name(path_i)
+        print(str(self.raw_dict.keys()[0]))
+        print(new_key)
         return self.raw_dict[new_key]
 
     def __call__(self,img_i):
