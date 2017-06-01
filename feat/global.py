@@ -3,6 +3,7 @@ sys.path.append(os.path.abspath('../cluster_images'))
 import numpy as np 
 import utils.actions.read
 import utils.paths.files
+from sets import Set 
 
 def get_global_features(in_path,out_path,dataset_format='cp_dataset'):
     read_actions=utils.actions.read.ReadActions(dataset_format,False)
@@ -13,9 +14,20 @@ def get_global_features(in_path,out_path,dataset_format='cp_dataset'):
 
 def extract_features(action_i):
     series_i=action_i.to_series()
-    data_vector=[ np.mean(ts_j)
-                  for ts_j in series_i]
+    mean_vector=mean_of_feats(series_i)
+    sd_vector=std_of_feats(series_i)
+    data_vector=mean_vector+sd_vector            
     return (data_vector,action_i.cat,action_i.person)	
+
+def mean_of_feats(series_i):
+    return [ np.mean(ts_j)
+                  for ts_j in series_i] 
+
+def std_of_feats(series_i,tabu=[]):
+    tabu=Set(tabu)
+    return [ np.std(ts_j)
+                for i,ts_j in enumerate(series_i)
+                  if not (i in tabu)] 
 
 def save_global(feat_vectors,out_path):
     def extr_data(i):
@@ -28,6 +40,6 @@ def save_global(feat_vectors,out_path):
     utils.paths.files.save_string(out_path,feat_text)
 
 if __name__ == "__main__":
-    in_path= '../dtw_feat/simple3/seq'
-    out_path= '../dtw_feat/simple3/dataset.txt'
+    in_path= '../../ultimate3/simple/seq'
+    out_path= '../../ultimate3/simple/dataset.txt'
     get_global_features(in_path,out_path)
