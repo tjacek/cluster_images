@@ -31,8 +31,14 @@ def basic_dataset(action_dir):
     names=name.split('_')
     if(len(names)==2):
         cat=action_dir[-2]
-        person=utils.text.get_person(name)
-    #name=c+name
+        
+        person=names[0]#utils.text.get_person(name)
+        person=utils.text.extract_number(person)
+        name=cat+'_'+str(person)
+        print("***************")
+        print(cat)
+        print(person)
+        print(name)
         return name,cat,person
     raise Exception("Wrong dataset format " + name +" " + str(len(names)))        
 
