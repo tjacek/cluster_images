@@ -26,9 +26,9 @@ class Image(np.ndarray):
     def get_orginal(self):
         return np.reshape(self,self.org_dim)
 
-    def save(self,out_path,i=None,unorm=False):
+    def save(self,out_path,i=None,unorm=False,file_type='.jpg'):
         if(i!=None):
-            filename= 'img' +str(i)+'.jpg'#self.name
+            filename= 'img' +str(i)+file_type #self.name
         else:
             filename= get_name(self.name)
         full_name=out_path.append(filename,copy=True)

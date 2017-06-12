@@ -58,7 +58,7 @@ class Action(object):
             saved_imgs= utils.imgs.unorm(self.img_seq)
         else:
             saved_imgs= self.img_seq    
-        [img_i.save(full_outpath,i) 
+        [img_i.save(full_outpath,i,file_type='.png') 
          for i,img_i in enumerate(saved_imgs)]
 
     @utils.paths.path_args
@@ -75,6 +75,16 @@ class Action(object):
             return [ (self.cat,img_i,index)
                       for img_i in self.img_seq]
 
+    def to_series(self):
+        dim=len(self.img_seq[0])
+        size=len(self)
+        def s_helper(i):
+            return [self.img_seq[j][i] 
+                      for j in range(size)]
+        return [ s_helper(i) 
+                  for i in range(dim)]
+
+
 def new_action(old_action,new_seq):
     return Action(old_action.name,new_seq,
                       old_action.cat,old_action.person)
@@ -85,7 +95,7 @@ def apply_select(in_path,out_path=None,selector=None,
         selector=utils.selection.SelectModulo()
     if(type(selector)==int):
         selector=utils.selection.SelectModulo(selector)
-    read_actions=utils.actions.read.ReadActions(dataset_format,norm)
+    read_actions=utils.actions.read.ReadActions(dataset_format,norm=norm)
     actions=read_actions(in_path)
     s_actions=raw_select(actions,selector)
     if(out_path==None):
@@ -100,8 +110,9 @@ def raw_select(actions,selector):
                  if selector(action_i)]
 
 def transform_actions(in_path,out_path,transformation,seq_transform=True,dataset_format='cp_dataset'):
-    read_actions=utils.actions.read.ReadActions(dataset_format,False)
+    read_actions=utils.actions.read.ReadActions(dataset_format,img_seq=True,norm=False,as_dict=False)
     actions=read_actions(in_path)
+    print("Number of actions %d" % len(actions))
     if(seq_transform):
         transformed_actions=[ action_i(transformation)
                            for action_i in actions]
@@ -116,16 +127,17 @@ def show_actions(actions):
     print([len(action_i) for action_i in actions])
 
 if __name__ == "__main__":
-    in_path="../ensemble2/preproc/basic/time"
-    out_path="../ensemble2/preproc/basic/kkllone_frame"
-    #bound_frames=utils.actions.frames.ProjFrames(False) 
+    in_path="../../exper/scale"
+    out_path="../../exper/time"
+    #bound_frames=utils.actions.frames.ProjFrames(True,True) 
     #bound_frames=utils.actions.frames.BoundFrames(True,None,smooth_img=False) #utils.actions.frames.ProjFrames(False) 
     #rescale=utils.actions.unify.Rescale()
-    #transform_actions(in_path,out_path,rescale,seq_transform=False,dataset_format='cp_dataset')
+    time_frames=utils.actions.frames.TimeFrames() 
+    transform_actions(in_path,out_path,time_frames,seq_transform=True,dataset_format='cp_dataset')
     
-    in_path="../cross/10_set/train_10"#preproc/unified'
-    out_path="../cross/10_set/train_select" #/preproc/train'
-    selector=utils.selection.SelectSet(['17','18'],'cat') #SelectPerson(5,True)
-    apply_select(in_path,out_path, selector,dataset_format='cp_dataset')
+    #in_path="../cross/10_set/train_10"#preproc/unified'
+    #out_path="../cross/10_set/train_select" #/preproc/train'
+    #selector=utils.selection.SelectSet(['17','18'],'cat') #SelectPerson(5,True)
+    #apply_select(in_path,out_path, selector,dataset_format='cp_dataset')
 
     

@@ -108,7 +108,7 @@ class SaveActions(object):
     @utils.paths.path_args
     def __call__(self,actions,outpath):
         dirs.make_dir(outpath)
-        print(type(outpath))
+        print('Save actions to' + str(outpath))
         extr_cats=utils.data.ExtractCat(parse_cat=lambda a:a.cat)
         for action_i in actions:
             extr_cats(action_i)
