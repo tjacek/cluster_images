@@ -41,22 +41,38 @@ class TimeFrames(object):
         return new_seq
 
 class MotionFrames(object):
-    def __init__(self,tau=5.0,scale=20):
-        self.tau=tau
+    def __init__(self,tau=5,scale=20,diff=False):
+        self.tau=int(tau)
         self.scale=scale
+        self.diff=diff
 
     def __call__(self,img_seq):
-        diff_seq=diff_frames(img_seq)
-        diff_seq=[self.tau*diff_i
-                for diff_i in diff_seq]
-        n=len(diff_seq)-1        
-        def motion_helper(img_i,img_j):
-            motion_img=np.zeros(img_j.shape)
-            img_i[img_j!=0]=0.0
-            motion_img[img_i!=0]=img_i[img_i!=0]-1
-            motion_img[img_j!=0]=img_j[img_j!=0]
-            return utils.imgs.Image(img_i.name,motion_img,img_i.org_dim)
-        return [ self.scale*motion_helper( diff_seq[i],diff_seq[i+1])
+        if(self.diff):
+            diff_seq=diff_frames(img_seq)
+        else:
+            diff_seq=img_seq
+        #def tau_helper(diff_i):
+        #    diff_i[diff_i!=0]=self.tau
+        #    return diff_i
+        #diff_seq=[ tau_helper(diff_i)
+        #        for diff_i in diff_seq]
+        n=len(diff_seq)#-1        
+        #def motion_helper(img_i),img_j):
+        #    motion_img=np.zeros(img_j.shape)
+        #    img_i[img_j!=0]=0.0
+        #    motion_img[img_i!=0]=img_i[img_i!=0]-1
+        #    motion_img[img_j!=0]=img_j[img_j!=0]
+        #    return utils.imgs.Image(img_i.name,motion_img,img_i.org_dim)
+        def motion_helper(i):
+            motion_img=np.zeros(diff_seq[0].shape)
+            for t in range(self.tau):
+                index=i-t
+                if(index >= 0):
+                    diff_t=diff_seq[index]
+                    motion_img[diff_t!=0]=t
+            name_i=diff_seq[i].name
+            return utils.imgs.Image(name_i,motion_img)
+        return [ self.scale*motion_helper(i)#diff_seq[i],diff_seq[i+1])
                    for i in range(n) ]
 
 def diff_frames(img_seq,threshold=0.1):
@@ -112,9 +128,12 @@ class SmoothImg(object):
         self.kern = kern
     
     def __call__(self,raw_img):
-        smooth_img=cv2.blur(raw_img,self.kern)
-        smooth_img=smooth_img.astype(np.uint8)
-        ret,binary_img=cv2.threshold(smooth_img,1,255,cv2.THRESH_BINARY)
+        if(self.kern!=None):
+            smooth_img=cv2.blur(raw_img,self.kern)
+            smooth_img=smooth_img.astype(np.uint8)
+        else:
+            smooth_img=raw_img.astype(np.uint8)
+        ret,binary_img=cv2.threshold(smooth_img,5,255,cv2.THRESH_BINARY)
         binary_img[binary_img!=0]=DEFAULT_DEPTH_VALUE
         return utils.imgs.Image(raw_img.name,binary_img)
 
@@ -126,22 +145,26 @@ def bound_local(img_seq):
 
 
 class ProjFrames(object):
-    def __init__(self,zx=True,clean=None):
+    def __init__(self,zx=True,smooth=True):#,clean=None):
         self.zx=zx
+        self.smooth=smooth
 
     def __call__(self,img_seq):
         z_max=upper_bound(img_seq)
         z_min=lower_bound(img_seq)
         def proj_helper(img_i):
             print(img_i.name)
-            img_i=img_i.get_orginal()
+            #img_i=img_i.get_orginal()
             proj_xz=self.get_clean_img( img_i,z_max,z_min)
             for (x, y), z in np.ndenumerate(img_i):
                 if(z!=0):
                     #z-=z_min
                     i,j=self.get_index(x,y,z)
                     proj_xz[i][j]=DEFAULT_DEPTH_VALUE
-            return utils.imgs.Image(img_i.name,proj_xz)
+            new_img=utils.imgs.Image(img_i.name,proj_xz)
+            if(self.smooth):
+                new_img=self.smooth_img(new_img)
+            return new_img
         return [proj_helper(img_i) 
                    for img_i in img_seq]
 
@@ -151,12 +174,40 @@ class ProjFrames(object):
         else:
             return np.zeros( (img_i.shape[1],z_max))
 
+    def smooth_img(self,raw_img,kern=(7,7)):
+        #raw_img=raw_img.astype(np.uint8)
+        #smooth_img = raw_img#cv2.GaussianBlur(raw_img, (5, 5), 0)
+        true_kern=np.ones(kern)
+        smooth_img=remove_isol(raw_img)
+        smooth_img=cv2.dilate(smooth_img, true_kern, iterations=1)
+      
+
+        #smooth_img = cv2.erode(smooth_img,(5,5),iterations = 1)
+        #smooth_img=cv2.blur(raw_img,kern)
+        #ret,binary_img=cv2.threshold(smooth_img,1,255,cv2.THRESH_BINARY)
+        #binary_img[binary_img!=0]=DEFAULT_DEPTH_VALUE
+        return utils.imgs.Image(raw_img.name,smooth_img)
+
     def get_index(self,x,y,z):
         z=np.floor(z)
         if(self.zx):
             return x,z
         else:
             return y,z
+
+def remove_isol(img_i):
+    kernel = np.ones((3,3),np.float32)
+    kernel[1][1]=0.0
+    img_i=img_i.astype(float)
+    img_i[img_i!=0]=1.0
+    img_i = cv2.filter2D(img_i,-1,kernel)
+    img_i[ img_i<2.0]=0.0
+    img_i[img_i!=0]=DEFAULT_DEPTH_VALUE
+    #img_i=img_i.astype(int)
+
+    #ret,binary_img=cv2.threshold(img_i,1,255,cv2.THRESH_BINARY)
+    #binary_img[binary_img!=0]=DEFAULT_DEPTH_VALUE
+    return img_i#binary_img
 
 def upper_bound(img_seq,shift=3):
     max_z=max([np.amax(img_i)#.item()
