@@ -4,6 +4,10 @@ import numpy as np
 import utils.actions.read
 import utils.paths.files
 from sets import Set 
+import scipy.stats as st
+
+#import pandas as pd 
+import itertools
 
 def get_global_features(in_path,out_path,dataset_format='cp_dataset'):
     read_actions=utils.actions.read.ReadActions(dataset_format,False)
@@ -14,9 +18,14 @@ def get_global_features(in_path,out_path,dataset_format='cp_dataset'):
 
 def extract_features(action_i):
     series_i=action_i.to_series()
-    mean_vector=mean_of_feats(series_i)
-    sd_vector=std_of_feats(series_i)
-    data_vector=mean_vector+sd_vector            
+    data_vector=[]
+    feature_extractors=[mean_of_feats,std_of_feats,skew_of_feats,corrl_of_feats]
+    for extractor_i in feature_extractors:
+        data_vector+=extractor_i(series_i)
+    #mean_vector=mean_of_feats(series_i)
+    #sd_vector=std_of_feats(series_i)
+    #skew_vector=skew_of_feats(series_i)
+    #data_vector=mean_vector+sd_vector +skew_vector           
     return (data_vector,action_i.cat,action_i.person)	
 
 def mean_of_feats(series_i):
@@ -29,6 +38,17 @@ def std_of_feats(series_i,tabu=[]):
                 for i,ts_j in enumerate(series_i)
                   if not (i in tabu)] 
 
+def skew_of_feats(series_i):
+    return [st.skew(ts_j)
+              for ts_j in series_i]
+
+def corrl_of_feats(series_i):
+    s_pairs=itertools.combinations(series_i,2)
+    corl=[st.pearsonr(pair_i[0],pair_i[1])[0] 
+            for pair_i in s_pairs]
+    #print(type(corl[0]))
+    return corl
+
 def save_global(feat_vectors,out_path):
     def extr_data(i):
     	y_i=str(feat_vectors[i][1])
@@ -40,6 +60,6 @@ def save_global(feat_vectors,out_path):
     utils.paths.files.save_string(out_path,feat_text)
 
 if __name__ == "__main__":
-    in_path= '../../ultimate3/simple/seq'
-    out_path= '../../ultimate3/simple/dataset.txt'
-    get_global_features(in_path,out_path)
+    in_path=  "../../konf/simple/seq"#'../../final_paper/UTKinect/simple/seq'
+    out_path=  "../../konf/simple/dataset.txt"#'../../final_paper/UTKinect/simple/dataset.txt'
+    get_global_features(in_path,out_path,dataset_format='cp_dataset')
