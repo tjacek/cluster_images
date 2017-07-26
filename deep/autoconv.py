@@ -11,6 +11,7 @@ from lasagne.regularization import regularize_layer_params, l2, l1
 from lasagne.layers.conv import TransposedConv2DLayer
 import tools 
 import utils.data as data
+import utils.actions 
 import train
 
 class ConvAutoencoder(deep.NeuralNetwork):
@@ -35,20 +36,18 @@ class ConvAutoencoder(deep.NeuralNetwork):
         img4D=self.preproc.apply(in_img)
         return self.__prediction__(img4D).flatten()
 
-def default_parametrs():
-    return {"num_input":(None,2,60,60),"num_hidden":200,"batch_size":100,
-            "num_filters":16,"filter_size":(5,5),"pool_size":(4,4)}  
-
 def compile_conv_ae(hyper_params,preproc):
     l_hid,l_out,in_var=build_conv_ae(hyper_params)
     params = lasagne.layers.get_all_params(l_out, trainable=True)
     target_var = T.ivector('targets')
     reconstruction = lasagne.layers.get_output(l_out)
     reduction=lasagne.layers.get_output(l_hid)
+    
     loss = lasagne.objectives.squared_error(reconstruction, in_var).mean()
     l1_penalty = regularize_layer_params(l_hid, l1) * 0.0001
-    loss+=l1_penalty  
-    updates=lasagne.updates.nesterov_momentum(loss, params, learning_rate=0.001, momentum=0.8) 
+    #loss+=l1_penalty  
+    updates=lasagne.updates.adadelta(loss, params, learning_rate=0.001) 
+    #lasagne.updates.nesterov_momentum(loss, params, learning_rate=0.001, momentum=0.8) 
     return ConvAutoencoder(hyper_params,l_out,preproc,in_var,
                          reduction,reconstruction,loss,updates)    
 
@@ -58,8 +57,8 @@ def build_conv_ae(hyper_params):
                 num_filters=hyper_params['n_filters1'],
                 filter_size=hyper_params['filter_size1'],
                 pad='same',
-                nonlinearity=lasagne.nonlinearities.sigmoid,
-                W=lasagne.init.GlorotUniform(),
+                nonlinearity=lasagne.nonlinearities.rectify,
+                #W=lasagne.init.GlorotUniform(),
                 name='conv1')
     show_layer(l_conv1)
     l_pool1 = lasagne.layers.MaxPool2DLayer(l_conv1, pool_size=hyper_params['pool_size1'],name='pool1')
@@ -68,8 +67,8 @@ def build_conv_ae(hyper_params):
                 num_filters=hyper_params['n_filters2'],
                 filter_size=hyper_params['filter_size1'],
                 pad='same',
-                nonlinearity=lasagne.nonlinearities.sigmoid,
-                W=lasagne.init.GlorotUniform(),
+                nonlinearity=lasagne.nonlinearities.rectify,
+                #W=lasagne.init.GlorotUniform(),
                 name='conv2')
     show_layer(l_conv2)
     
@@ -80,8 +79,8 @@ def build_conv_ae(hyper_params):
                 num_filters=hyper_params['n_filters3'],
                 filter_size=hyper_params['filter_size1'],
                 pad='same',
-                nonlinearity=lasagne.nonlinearities.sigmoid,
-                W=lasagne.init.GlorotUniform(),
+                nonlinearity=lasagne.nonlinearities.rectify,
+                #W=lasagne.init.GlorotUniform(),
                 name='conv3')
     show_layer(l_conv3)
 
@@ -89,7 +88,7 @@ def build_conv_ae(hyper_params):
     show_layer(l_pool3)
 
     l_hidden = lasagne.layers.DenseLayer(l_pool3, num_units=hyper_params['num_hidden'],
-                      nonlinearity=lasagne.nonlinearities.sigmoid,name='hidden')
+                      nonlinearity=lasagne.nonlinearities.rectify,name='hidden')
     show_layer(l_hidden)
     
     l_hidden_inv = lasagne.layers.InverseLayer(l_hidden, l_hidden,name='hidden_inv')
@@ -137,48 +136,23 @@ def show_layer(layer):
     print(layer.name)
     print(lasagne.layers.get_output_shape(layer))
 
-#def build_conv_ae(hyper_params):
-#    num_hidden=hyper_params["num_hidden"]
-#    input_shape = hyper_params["num_input"]
-#    n_filters = hyper_params["num_filters"]
-#    filter_size2D = hyper_params["filter_size"]
-#    pool_size2D =  hyper_params["pool_size"]
-#    l_in = lasagne.layers.InputLayer(
-#               shape=input_shape)
-#    conv_layer1 = lasagne.layers.Conv2DLayer(
-#            l_in, num_filters=n_filters, filter_size=filter_size2D,
-#            nonlinearity=None,#lasagne.nonlinearities.rectify,
-#            W=lasagne.init.GlorotUniform())
+def train_ae(img_path,nn_path):
+    preproc=tools.ImgPreproc2D()
+    imgset=imgs.make_imgs(img_path,norm=True,transform=preproc)
 
-#    pool_layer1 = lasagne.layers.MaxPool2DLayer(conv_layer1, pool_size=pool_size2D)
-#    pool_size=list(lasagne.layers.get_output_shape(pool_layer1))
-#    pool_size[0]=[0]
-#    pool_size=tuple(pool_size)
-#    print(pool_size)
-#    flat_layer1=lasagne.layers.ReshapeLayer(pool_layer1,([0],-1) )
-#    flat_size=lasagne.layers.get_output_shape(flat_layer1)[1]
-#    print 'flat size %d' % flat_size
-#    hidden=lasagne.layers.DenseLayer(flat_layer1,
-#             num_units=num_hidden,
-#             nonlinearity=lasagne.nonlinearities.rectify)
-#
-#    flat_layer2=lasagne.layers.DenseLayer(hidden,
-#             num_units=flat_size,
-#             nonlinearity=lasagne.nonlinearities.rectify)
-#
-#    pool_layer2=lasagne.layers.ReshapeLayer(flat_layer2,(pool_size))
-#
-#    conv_layer2=lasagne.layers.Upscale2DLayer(pool_layer2, pool_size2D)
-    #input_shape
-#    n_chans=input_shape[1]
-#    out_layer= lasagne.layers.TransposedConv2DLayer(
-#            conv_layer2, num_filters=n_chans, filter_size=filter_size2D,
-#            nonlinearity=None,#lasagne.nonlinearities.rectify,
-#            W=lasagne.init.GlorotUniform())
-    
-#    in_var=l_in.input_var
-#    print(lasagne.layers.get_output_shape( out_layer))
-#    return hidden,out_layer,in_var
+    x=imgs.to_dataset(imgset,extract_cat=None,transform=None)
+
+    model=get_model(preproc,compile=False)
+    train.test_unsuper_model(x,model,num_iter=50)
+    model.get_model().save(nn_path)
+
+def reconstruct(img_path,nn_path,out_path):
+    preproc=deep.tools.ImgPreproc2D()
+    nn_reader=deep.reader.NNReader(preproc)
+    conv_ae=nn_reader(nn_path) 
+    def ae_transform(in_img):
+        return conv_ae.reconstructed(in_img)
+    utils.actions.transform_actions(img_path,out_path,ae_transform,seq_transform=False)
 
 def get_model(preproc,compile=True):
     if(compile):
@@ -186,17 +160,10 @@ def get_model(preproc,compile=True):
         return compile_conv_ae(params,preproc)
     else:  
         nn_reader=deep.reader.NNReader(preproc)
-        return nn_reader(nn_path,model_p)
+        return nn_reader(nn_path,0.0)
 
 if __name__ == "__main__": 
-    path_dir="../../AArtyk/MSR/proj"
+    img_path="../../AArtyk/MSR/proj"
     nn_path="../../AArtyk/conv_ae"
-    preproc=tools.ImgPreproc2D()
-    imgset=imgs.make_imgs(path_dir,norm=True,transform=preproc)
-
-    #extract_cat=data.ExtractCat()
-    x=imgs.to_dataset(imgset,extract_cat=None,transform=None)
-
-    model=get_model(preproc,compile=False)
-    train.test_unsuper_model(x,model,num_iter=10)
-    model.get_model().save(ae_path)
+    out_path="../../AArtyk/proj_rec"
+    reconstruct(img_path,nn_path,out_path)
