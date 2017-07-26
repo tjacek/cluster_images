@@ -1,8 +1,9 @@
-import lasagne,pickle
 import numpy as np
+import lasagne
+import pickle
+import utils.paths.files as files
 import theano
 import theano.tensor as T
-import utils.files as files
 #import deep.ae
 
 class NeuralNetwork(object):
@@ -34,3 +35,8 @@ class Model(object):
     def set_determistic(self):
         if('p' in self.hyperparams):
             self.hyperparams['p']=0.0
+
+    def add_empty_params(self,param_shape):
+        print(type(param_shape))
+        print(param_shape)
+        self.params.append(np.ones(param_shape))
