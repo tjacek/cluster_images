@@ -122,7 +122,7 @@ def get_updates(loss,out_layer):
     return updates
 
 def default_params():
-    return {"input_shape":(None,3,60,60),"num_filters":16,"n_hidden":100,
+    return {"input_shape":(None,2,64,64),"num_filters":16,"n_hidden":100,
               "filter_size":(5,5),"pool_size":(4,4),"p":0.5, "l1_reg":0.001}
 
 def get_model(preproc,nn_path=None, params=None, compile=True,l1_reg=True,model_p=0.1):
@@ -139,13 +139,15 @@ def get_model(preproc,nn_path=None, params=None, compile=True,l1_reg=True,model_
         nn_reader=deep.reader.NNReader(preproc)
         return nn_reader(nn_path,model_p)
 
-if __name__ == "__main__":
-    img_path='../inspect/b_nn/train'
-    nn_path='../inspect/b_nn/nn_basic'
-    
-    #img_path='../cross/1_set/train'
-    #nn_path='../cross/1_set/nn'
+def binarize(cat,y):
+    return [ int(cat==y_i)
+                for y_i in y]
 
+if __name__ == "__main__":
+    #img_path="../../AArtyk/select_untime/select_worst3/train"
+    #nn_path="../../AArtyk/select_untime/select_worst3/nn_worst"
+    img_path="../../AArtyk/untime/train"
+    nn_path="../../AArtyk/binary/cat3/nn_3"
     preproc=tools.ImgPreprocProj()
     imgset=imgs.make_imgs(img_path,norm=True)
     
@@ -156,6 +158,8 @@ if __name__ == "__main__":
     #print(extract_cat.dir.items())
     print(x.shape)
     print(y.shape)
-    model=get_model(preproc,nn_path,compile=False,model_p=0.0)
-    train.test_super_model(x,y,model,num_iter=250)
+
+    y=binarize(3,y)
+    model=get_model(preproc,nn_path,compile=True,model_p=0.5)
+    train.test_super_model(x,y,model,num_iter=20)
     model.get_model().save(nn_path)
