@@ -35,15 +35,13 @@ class Convet(deep.NeuralNetwork):
     
     def get_category(self,img):
         dist=self.get_distribution(img)
-        return np.argmax(dist)#[tools.dist_to_category(dist_i) 
-               #     for dist_i in dist]
+        return np.argmax(dist)
 
     def get_distribution(self,x):
         if(len(x.shape)!=4):
             img4D=self.preproc.apply(x)
         else:
             img4D=x
-        #x.name=str(x.name)
         img_x=self.pred(img4D).flatten()
         return img_x
 
@@ -140,15 +138,16 @@ def get_model(preproc,nn_path=None, params=None, compile=True,l1_reg=True,model_
         return nn_reader(nn_path,model_p)
 
 def binarize(cat,y):
+    print(y)
     return [ int(cat==y_i)
                 for y_i in y]
 
 if __name__ == "__main__":
     #img_path="../../AArtyk/select_untime/select_worst3/train"
     #nn_path="../../AArtyk/select_untime/select_worst3/nn_worst"
-    img_path="../../AArtyk/untime/train"
-    nn_path="../../AArtyk/binary/cat3/nn_3"
-    preproc=tools.ImgPreprocProj()
+    img_path="../../AArtyk/time/train"
+    nn_path="../../AArtyk/binary_time/cat19/nn_19"
+    preproc=tools.ImgPreproc2D()
     imgset=imgs.make_imgs(img_path,norm=True)
     
     print("read")
@@ -159,7 +158,7 @@ if __name__ == "__main__":
     print(x.shape)
     print(y.shape)
 
-    y=binarize(3,y)
-    model=get_model(preproc,nn_path,compile=True,model_p=0.5)
-    train.test_super_model(x,y,model,num_iter=20)
+    y=binarize(19,y)
+    model=get_model(preproc,nn_path,compile=False,model_p=0.5)
+    train.test_super_model(x,y,model,num_iter=250)
     model.get_model().save(nn_path)
