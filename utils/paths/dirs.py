@@ -1,16 +1,20 @@
+import sys,os
+sys.path.append(os.path.abspath('../cluster_images'))
+import numpy as np
 import os
 import os.path as io 
-import paths 
+import utils.paths 
 from natsort import natsorted
 from shutil import copyfile
 from sets import Set
+import utils.paths
 
 class ApplyToFiles(object):
     def __init__(self,dir_arg=False):
         self.dir_arg=dir_arg
 
     def __call__(self, func):    
-        @paths.path_args
+        @utils.paths.path_args
         def inner_func(in_dir,out_dir):
             print(str(in_dir))
             in_paths=get_files(in_dir,dirs=self.dir_arg)
@@ -27,7 +31,7 @@ def dir_arg(func):
     return inner_func
 
 def apply_to_dirs( func):    
-    @paths.path_args
+    @utils.paths.path_args
     def inner_func(*args):
         old_path=str(args[0])
         new_path=str(args[1])
@@ -40,7 +44,7 @@ def apply_to_dirs( func):
             func(in_i,out_i,*other_args)
     return inner_func
     
-@paths.path_args
+@utils.paths.path_args
 def copy_dir(in_path,out_path):
     in_files=get_files(in_path,dirs=True)
     make_dir(str(out_path))
@@ -51,7 +55,7 @@ def copy_dir(in_path,out_path):
         print(str(out_file_i))#out_file=out_path.
         unify_dirs(str(in_file_i),str(out_file_i)) 
 
-@paths.path_args
+@utils.paths.path_args
 def unify_dirs(in_path,out_path):
     dirs_paths=get_files(in_path)
     make_dir(str(out_path))
@@ -67,36 +71,42 @@ def unify_dirs(in_path,out_path):
 def get_files(dir_path,dirs=True,append_path=True):
     d_path=str(dir_path)
     all_in_dir=os.listdir(d_path)
+    print(all_in_dir)
     if(dirs):    
         files= [f for f in all_in_dir  
                  if (not is_file(f,dir_path))]
     else:
     	files= [f for f in all_in_dir  
                  if is_file(f,dir_path)]
+    print(files)
     files=natsorted(files)
     if(append_path):
-        files=[paths.get_paths(dir_path,file_i) for file_i in files]
+        files=[utils.paths.get_paths(dir_path,file_i) for file_i in files]
     return files
 
 def is_file(f,path):
     file_path=str(path)+"/"+f
     return io.isfile(file_path)#io.join(path,f))
 
-@paths.str_arg
+@utils.paths.str_arg
 def make_dir(path):
     if(not os.path.isdir(path)):
-        os.system("mkdir "+path)
+        os.mkdir(path)
+    #if(not os.path.isdir(path)):
+    #    os.system("mkdir "+path)
 
-def all_files(in_path):
-    dirs_i=get_files(in_path,dirs=True)
-    files_i=get_files(in_path,dirs=False)
+def all_files(in_path,append_path=True):
+    dirs_i=get_files(in_path,dirs=True,append_path=append_path)
+    files_i=get_files(in_path,dirs=False,append_path=append_path)
     if(dirs_i):
         for dirs_ij in dirs_i:
             files_i+=all_files(dirs_ij)
     return files_i
 
+@utils.paths.path_args
 def bottom_dirs(in_path):
     dirs_i=get_files(in_path,dirs=True)
+    print(dirs_i)
     bottom=[]
     if(dirs_i):
         for dirs_ij in dirs_i:
