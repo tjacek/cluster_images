@@ -10,7 +10,8 @@ class ExtractBox(object):
         self.end_point=points[1]
 
     def __call__(self,img1):
-    	org_img1=img1.get_orginal()
+    	org_img1=img1#.get_orginal()
+        print(org_img1.shape)
     	print(self.start_point)
     	print(self.end_point)
         new_img1=org_img1[self.start_point[1]:self.end_point[1],self.start_point[0]:self.end_point[0]]
@@ -43,6 +44,11 @@ def make_extract_box(nonzero_frame):
     return ExtractBox(points)
 
 def simple_bbox(nonzero_frames):
+    nonzero_frames*=200
     nonzero_frames=nonzero_frames.astype(np.uint8)
-    x0,y0,w,h=cv2.boundingRect(nonzero_frames)
-    return [(x0,y0),((x0+w,y0+h))] 
+    thresh = cv2.threshold(nonzero_frames, 1, 255, cv2.THRESH_BINARY)[1]  
+    #thresh = cv2.dilate(thresh, None, iterations=2)  
+    contours, hierarchy= cv2.findContours(thresh.copy(),cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
+    #nonzero_frames=nonzero_frames.astype(np.uint8)
+    x0,y0,w,h=cv2.boundingRect(contours[0])
+    return [(x0,y0),((x0+w,y0+h))]     
