@@ -29,14 +29,12 @@ class SimplePreproc(object):
         return img_i[:][0:new_size]
 
 class PcloudFeatures(object):
-    def __init__(self):
-        self.cloud_extractors=[area_feat,std_features,skewness_features,corl_features]#,
-        #        OutlinersExtractor(0),OutlinersExtractor(1), OutlinersExtractor(2),
-        #        OutlinersExtractor(0,True),OutlinersExtractor(1,True), OutlinersExtractor(2,True)]
-        #center,z_outliners,corl_features]
-        #[area_feat,std_features,skewness_features,corl_features]
-        #[pca_features,area_feat]#[std_features,skewness_features,area_feat]
-        
+    def __init__(self,cloud_extractors=None):
+        if(cloud_extractors==None):
+            self.cloud_extractors=[area_feat,std_features,skewness_features,corl_features]#,
+        else:
+            self.cloud_extractors=cloud_extractors
+
     def __call__(self,img_i):
         print(img_i.name)
         points=utils.pcloud.make_point_cloud(img_i)
@@ -60,23 +58,33 @@ def test_transform(img_i):
 def make_extract():
     return ExtractFeatures(SimplePreproc(),PcloudFeatures())
 
-def get_features(img):
-    img=preproc_img(img)
-    print('Shape:')
-    print(img.shape)
-    points=utils.pcloud.make_point_cloud(img)
-    points=utils.pcloud.unit_normalized(points)
-    #points=pcloud.normalized_cloud(points)
-    if(points==None):
-    	return None
-    cloud_extractors=[area_feat,skewness_features,std_features,corl_features]#,center,extr_features]
-                      #extr_features]#,elipse_feat]
-    all_feats=[]
-    for extr_i in cloud_extractors:
-        all_feats+=extr_i(img,points)
-    print(all_feats)
-    print(len(all_feats))      	
-    return np.array(all_feats)
+class GetFeatures(object):
+    def __init__(self, cloud_extractors):
+        self.cloud_extractors=cloud_extractors
+        
+    def __call__(self,img):
+        img=preproc_img(img)
+        print('Shape:')
+        print(img.shape)
+        points=utils.pcloud.make_point_cloud(img)
+        points=utils.pcloud.unit_normalized(points)
+        #points=pcloud.normalized_cloud(points)
+        if(points==None or len(points)==0):
+    	    raise Exception("")
+        #cloud_extractors=[area_feat,skewness_features,std_features,corl_features]
+        all_feats=[]
+        for extr_i in self.cloud_extractors:
+            all_feats+=extr_i(img,points)
+        print(all_feats)
+        print(len(all_feats))      	
+        return np.array(all_feats)
+
+def get_basic_features():
+    #cloud_extractors=[area_feat,skewness_features,std_features,corl_features]
+    #cloud_extractors.append(extr_point)
+    #cloud_extractors=[extr_point]
+    cloud_extractors=[extr_point]
+    return GetFeatures(cloud_extractors)
 
 def preproc_img(img_i):
     x=img_i.shape[0]
@@ -95,6 +103,10 @@ def extr_features(img,pcloud):
 
 def center(img,pcloud):
     return pcloud.center_of_mass(True)
+
+def extr_point(img_i,pcloud):
+    index=np.unravel_index(img_i.argmax(),img_i.shape)
+    return list(index)
 
 def std_features(img,pcloud):
     points=pcloud.get_numpy()
@@ -134,18 +146,6 @@ def corl_features(img,pcloud):
     feats.append(corl_helper(1,2))    
     feats.append(corl_helper(2,0))    
     return feats
-
-
-#def corl_features(img,pcloud):
-#    feats=[]
-#    points=pcloud.get_numpy()
-#    dim=pcloud.dims
-#    for x_i in range(dim):
-#        for y_i in range(dim):
-#            if(x_i!=y_i):
-#                corr_xy=scipy.stats.pearsonr(points[:,x_i],points[:,y_i])
-#                feats.append(corr_xy[0])    
-#    return feats
 
 def height_feat(img,pcloud):
     img2D=img.get_orginal()
