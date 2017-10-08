@@ -1,54 +1,27 @@
-import deep
-import utils.imgs as imgs 
-import utils.paths.dirs,utils.paths.files
-import utils.data as data
-import deep.reader 
-import deep.tools 
-import utils.conf
-import numpy as np
+import sys,os
+sys.path.append(os.path.abspath('../cluster_images'))
+import utils.actions.read
+import deep.tools
 import basic
-import basic.reduction
-import basic.external
-import basic.combine
 
-def transform_features(conf_dict):
-    in_path=conf_dict['in_path']
-    out_path=conf_dict['out_path']
-    extractor=select_extractor(conf_dict)
-    basic.external.transform_features(in_path,out_path,extractor) 
+def extract_feats(in_path,out_path,dataset_format='mhad_dataset'):
+    read_actions=utils.actions.read.ReadActions(dataset_format)
+    actions=read_actions(in_path)
+    extractor=select_extractor(extractor_type='basic')
+    basic_actions=[ action_i.transform(extractor,False) for action_i in actions]
+ 
+    for basic_action_i in basic_actions:
+        basic_action_i.to_text_file(out_path)
 
-def make_features(conf_dict,weight=0.0):
-    in_path=conf_dict['img_path']
-    out_path=conf_dict['feat_path']
-    extractor=select_extractor(conf_dict)
-    data=imgs.make_imgs(in_path,norm=True)
-    assert(type(data[0])== utils.imgs.Image )
-    basic.external.external_features(out_path,data,extractor, weight)
+def select_extractor(extractor_type):
+    extractor=basic.get_basic_features()
+    if(extractor_type=='basic'):
+        return basic.get_basic_features()	
+    raise Exception("No preproc")
 
-def select_extractor(conf_dict):
-    extractor_type=conf_dict['extractor']
-    preproc=select_preproc(conf_dict)
-
-    if(extractor_type=='deep'):
-        nn_path=conf_dict['nn_path']
-        nn_reader=deep.reader.NNReader(preproc)
-        extractor=nn_reader(nn_path)
-    elif extractor_type=='text':
-        text_path=conf_dict['text_path']
-        feat_dict=basic.external.read_external(text_path)
-        extractor=lambda img_i:feat_dict[img_i.name]
-    elif extractor_type=='basic':
-        extractor=basic.get_features
-    elif extractor_type=='combine':
-        combine_path=conf_dict['combine_path']
-        extractor=basic.combine.build_combined(combine_path,preproc3D)
-    else:
-        extractor=getattr(basic.reduction,extractor_type)
-    assert(extractor!=None)
-    return extractor
-
-def select_preproc(conf_dict):
-    preproc=conf_dict['preproc']
+def select_preproc(preproc):
+    if(type(preproc)==dict):	
+        preproc=conf_dict['preproc']
     if(preproc=='proj'):
         return deep.tools.ImgPreprocProj()
     elif preproc=='time':    
@@ -57,7 +30,6 @@ def select_preproc(conf_dict):
         return deep.tools.ImgPreproc1D()
     raise Exception("No preproc")
 
-if __name__ == "__main__":
-    conf_path="conf/dane4.cfg"
-    conf_dict=utils.conf.read_config(conf_path)
-    make_features(conf_dict)
+in_path="../../AArtyk2/time/"
+out_path="../../AArtyk2/corel/"
+extract_feats(in_path,out_path)

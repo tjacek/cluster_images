@@ -33,10 +33,15 @@ class Action(object):
         return Action(self.name,fun(self.img_seq),
                        self.cat,self.person)
 
-    def transform(self,fun):
-        img_dec=self.get_img_dec(fun)
+    def transform(self,fun, img_seq=True):
+        if(img_seq):
+            img_dec=self.get_img_dec(fun)
+        else:
+            img_dec=fun
         new_seq=[img_dec(img_i)
-                  for img_i in self.img_seq]         
+                    for img_i in self.img_seq]
+        new_seq=[img_i for img_i in new_seq
+                         if img_i!=None]                                     
         return Action(self.name,new_seq,
                       self.cat,self.person)
     
@@ -84,6 +89,11 @@ class Action(object):
         return [ s_helper(i) 
                   for i in range(dim)]
 
+    def dim(self):
+        first_frame=self.img_seq[0]
+        if(type(first_frame)==list):
+            return len(first_frame)
+        return first_frame.shape[0]
 
 def new_action(old_action,new_seq):
     return Action(old_action.name,new_seq,
