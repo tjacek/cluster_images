@@ -2,10 +2,15 @@ import sys,os
 sys.path.append(os.path.abspath('../cluster_images'))
 import utils.actions.read
 import deep.tools
-import basic,seq.dtw_feat
+import basic
+import seq.dtw_feat
+import feat.global_feat
 
-def global_feats(seq_path,out_path,dataset_format='mhad_dataset'):
-    seq.dtw_feat.make_dtw_feat(seq_path,out_path,dataset_format=dataset_format)
+def global_feats(seq_path,out_path,aggregate_type='dtw',dataset_format='mhad_dataset'):
+    if(aggregate_type=='dtw'):
+        seq.dtw_feat.make_dtw_feat(seq_path,out_path,dataset_format=dataset_format)
+    else:
+        feat.global_feat.get_global_features(seq_path,out_path,dataset_format=dataset_format)
 
 def local_feats(in_path,out_path,dataset_format='mhad_dataset'):
     read_actions=utils.actions.read.ReadActions(dataset_format)
@@ -33,7 +38,7 @@ def select_preproc(preproc):
         return deep.tools.ImgPreproc1D()
     raise Exception("No preproc")
 
-seq_path="../../AArtyk2/basic/corel/seq"
-out_path="../../AArtyk2/basic/corel/dtw_feats.txt"
-global_feats(seq_path,out_path)
+seq_path="../../AArtyk2/basic/simple/seq"
+out_path="../../AArtyk2/basic/simple/simple.txt"
+global_feats(seq_path,out_path,'basic',dataset_format='mhad_dataset')
 #extract_feats(in_path,out_path)
