@@ -7,6 +7,11 @@ import basic
 import seq.dtw_feat
 import feat.global_feat
 
+def all_feats(in_path,seq_path,out_path,aggregate_type='dtw',
+              extractor_type='deep',dataset_format='mhad_dataset'):
+    local_feats(in_path,seq_path,extractor_type,dataset_format)
+    global_feats(seq_path,out_path,aggregate_type,dataset_format)
+
 def global_feats(seq_path,out_path,aggregate_type='dtw',dataset_format='mhad_dataset'):
     if(aggregate_type=='dtw'):
         seq.dtw_feat.make_dtw_feat(seq_path,out_path,dataset_format=dataset_format)
@@ -31,14 +36,6 @@ def select_extractor(extractor_type,preproc_type='time'):
         return get_deep_reader(extractor_desc,preproc)
     raise Exception("No extractor")
 
-def decompose(extractor_type):
-    extractor_desc=extractor_type
-    if(type(extractor_type)==dict):
-        extractor_id=extractor_type['extractor_id']
-    else:
-        extractor_id=extractor_type
-    return extractor_id,extractor_desc
-
 def select_preproc(preproc_type):
     if(type(preproc_type)==dict):	
         preproc=conf_dict['preproc']
@@ -57,13 +54,19 @@ def get_deep_reader(nn_path,preproc):
     extractor=nn_reader(nn_path)
     return extractor
 
+def decompose(extractor_type):
+    extractor_desc=extractor_type
+    if(type(extractor_type)==dict):
+        extractor_id=extractor_type['extractor_id']
+    else:
+        extractor_id=extractor_type
+    return extractor_id,extractor_desc
+
 def get_deep(nn_path):
     return {'extractor_id':'deep','nn_path':nn_path}
 
 img_path='../../AArtyk2/time'
-nn_path="../../AArtyk2/deep/16/nn_16"
-seq_path="../../AArtyk2/deep/16/seq"
-out_path="../../AArtyk2/basic/simple/simple.txt"
-#global_feats(seq_path,out_path,'basic',dataset_format='mhad_dataset')
-
-local_feats(img_path,seq_path,get_deep(nn_path))
+nn_path="../../AArtyk2/deep/all/nn_all"
+seq_path="../../AArtyk2/deep/all/seq"
+out_path="../../AArtyk2/deep/all/simple.txt"
+all_feats(in_path,seq_path,out_path,extractor_type=get_deep(nn_path))
