@@ -143,10 +143,8 @@ def binarize(cat,y):
                 for y_i in y]
 
 if __name__ == "__main__":
-    #img_path="../../AArtyk/select_untime/select_worst3/train"
-    #nn_path="../../AArtyk/select_untime/select_worst3/nn_worst"
-    img_path="../../AArtyk/time/train"
-    nn_path="../../AArtyk/binary_time/cat19/nn_19"
+    img_path="../../AArtyk2/train"
+    nn_path="../../AArtyk2/deep/nn_26"
     preproc=tools.ImgPreproc2D()
     imgset=imgs.make_imgs(img_path,norm=True)
     
@@ -154,11 +152,10 @@ if __name__ == "__main__":
     print(len(imgset))
     extract_cat=data.ExtractCat()
     x,y=imgs.to_dataset(imgset,extract_cat,preproc)
-    #print(extract_cat.dir.items())
     print(x.shape)
     print(y.shape)
 
-    y=binarize(19,y)
+    y=binarize(25,y)
     model=get_model(preproc,nn_path,compile=False,model_p=0.5)
-    train.test_super_model(x,y,model,num_iter=250)
+    train.test_super_model(x,y,model,num_iter=50)
     model.get_model().save(nn_path)
