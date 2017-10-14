@@ -52,7 +52,7 @@ def copy_dir(in_path,out_path):
     	out_file_i=out_path.replace(in_file_i)
         make_dir(str(out_file_i))
         print(str(in_file_i))
-        print(str(out_file_i))#out_file=out_path.
+        print(str(out_file_i))
         unify_dirs(str(in_file_i),str(out_file_i)) 
 
 @utils.paths.path_args
@@ -63,22 +63,18 @@ def unify_dirs(in_path,out_path):
     for dir_i in dirs_paths:
         files_paths+=get_files(dir_i,dirs=False)
     for in_file_i in files_paths:
-        print(str(in_file_i))
         out_file_i=out_path.replace(in_file_i)
-        print(str(out_file_i))
         copyfile(str(in_file_i),str(out_file_i))
 
 def get_files(dir_path,dirs=True,append_path=True):
     d_path=str(dir_path)
     all_in_dir=os.listdir(d_path)
-    print(all_in_dir)
     if(dirs):    
         files= [f for f in all_in_dir  
                  if (not is_file(f,dir_path))]
     else:
     	files= [f for f in all_in_dir  
                  if is_file(f,dir_path)]
-    print(files)
     files=natsorted(files)
     if(append_path):
         files=[utils.paths.get_paths(dir_path,file_i) for file_i in files]
@@ -92,8 +88,6 @@ def is_file(f,path):
 def make_dir(path):
     if(not os.path.isdir(path)):
         os.mkdir(path)
-    #if(not os.path.isdir(path)):
-    #    os.system("mkdir "+path)
 
 def all_files(in_path,append_path=True):
     dirs_i=get_files(in_path,dirs=True,append_path=append_path)
@@ -106,7 +100,6 @@ def all_files(in_path,append_path=True):
 @utils.paths.path_args
 def bottom_dirs(in_path):
     dirs_i=get_files(in_path,dirs=True)
-    print(dirs_i)
     bottom=[]
     if(dirs_i):
         for dirs_ij in dirs_i:
