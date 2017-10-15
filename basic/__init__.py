@@ -28,22 +28,6 @@ class SimplePreproc(object):
         new_size=img_i.shape[0]/self.div
         return img_i[:][0:new_size]
 
-class PcloudFeatures(object):
-    def __init__(self,cloud_extractors=None):
-        if(cloud_extractors==None):
-            self.cloud_extractors=[area_feat,std_features,skewness_features,corl_features]#,
-        else:
-            self.cloud_extractors=cloud_extractors
-
-    def __call__(self,img_i):
-        print(img_i.name)
-        points=utils.pcloud.make_point_cloud(img_i)
-        all_feats=[]
-        for extr_i in self.cloud_extractors:
-            all_feats+=extr_i(img_i,points)
-        print(all_feats)        
-        return np.array(all_feats)
-
 def action_features(in_path,out_path,extractor,dataset_format='cp_dataset'):
     read_actions=utils.actions.read.ReadActions(dataset_format,norm=True)
     actions=read_actions(in_path)
@@ -67,11 +51,11 @@ class GetFeatures(object):
         print('Shape:')
         print(img.shape)
         points=utils.pcloud.make_point_cloud(img)
-        points=utils.pcloud.unit_normalized(points)
         #points=pcloud.normalized_cloud(points)
         if(points==None or len(points)==0):
-    	    raise Exception("")
-        #cloud_extractors=[area_feat,skewness_features,std_features,corl_features]
+    	    #return None
+            raise Exception("No points")
+        points=utils.pcloud.unit_normalized(points)
         all_feats=[]
         for extr_i in self.cloud_extractors:
             all_feats+=extr_i(img,points)
@@ -81,9 +65,8 @@ class GetFeatures(object):
 
 def get_basic_features():
     #cloud_extractors=[area_feat,skewness_features,std_features,corl_features]
-    #cloud_extractors.append(extr_point)
-    #cloud_extractors=[extr_point]
     cloud_extractors=[extr_point]
+    #cloud_extractors=[corl_features]
     return GetFeatures(cloud_extractors)
 
 def preproc_img(img_i):
