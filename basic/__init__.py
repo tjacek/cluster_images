@@ -10,24 +10,6 @@ import utils
 import utils.imgs
 import utils.actions
 
-class ExtractFeatures(object):
-    def __init__(self,preproc,features):
-        self.preproc=preproc
-        self.features=features
-
-    def __call__(self,imgs_seq):
-        img_seq=[ self.preproc(img_i) for img_i in imgs_seq ]
-        return [ self.features(img_i)
-                 for img_i in img_seq]
-
-class SimplePreproc(object):
-    def __init__(self, div=3):        
-        self.div=div
-
-    def __call__(self,img_i):
-        new_size=img_i.shape[0]/self.div
-        return img_i[:][0:new_size]
-
 def action_features(in_path,out_path,extractor,dataset_format='cp_dataset'):
     read_actions=utils.actions.read.ReadActions(dataset_format,norm=True)
     actions=read_actions(in_path)
