@@ -45,16 +45,20 @@ class GetFeatures(object):
         print(len(all_feats))      	
         return np.array(all_feats)
 
-def get_basic_features():
-    #cloud_extractors=[area_feat,skewness_features,std_features,corl_features]
-    cloud_extractors=[extr_point]
-    #cloud_extractors=[corl_features]
+def get_basic_features(feat_type='skew'):
+    if(feat_type=='extr'):
+        cloud_extractors=[extr_point]
+    elif(feat_type=='corl'):
+        cloud_extractors=[corl_features]
+    elif(feat_type=='skew'):
+        cloud_extractors=[skewness_features]
+    else:
+        cloud_extractors=[area_feat,skewness_features,std_features,corl_features]
     return GetFeatures(cloud_extractors)
 
 def preproc_img(img_i):
     x=img_i.shape[0]
     y=img_i.shape[1]
-    #z= x/(x/y)   
     return img_i[0:y]
 
 def extr_features(img,pcloud):
