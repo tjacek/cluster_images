@@ -90,7 +90,7 @@ def build_model(params):
             nonlinearity=lasagne.nonlinearities.rectify)
     out_layer = lasagne.layers.DenseLayer(
             lasagne.layers.dropout(dropout, p=p_drop),
-            num_units=n_cats,
+            num_units=int(n_cats),
             nonlinearity=lasagne.nonlinearities.softmax)
     all_layers={"in":in_layer, "conv1":conv_layer1,"pool":pool_layer1,
                 "conv2":conv_layer2,"pool2":pool_layer2,
@@ -142,9 +142,18 @@ def binarize(cat,y):
     return [ int(cat==y_i)
                 for y_i in y]
 
+
+def experiment(x,y,preproc,nn_path,n_models,n_iters):
+    for i in range(n_models):
+        nn_path_i=nn_path+'_'+str(i)
+        b_y=binarize(i,y)
+        model=get_model(preproc,nn_path_i,compile=True,model_p=0.5)
+        train.test_super_model(x,b_y,model,num_iter=n_iters)
+        model.get_model().save(nn_path_i)
+
 if __name__ == "__main__":
-    img_path="../../AArtyk2/train"
-    nn_path="../../AArtyk2/deep/nn_26"
+    img_path="../datasets/time"
+    nn_path="../models/nn"
     preproc=tools.ImgPreproc2D()
     imgset=imgs.make_imgs(img_path,norm=True)
     
@@ -154,8 +163,8 @@ if __name__ == "__main__":
     x,y=imgs.to_dataset(imgset,extract_cat,preproc)
     print(x.shape)
     print(y.shape)
-
-    y=binarize(25,y)
-    model=get_model(preproc,nn_path,compile=False,model_p=0.5)
-    train.test_super_model(x,y,model,num_iter=50)
-    model.get_model().save(nn_path)
+    experiment(x,y,preproc,nn_path,n_models=3,n_iters=4)
+#    y=binarize(0,y)
+#    model=get_model(preproc,nn_path,compile=True,model_p=0.5)
+#    train.test_super_model(x,y,model,num_iter=5)
+#    model.get_model().save(nn_path)
