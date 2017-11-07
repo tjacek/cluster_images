@@ -74,7 +74,7 @@ def read_images(paths,nomalized=True):
 @paths.path_args
 def read_img(dir_path):
     raw_img=cv2.imread(str(dir_path),cv2.IMREAD_GRAYSCALE) 
-    if(raw_img==None):
+    if(raw_img is None):
         return None#raise Exception("No image in path " + str(dir_path))
     img_i=Image(str(dir_path),raw_img)
     return img_i
@@ -98,7 +98,7 @@ def make_imgs(in_path,norm=True,transform=None):
     imgset=[read_img(path_i)
           for path_i in img_dirs]
     imgset=[img_i for img_i in imgset
-                    if img_i!=None]
+                    if not (img_i is None)]
     if(norm):
         imgset=[ img_i/255.0
                  for img_i in imgset]
