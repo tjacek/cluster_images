@@ -29,19 +29,26 @@ def cp_dataset(action_dir):
 def basic_dataset(action_dir):
     name=action_dir.get_name()
     names=name.split('_')
-    if(len(names)==2):
-        cat=action_dir[-2]
+    if(len(names)>=2):
+        cat= action_dir[-2]#get_basic_cat(name,action_dir)
         
         person=names[0]#utils.text.get_person(name)
+        print(person)
         person=utils.text.extract_number(person)
-        name=cat+'_'+str(person)
+        name=cat+'s' +str(person) +'_'+ names[1]
         print("***************")
         print(cat)
         print(person)
         print(name)
         return name,cat,person
-    raise Exception("Wrong dataset format " + name +" " + str(len(names)))        
+    raise Exception("Wrong dataset format" + name +"-" + str(len(names)))        
 
+def get_basic_cat(name,action_dir):
+    if(len(action_dir)>1):
+        return action_dir[-2]
+    else:
+        return name.split('_')[0]
+         
 @utils.paths.path_args
 def cropped_dataset(action_dir):
     name=action_dir.get_name()
@@ -56,8 +63,16 @@ def cropped_dataset(action_dir):
     #person=utils.text.get_person(name)
     return name,cat,person
 
+@utils.paths.path_args
+def mhad_dataset(action_dir):
+    name=action_dir.get_name()
+    desc=name.split('_')
+    cat=int(desc[0].replace('a',''))
+    person=int(desc[1].replace('s',''))
+    return name,cat,person
+
 FORMAT_DIR={'cp_dataset':cp_dataset,'basic_dataset':basic_dataset,
-            'cropped_dataset':cropped_dataset}
+            'cropped_dataset':cropped_dataset,'mhad_dataset':mhad_dataset}
 
 class ReadActions(object):
     def __init__(self, dataset_format,img_seq=True,norm=False,as_dict=False):
@@ -67,19 +82,18 @@ class ReadActions(object):
         self.img_seq=img_seq
 
     def __call__(self,action_path):
-        #action_dirs=dirs.bottom_dirs(action_path)
-        #print(action_dirs)
-        #if(len(action_dirs)==0):
-        #    raise Exception("No actions in dir: " + str(action_path))
         action_dirs=self.get_dirs(action_path)
         actions=[self.parse_action(action_dir_i) 
                    for action_dir_i in action_dirs]
+        if(len(actions)==0):
+            raise Exception("No actions found at " + str(action_path))
         if(self.as_dict):
             actions={ action_i.cat+'_' +action_i.name:action_i
                       for action_i in actions}
         return actions
 
     def parse_action(self,action_dir):
+        print("sad"+str(action_dir))
         name,cat,person=self.dataset_format(action_dir)
         if(self.img_seq):
             data_seq=imgs.make_imgs(action_dir,norm=self.norm)
@@ -107,16 +121,18 @@ class SaveActions(object):
 
     @utils.paths.path_args
     def __call__(self,actions,outpath):
-        dirs.make_dir(outpath)
-        print('Save actions to' + str(outpath))
+        dirs.make_dir(str(outpath))
+        print('Save actions to ' + str(outpath))
         extr_cats=utils.data.ExtractCat(parse_cat=lambda a:a.cat)
         for action_i in actions:
             extr_cats(action_i)
         for name_i in extr_cats.names():
-            cat_dir_i=outpath.append(name_i,copy=True)
+            print("**********")
+            print(name_i)
+            cat_dir_i=outpath.append(str(name_i),copy=True)
             dirs.make_dir(cat_dir_i)
         for action_i in actions:
-            cat_path_i=outpath.append(action_i.cat,copy=True)
+            cat_path_i=outpath.append(str(action_i.cat),copy=True)
             if(self.img_actions):
                 action_i.save(cat_path_i,self.unorm)
             else:
