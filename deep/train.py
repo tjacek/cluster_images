@@ -3,12 +3,13 @@ import theano
 import theano.tensor as T
 import lasagne
 
-def test_super_model(X,y,model,transform,
+def test_super_model(X,y,model,transform=None,
                       batch_size=100,num_iter=500):
     print("Num iters " + str(num_iter))
-    X=transform(X,dim=60)
-    x_batch,n_batches=tools.get_batch(X,batch_size)
-    y_batch,n_batches=tools.get_batch(y,batch_size)
+    if(transform!=None):
+        X=transform(X,dim=60)
+    x_batch,n_batches=get_batch(X,batch_size)
+    y_batch,n_batches=get_batch(y,batch_size)
     for epoch in range(num_iter):
         cost_e = []
         for i in range(n_batches):
@@ -24,11 +25,9 @@ def test_super_model(X,y,model,transform,
 
 def test_unsuper_model(X,model,transform=None,
                         batch_size=100,num_iter=250):
-    print(X.shape)
     if(transform!=None):
         X=transform(X,dim=60)
-    print(X.shape)
-    x_batch,n_batches=tools.get_batch(X,batch_size)
+    x_batch,n_batches=get_batch(X,batch_size)
     for epoch in range(num_iter):
         cost_e = []
         for i in range(n_batches):
