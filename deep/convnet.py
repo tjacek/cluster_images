@@ -12,8 +12,10 @@ import utils
 import utils.imgs as imgs
 import utils.text as text
 import utils.data as data
-import utils.paths
+import utils.paths,utils.timer
 import deep.reader
+import theano.sandbox.cuda
+theano.sandbox.cuda.use("gpu")
 
 class Convet(deep.NeuralNetwork):
     def __init__(self,hyperparams,out_layer,preproc,
@@ -123,7 +125,7 @@ def default_params():
     return {"input_shape":(None,2,64,64),"num_filters":16,"n_hidden":100,
               "filter_size":(5,5),"pool_size":(4,4),"p":0.5, "l1_reg":0.001}
 
-def get_model(preproc,nn_path=None, params=None, compile=True,l1_reg=True,model_p=0.1):
+def get_model(n_cats,preproc,nn_path=None, params=None, compile=True,l1_reg=True,model_p=0.1):
     if(nn_path==None):
         compile=True
     if(compile):
@@ -131,7 +133,7 @@ def get_model(preproc,nn_path=None, params=None, compile=True,l1_reg=True,model_
             params=default_params()
         old_shape=params['input_shape']
         params['input_shape']=(old_shape[0],preproc.dim,old_shape[2],old_shape[3])
-        params['n_cats']= data.get_n_cats(y)
+        params['n_cats']= n_cats#data.get_n_cats(y)
         return compile_convnet(params,preproc)
     else:  
         nn_reader=deep.reader.NNReader(preproc)
@@ -142,14 +144,15 @@ def binarize(cat,y):
     return [ int(cat==y_i)
                 for y_i in y]
 
-
+#@utils.timer.clock
 def experiment(x,y,preproc,nn_path,n_models,n_iters):
     if(type(n_models)==int):
         n_models=range(n_models)
     for i in n_models:
         nn_path_i=nn_path+'_'+str(i)
         b_y=binarize(i,y)
-        model=get_model(preproc,nn_path_i,compile=True,model_p=0.5)
+        n_cats=data.get_n_cats(b_y)
+        model=get_model(n_cats,preproc,nn_path_i,compile=True,model_p=0.5)
         train.test_super_model(x,b_y,model,num_iter=n_iters)
         model.get_model().save(nn_path_i)
 
@@ -165,4 +168,4 @@ if __name__ == "__main__":
     x,y=imgs.to_dataset(imgset,extract_cat,preproc)
     print(x.shape)
     print(y.shape)
-    experiment(x,y,preproc,nn_path,n_models=[1],n_iters=5)
+    experiment(x,y,preproc,nn_path,range(1,27),500)
