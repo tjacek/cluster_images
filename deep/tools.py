@@ -73,8 +73,10 @@ class ImgPreprocProj(ImgPreproc):
     def __init__(self):
         self.dim=3
 
-    def apply(self,in_img):
-        org_img=in_img.get_orginal()
+    def apply(self,org_img):
+        #print(type(org_img))
+        #print(org_img.shape)
+
         img3D=imgs.split_img(org_img,scale=3)
         img4D=np.expand_dims(img3D,0)
         return img4D

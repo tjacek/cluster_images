@@ -144,7 +144,7 @@ def binarize(cat,y):
 
 if __name__ == "__main__":
     img_path="../../AArtyk2/train"
-    nn_path="../../AArtyk2/deep/nn_26"
+    nn_path="../../AArtyk2/deep/nn_25"
     preproc=tools.ImgPreproc2D()
     imgset=imgs.make_imgs(img_path,norm=True)
     
@@ -157,5 +157,5 @@ if __name__ == "__main__":
 
     y=binarize(25,y)
     model=get_model(preproc,nn_path,compile=False,model_p=0.5)
-    train.test_super_model(x,y,model,num_iter=50)
+    train.test_super_model(x,y,model,num_iter=30)
     model.get_model().save(nn_path)
