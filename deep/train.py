@@ -14,8 +14,6 @@ def test_super_model(X,y,model,transform=None,
         cost_e = []
         for i in range(n_batches):
             x_i=x_batch[i]
-            if((i%25)==0):
-                print(model.get_category(x_i))
             y_i=y_batch[i]
             loss_i=model.updates(x_i,y_i)
             cost_e.append(loss_i)

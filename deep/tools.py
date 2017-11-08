@@ -6,7 +6,7 @@ import theano.tensor as T
 import lasagne
 import deep
 import ae
-import autoconv
+#import autoconv
 import utils.imgs as imgs
 import utils.paths.dirs as dirs
 import deep.reader
@@ -139,7 +139,7 @@ def postproc3D(in_img):
 
 def reconstruction(ae_path,img_path,out_path):
     reader=deep.reader.NNReader()
-    nn=reader.read(ae_path)#autoconv.read_conv_ae(ae_path)
+    nn=reader.read(ae_path)
     imgset=imgs.make_imgs(img_path,norm=True)
     recon=[nn.reconstructed(img_i) 
             for img_i in imgset]
