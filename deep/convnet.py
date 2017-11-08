@@ -144,7 +144,9 @@ def binarize(cat,y):
 
 
 def experiment(x,y,preproc,nn_path,n_models,n_iters):
-    for i in range(n_models):
+    if(type(n_models)==int):
+        n_models=range(n_models)
+    for i in n_models:
         nn_path_i=nn_path+'_'+str(i)
         b_y=binarize(i,y)
         model=get_model(preproc,nn_path_i,compile=True,model_p=0.5)
@@ -163,8 +165,4 @@ if __name__ == "__main__":
     x,y=imgs.to_dataset(imgset,extract_cat,preproc)
     print(x.shape)
     print(y.shape)
-    experiment(x,y,preproc,nn_path,n_models=3,n_iters=4)
-#    y=binarize(0,y)
-#    model=get_model(preproc,nn_path,compile=True,model_p=0.5)
-#    train.test_super_model(x,y,model,num_iter=5)
-#    model.get_model().save(nn_path)
+    experiment(x,y,preproc,nn_path,n_models=[1],n_iters=5)
