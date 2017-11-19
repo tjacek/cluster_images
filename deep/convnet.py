@@ -14,8 +14,10 @@ import utils.text as text
 import utils.data as data
 import utils.paths,utils.timer
 import deep.reader
-import theano.sandbox.cuda
-theano.sandbox.cuda.use("gpu")
+import gc
+
+#import theano.sandbox.cuda
+#theano.sandbox.cuda.use("gpu")
 
 class Convet(deep.NeuralNetwork):
     def __init__(self,hyperparams,out_layer,preproc,
@@ -155,6 +157,7 @@ def experiment(x,y,preproc,nn_path,n_models,n_iters):
         model=get_model(n_cats,preproc,nn_path_i,compile=True,model_p=0.5)
         train.test_super_model(x,b_y,model,num_iter=n_iters)
         model.get_model().save(nn_path_i)
+        gc.collect()
 
 if __name__ == "__main__":
     img_path="../datasets/time"
