@@ -24,13 +24,12 @@ def make_dataset(actions):
     x=np.array(x)
     y=[action_i.cat for action_i in actions]
     names=[action_i.name for action_i in actions]
+    extract_cat=utils.data.ExtractCat(lambda x:x)
+    y=[ extract_cat(y_i) for y_i in y]
     return {'x':x ,'y':y,'names':names}
 
 @paths.path_args
 def use_dtw(dataset_path,k=0,dataset_format='cp_dataset',select_type='modulo'):
-    #dataset=seq_dataset(dataset_path,dataset_format)
-    #split_dataset= split.get_dataset(k,select_type)
-    #train,test=split_dataset(dataset) #.person_dataset(dataset)
     train,test=seq_dataset(dataset_path)
     wrap=Wrap()
     y_pred=wrap(train,test)
