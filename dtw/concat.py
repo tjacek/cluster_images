@@ -25,6 +25,6 @@ def unified_action(actionA,actionB):
 
 if __name__ == "__main__":
     in_path1= '../../AArtyk/simple/corl/seq'
-    in_path2= '../../AArtyk/simple/max_z/seq'
+    in_path2= '../../AArtyk/simple/skew/seq'
     out_path= '../../AArtyk/simple/conc'
     concat_actions(in_path1,in_path2,out_path)
