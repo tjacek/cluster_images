@@ -3,39 +3,14 @@ sys.path.append(os.path.abspath('../cluster_images'))
 import numpy as np 
 from collections import Counter
 from seq.to_dataset import seq_dataset
-#import seq,split
+import seq,
 import utils.paths as paths
 from utils.timer import clock 
 import utils.data
-import utils.actions,utils.actions.read
-from sklearn.metrics import classification_report,confusion_matrix
-
-def seq_dataset(in_path,dataset_format='cp_dataset'):
-    action_reader=utils.actions.read.ReadActions(dataset_format,img_seq=False)
-    actions= action_reader(in_path)
-    test= utils.actions.raw_select(actions,0)
-    train= utils.actions.raw_select(actions,1)    
-    train=make_dataset(train)
-    test=make_dataset(test)
-    return train,test
-
-def make_dataset(actions):
-    x=[np.array(action_i.img_seq)
-        for action_i in actions]
-    x=np.array(x)
-    y=[action_i.cat for action_i in actions]
-    names=[action_i.name for action_i in actions]
-    extract_cat=utils.data.ExtractCat(lambda x:x)
-    y=[ extract_cat(y_i) for y_i in y]
-    return {'x':x ,'y':y,'names':names}
-
-def check_prediction(y_pred,y_true):
-    print(classification_report(y_true, y_pred,digits=4))
-    print(confusion_matrix(y_true,y_pred))
 
 @paths.path_args
 def use_dtw(dataset_path,k=0,dataset_format='cp_dataset',select_type='modulo'):
-    train,test=seq_dataset(dataset_path)
+    train,test=seq.seq_dataset(dataset_path)
     wrap=Wrap()
     y_pred=wrap(train,test)
     check_prediction(y_pred,test['y'])
