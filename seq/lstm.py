@@ -101,8 +101,8 @@ def create_dataset(seq_path,nn_path):
     check_model(model,test)
 
 if __name__ == "__main__":
-    path='../../Documents/X2017/dtw_contr/corl_skew/seq'
-    nn_path='../../Documents/X2017/dtw_contr/corl_skew/lstm'
+    path='../../Documents/X2017/dtw_contr/skew/seq'
+    nn_path='../../Documents/X2017/dtw_contr/skew/lstm'
 
 #    path,nn_path=get_paths('../ensemble3/','select/',seq='seq',lstm='lstm')
     create_dataset(path,nn_path)

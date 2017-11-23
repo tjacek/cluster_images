@@ -2,8 +2,7 @@ import sys,os
 sys.path.append(os.path.abspath('../cluster_images'))
 import numpy as np 
 from collections import Counter
-from seq.to_dataset import seq_dataset
-import seq,
+import seq
 import utils.paths as paths
 from utils.timer import clock 
 import utils.data

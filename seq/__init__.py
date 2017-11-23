@@ -59,3 +59,15 @@ def make_masked_seq(x,max_seq,seq_dim):
 def check_prediction(y_pred,y_true):
     print(classification_report(y_true, y_pred,digits=4))
     print(confusion_matrix(y_true,y_pred))
+
+def unify_dataset(dataset1,dataset2):
+    new_dataset={}
+    for key_i,value_i in dataset1.items():        
+        if(type(value_i)==list):
+            new_value=value_i+dataset2[key_i]
+        elif(type(value_i)==np.ndarray):
+            new_value=np.concatenate((value_i,dataset2[key_i]),axis=0)
+        else:
+            new_value=value_i
+        new_dataset[key_i]=new_value 
+    return new_dataset
