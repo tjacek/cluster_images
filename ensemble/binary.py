@@ -13,16 +13,18 @@ class BinaryEnsemble(object):
                     for action_i in actions]    	
     
     def __call__(self,img_i):
-        print(img_i.shape)
-        feats=[nn_j.get_distribution(img_i)[1] 
+        def dist_helper(nn_j):
+            prob_j=nn_j.get_distribution(img_i)[1] 
+            if(prob_j<0.05):
+                return 0.0
+            return prob_j
+        feats=[dist_helper(nn_j)
                 for nn_j in self.binary_networks]
         return np.array(feats)
 
 def ensemble_seq(in_path,nn_dir,out_path,dataset_format='cp_dataset'):
     action_reader=utils.actions.read.ReadActions(dataset_format,img_seq=True)
     actions=action_reader(in_path)
-    for action_i in actions:
-        print(action_i)
     binary_ensemble=read_ensemble(nn_dir)
     new_actions=binary_ensemble.get_seq(actions)
     save_actions=utils.actions.read.SaveActions(img_actions=False)
