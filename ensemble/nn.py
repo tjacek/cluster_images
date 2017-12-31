@@ -18,5 +18,19 @@ class NNEnsemble(object):
         dists=np.array(dists)
         return np.sum(dists, axis=0)
 
-def read(nn_dir):
-    nn_ensemble= NNEnsemble( ensemble.read_ensemble(nn_dir))	
+def read_datasets(in_path,dataset_format='cp_dataset'):
+    datasets_paths=os.listdir(str(in_path))
+    datasets=[seq_dataset(path_i,masked=True,dataset_format)[1]
+                for path_i in datasets_paths]
+    datasets=[ to_dir(data_i) for data_i in datasets]
+    
+def to_dir(dataset_j):
+    names=dataset_i['names']
+    def dir_helper(i,name_i):
+        action_i={ 'mask':dataset_j['mask'][i],
+                   'x':dataset_j['x'][i],
+                   'y':datasets['y'][i]}
+        return {name_i:action_i}
+    return [ dir_helper(i,name_i) 
+                for i,name_i in enumerate(names)]
+    
