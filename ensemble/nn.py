@@ -22,7 +22,12 @@ def read_datasets(in_path,dataset_format='cp_dataset'):
     datasets_paths=os.listdir(str(in_path))
     datasets=[seq_dataset(path_i,masked=True,dataset_format)[1]
                 for path_i in datasets_paths]
+    names=datasets[0]['names']
+    y=datasets[0]['y']
     datasets=[ to_dir(data_i) for data_i in datasets]
+    actions={ name_i:[data_i[name_i] for data_i in datasets] 
+                for name_i in names}
+    return actions,y,names
     
 def to_dir(dataset_j):
     names=dataset_i['names']
