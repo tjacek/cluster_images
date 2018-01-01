@@ -1,3 +1,5 @@
+import sys,os
+sys.path.append(os.path.abspath('../cluster_images'))
 import numpy as np
 import ensemble
 
@@ -18,24 +20,26 @@ class NNEnsemble(object):
         dists=np.array(dists)
         return np.sum(dists, axis=0)
 
-def read_datasets(in_path,dataset_format='cp_dataset'):
-    datasets_paths=os.listdir(str(in_path))
-    datasets=[seq_dataset(path_i,masked=True,dataset_format)[1]
-                for path_i in datasets_paths]
-    names=datasets[0]['names']
-    y=datasets[0]['y']
-    datasets=[ to_dir(data_i) for data_i in datasets]
-    actions={ name_i:[data_i[name_i] for data_i in datasets] 
-                for name_i in names}
-    return actions,y,names
+class RNNCls(object):
+    def __init__(self,rnn,conv_net):
+        self.rnn=rnn
+        self.conv_net=conv_net
     
-def to_dir(dataset_j):
-    names=dataset_i['names']
-    def dir_helper(i,name_i):
-        action_i={ 'mask':dataset_j['mask'][i],
-                   'x':dataset_j['x'][i],
-                   'y':datasets['y'][i]}
-        return {name_i:action_i}
-    return [ dir_helper(i,name_i) 
-                for i,name_i in enumerate(names)]
-    
+    def __call__(self,action):
+        seq_i=self.get_seq(action)
+        self.rnn.get_distribution(self,x,mask)
+
+    def get_seq(self,action):
+        if(type(action)!=utils.actions.Action):
+            raise Exception("Non action type " + str(type(action)))
+        return [self.conv(img_i)  
+                for img_i in action.img_seq]
+
+def read_rnn(rnn_path,conv_path):
+    rnns=ensemble.read_ensemble(rnn_path,with_id=True)
+    conv_nets=ensemble.read_ensemble(conv_path,with_id=True)
+
+if __name__ == "__main__":
+    rnn_path="../../AArtyk/all_models/"
+    conv_path="../../AArtyk_exp/lstm/"
+    read_rnn(rnn_path,conv_path)
