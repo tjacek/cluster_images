@@ -30,10 +30,10 @@ class RNNCls(object):
         seq_i=np.array(self.get_seq(action))
         max_seq=self.rnn.hyperparams['max_seq']
         seq_dim=self.rnn.hyperparams['seq_dim']
-        mask=seq.make_mask(seq_i,1,max_seq)
+        mask=get_mask(len(action),max_seq)
         masked_seq=seq.make_masked_seq([seq_i],max_seq,seq_dim)        
         masked_seq=np.array(masked_seq)
-        #masked_seq=np.squeeze(masked_seq, axis=0)
+        masked_seq=np.squeeze(masked_seq, axis=0)
         print("@@@@@@@@@@@@")
         print(mask)
         print(masked_seq.shape)
@@ -49,16 +49,20 @@ def apply_nn(in_path,rnn,dataset_format='cp_dataset'):
     action_reader=utils.actions.read.ReadActions(dataset_format,img_seq=True)
     actions=action_reader(in_path)
     test= utils.actions.raw_select(actions,0)
-    #dataset=seq.seq_dataset(in_path,True,dataset_format)
-    #print(type(dataset))
-    y=[rnn(action_i) for action_i in test]
-        
+    y_true=[int(action_i.cat)-1 for action_i in test]
+    y_pred=[rnn(action_i) for action_i in test]
+    seq.check_prediction(y_pred,y_true)
+
 def read_rnn(rnn_path,conv_path):
     rnns=ensemble.read_ensemble(rnn_path,with_id=True)
     conv_nets=ensemble.read_ensemble(conv_path,with_id=True)
     clss=[RNNCls(rnns[key_i],conv_nets[key_i]) 
             for key_i in rnns.keys()]
     return NNEnsemble(clss)
+
+def get_mask(seq_len,max_seq):
+    return np.array([ float(i<seq_len)
+                        for i in range(max_seq)])
 
 
 if __name__ == "__main__":
