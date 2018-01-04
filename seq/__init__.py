@@ -6,8 +6,9 @@ from sklearn.metrics import classification_report,confusion_matrix
 import utils.data
 
 def seq_dataset(in_path,masked=False,dataset_format='cp_dataset'):
+    print(str(in_path))
     action_reader=utils.actions.read.ReadActions(dataset_format,img_seq=False)
-    actions= action_reader(in_path)
+    actions= action_reader(in_path)  
     test= utils.actions.raw_select(actions,0)
     train= utils.actions.raw_select(actions,1)    
     train=make_dataset(train,masked)
@@ -49,7 +50,10 @@ def make_mask(x,n_batch,max_seq):
     return mask
 
 def make_masked_seq(x,max_seq,seq_dim):
+    
     def masked_seq(seq_i):
+        if(seq_i.shape[0]>max_seq):
+            return np.ones( (seq_i.shape[0],seq_dim))
         seq_i_len=utils.data.seq_len(seq_i)
         new_seq_i=np.zeros((max_seq,seq_dim))
         new_seq_i[:seq_i_len]=seq_i[:seq_i_len]
