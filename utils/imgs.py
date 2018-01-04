@@ -15,8 +15,8 @@ class Image(np.ndarray):
         obj.org_dim=org_dim
         return obj
 
-    def __str__(self):
-        return str(self.name)
+#    def __str__(self):
+#        return str(self.name)
 
     def __array_finalize__(self, obj):
         if obj is None: return
@@ -27,13 +27,15 @@ class Image(np.ndarray):
         return np.reshape(self,self.org_dim)
 
     def save(self,out_path,i=None,unorm=False,file_type='.jpg'):
+        if(type(out_path)==str):
+            out_path=paths.Path(out_path)
         if(i!=None):
             filename= 'img' +str(i)+file_type #self.name
         else:
-            filename= get_name(self.name)
+            filename= get_name(self.name) + file_type
         full_name=out_path.append(filename,copy=True)
         img2D=self.get_orginal()
-        #print(str(full_name))
+        print(str(full_name))
         if(unorm):
             save_img(full_name,img2D)
         else:
@@ -102,8 +104,10 @@ def make_imgs(in_path,norm=True,transform=None):
     if(norm):
         imgset=[ img_i/255.0
                  for img_i in imgset]
+    print(type(imgset[0]))
     if(transform):
         imgset=transform(imgset)
+    print(type(imgset[0]))
     return imgset
 
 def unorm(imgset):
@@ -117,14 +121,21 @@ def unify_img(x,scale=2):
     return new_x
 
 def to_dataset(imgset,extract_cat,transform=None):
-    cats=[ extract_cat(img_i.name) 
+
+    if(extract_cat is None):
+        cats=None#return np.array(imgset,dtype=float)
+    else:
+        cats=[ extract_cat(img_i.name) 
             for img_i in imgset]
     if(transform):
         print(type(transform))
         imgset=transform(imgset) 
     x=np.array(imgset,dtype=float)
-    y=np.array(cats,dtype=float)
-    return x,y
+    if(cats!=None):
+        y=np.array(cats,dtype=float)
+        return x,y
+    else:
+        return x
 
 #def to_2D(imgset):
 #    imgs2D=[ img_i.get_orginal()

@@ -2,23 +2,17 @@ import sys,os
 sys.path.append(os.path.abspath('../cluster_images'))
 import numpy as np 
 from collections import Counter
-from seq.to_dataset import seq_dataset
-import seq,split
+import seq
 import utils.paths as paths
 from utils.timer import clock 
 import utils.data
 
 @paths.path_args
 def use_dtw(dataset_path,k=0,dataset_format='cp_dataset',select_type='modulo'):
-    dataset=seq_dataset(dataset_path,dataset_format)
-    #inst=dataset.to_instances()
-    #dataset=seq.to_dataset.from_instances(inst,dataset['params'])
-    #print(dataset['y'])
-    split_dataset= split.get_dataset(k,select_type)
-    train,test=split_dataset(dataset) #.person_dataset(dataset)
+    train,test=seq.seq_dataset(dataset_path)
     wrap=Wrap()
     y_pred=wrap(train,test)
-    seq.check_prediction(y_pred,test['y'])
+    check_prediction(y_pred,test['y'])
 
 class Wrap(object):
     def __init__(self):
@@ -82,7 +76,5 @@ def d2(v,u):
     return dist
 
 if __name__ == "__main__":
-    #path='../cross/1_set/u_seq'
-    path= '../dtw_feat/simple/seq'#'../dtw_feat/u_seq'
-    #path='../ensemble/seq'
-    use_dtw(path,0,'cp_dataset')
+    path= '../../AArtyk/simple/conc'
+    use_dtw(path,0,'basic_dataset')

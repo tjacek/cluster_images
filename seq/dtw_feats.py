@@ -1,14 +1,13 @@
 import sys,os
 sys.path.append(os.path.abspath('../cluster_images'))
+import seq
 import seq.dtw
-import split
-from seq.to_dataset import seq_dataset
 import utils.paths.files
 
-def make_dtw_feat(dataset_path,out_path,
+def make_dtw_feat(in_path,out_path,
 	              k=0,dataset_format='cp_dataset',select_type='modulo'):
-    train,test,all_seqs=read_seqs(dataset_path,k=k,dataset_format=dataset_format,select_type=select_type)
-    
+    train,test=seq.seq_dataset(in_path,dataset_format=dataset_format)
+    all_seqs=seq.unify_dataset(test,train)
     print(all_seqs.keys())
     seq_xy=get_pairs(all_seqs)
     train_xy=get_pairs(train)
@@ -30,17 +29,10 @@ def make_dtw_feat(dataset_path,out_path,
     feat_text= utils.paths.files.seq_to_string(dtw_feats,extr_data)
     utils.paths.files.save_string(out_path,feat_text)
 
-def read_seqs(dataset_path,k=0,dataset_format='cp_dataset',select_type='modulo'):
-    dataset=seq_dataset(dataset_path,dataset_format)
-    split_dataset= split.get_dataset(k,select_type)
-    train,test=split_dataset(dataset)
-    return train,test,dataset
-
 def get_pairs(all_seqs):
     return zip(all_seqs['x'],all_seqs['y'])
 
 if __name__ == "__main__":
-    #path='../cross/1_set/u_seq'
-    path='../dtw_feat/simple/seq'
-    out_path='../dtw_feat/simple3/dataset.txt'
-    make_dtw_feat(path,out_path)
+    in_path='../../Documents/X2017/dtw_contr/corl_skew/seq'
+    out_path='../../Documents/X2017/dtw_contr/corl_skew/dtw_feats.txt'
+    make_dtw_feat(in_path,out_path)
