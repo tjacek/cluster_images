@@ -157,8 +157,8 @@ def experiment(x,y,preproc,nn_path,n_models,n_iters):
         model.get_model().save(nn_path_i)
 
 if __name__ == "__main__":
-    img_path="../datasets/time"
-    nn_path="../models/nn"
+    img_path="../datasets/msr/time"
+    nn_path="../models/msr/nn"
     preproc=tools.ImgPreproc2D()
     imgset=imgs.make_imgs(img_path,norm=True)
     
@@ -168,4 +168,4 @@ if __name__ == "__main__":
     x,y=imgs.to_dataset(imgset,extract_cat,preproc)
     print(x.shape)
     print(y.shape)
-    experiment(x,y,preproc,nn_path,range(1,27),500)
+    experiment(x,y,preproc,nn_path,20,500)
