@@ -42,7 +42,7 @@ class Action(object):
         new_seq=[img_dec(img_i)
                     for img_i in self.img_seq]
         new_seq=[img_i for img_i in new_seq
-                         if img_i!=None]                                     
+                         if not img_i is None]                                     
         return Action(self.name,new_seq,
                       self.cat,self.person)
     
@@ -137,6 +137,14 @@ def transform_actions(in_path,out_path,transformation,seq_transform=True,dataset
 def show_actions(actions):
     print([len(action_i) for action_i in actions])
 
+
+class SingleFrame(object):
+    def __init__(self,scale=60):
+        self.scale=scale
+
+    def __call__(self,img_i):
+        new_img=img_i[0:self.scale]
+        return utils.imgs.Image(img_i.name,new_img)
 if __name__ == "__main__":
     in_path="../../exper/scale"
     out_path="../../exper/time"
