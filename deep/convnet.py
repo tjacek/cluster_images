@@ -160,8 +160,8 @@ def experiment(x,y,preproc,nn_path,n_models,n_iters):
         gc.collect()
 
 if __name__ == "__main__":
-    img_path="../datasets/time"
-    nn_path="../models/nn"
+    img_path="../../AArtyk/time"
+    nn_path="../../AArtyk/all_models"
     preproc=tools.ImgPreproc2D()
     imgset=imgs.make_imgs(img_path,norm=True)
     
