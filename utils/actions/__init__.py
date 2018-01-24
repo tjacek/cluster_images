@@ -138,20 +138,41 @@ def show_actions(actions):
 
 
 class SingleFrame(object):
-    def __init__(self,scale=60):
+    def __init__(self,scale=64):
         self.scale=scale
 
     def __call__(self,img_i):
         new_img=img_i[0:self.scale]
         return utils.imgs.Image(img_i.name,new_img)
+
+class CombineTransforms(object):
+    def __init__(self, transforms):
+        self.transforms=transforms
+
+    def __call__(self,img_i):
+#        print(img_i.shape)
+        imgs=[transform_i(img_i)[0] 
+            for transform_i in self.transforms
+                if img_i is not None]
+        for img_i in imgs:
+            print(img_i.shape)
+        new_img=np.concatenate(imgs)
+        return utils.imgs.Image(img_i.name,new_img)
+
+def proj_set_frames():
+    return CombineTransforms([utils.actions.frames.ProjFrames(True),
+                              utils.actions.frames.ProjFrames(False),
+                              lambda x:x])
+                        
 if __name__ == "__main__":
-    in_path="../../exper/scale"
-    out_path="../../exper/time"
+    full_path="../exper/full"
+    basic_path="../exper/basic"
+    proj_path="../exper/basic"
     #bound_frames=utils.actions.frames.ProjFrames(True,True) 
     #bound_frames=utils.actions.frames.BoundFrames(True,None,smooth_img=False) #utils.actions.frames.ProjFrames(False) 
     #rescale=utils.actions.unify.Rescale()
-    time_frames=utils.actions.frames.TimeFrames() 
-    transform_actions(in_path,out_path,time_frames,seq_transform=True,dataset_format='cp_dataset')
+    time_frames= proj_set_frames()
+    transform_actions(basic_path,proj_path,time_frames,seq_transform=True,dataset_format='mhad_dataset')
     
     #in_path="../cross/10_set/train_10"#preproc/unified'
     #out_path="../cross/10_set/train_select" #/preproc/train'
