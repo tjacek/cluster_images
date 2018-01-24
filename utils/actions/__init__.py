@@ -34,6 +34,7 @@ class Action(object):
                        self.cat,self.person)
 
     def transform(self,fun, img_seq=True):
+        print(str(self))
         if(img_seq):
             img_dec=self.get_img_dec(fun)
         else:
@@ -101,10 +102,6 @@ def new_action(old_action,new_seq):
 
 def apply_select(in_path,out_path=None,selector=None, 
                  dataset_format='cp_dataset',norm=False):
-    if(selector==None):
-        selector=utils.selection.SelectModulo()
-    if(type(selector)==int):
-        selector=utils.selection.SelectModulo(selector)
     read_actions=utils.actions.read.ReadActions(dataset_format,norm=norm)
     actions=read_actions(in_path)
     s_actions=raw_select(actions,selector)
@@ -114,7 +111,11 @@ def apply_select(in_path,out_path=None,selector=None,
         save_actions=utils.actions.read.SaveActions()
         save_actions(s_actions,out_path)
 
-def raw_select(actions,selector):
+def raw_select(actions,selector=None):
+    if(selector==None):
+        selector=utils.selection.SelectModulo()
+    if(type(selector)==int):
+        selector=utils.selection.SelectModulo(selector)
     return [ action_i
                for action_i in actions
                  if selector(action_i)]
