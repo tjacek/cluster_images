@@ -13,7 +13,7 @@ from utils.actions.unify import Rescale
 import re
 import cv2
 
-DEFAULT_DEPTH_VALUE=100
+DEFAULT_DEPTH_VALUE=150
 
 class TimeFrames(object):
     def __init__(self, new_dim=None):
@@ -145,55 +145,79 @@ def bound_local(img_seq):
 
 
 class ProjFrames(object):
-    def __init__(self,zx=True,smooth=True):#,clean=None):
+    def __init__(self,zx=True,smooth=False,scale_z=True):
         self.zx=zx
         self.smooth=smooth
+        self.scale_z=scale_z
 
     def __call__(self,img_seq):
-        z_max=upper_bound(img_seq)
-        z_min=lower_bound(img_seq)
-        def proj_helper(img_i):
-            print(img_i.name)
-            #img_i=img_i.get_orginal()
-            proj_xz=self.get_clean_img( img_i,z_max,z_min)
+        action_seq,z_dim=prepare_seq(img_seq)
+        if(self.zx):
+            clean_helper= lambda : np.zeros( (img_i.shape[0],z_dim))
+        else:
+            clean_helper= lambda : np.zeros( (img_i.shape[1],z_dim))
+        def proj_helper(k,img_k):
+            proj_xz=clean_helper()
             for (x, y), z in np.ndenumerate(img_i):
                 if(z!=0):
-                    #z-=z_min
                     i,j=self.get_index(x,y,z)
                     proj_xz[i][j]=DEFAULT_DEPTH_VALUE
-            new_img=utils.imgs.Image(img_i.name,proj_xz)
+            name_k=img_seq[k].name
+            print(name_k)
+            new_img=utils.imgs.Image(name_k,proj_xz)
             if(self.smooth):
                 new_img=self.smooth_img(new_img)
             return new_img
-        return [proj_helper(img_i) 
-                   for img_i in img_seq]
-
-    def get_clean_img(self, img_i,z_max,z_min):
-        if(self.zx):
-            return np.zeros( (img_i.shape[0],z_max))
-        else:
-            return np.zeros( (img_i.shape[1],z_max))
-
-    def smooth_img(self,raw_img,kern=(7,7)):
-        #raw_img=raw_img.astype(np.uint8)
-        #smooth_img = raw_img#cv2.GaussianBlur(raw_img, (5, 5), 0)
-        true_kern=np.ones(kern)
-        smooth_img=remove_isol(raw_img)
-        smooth_img=cv2.dilate(smooth_img, true_kern, iterations=1)
-      
-
-        #smooth_img = cv2.erode(smooth_img,(5,5),iterations = 1)
-        #smooth_img=cv2.blur(raw_img,kern)
-        #ret,binary_img=cv2.threshold(smooth_img,1,255,cv2.THRESH_BINARY)
-        #binary_img[binary_img!=0]=DEFAULT_DEPTH_VALUE
-        return utils.imgs.Image(raw_img.name,smooth_img)
+        return [proj_helper( i,img_i) 
+                   for i,img_i in enumerate(action_seq)]
 
     def get_index(self,x,y,z):
         z=np.floor(z)
         if(self.zx):
-            return x,z
+            return int(x),int(z)
         else:
-            return y,z
+            return int(y),int(z)
+
+    def smooth_img(self,raw_img,kern=(3,3)):
+        se1 = cv2.getStructuringElement(cv2.MORPH_RECT, (2,2))
+        smooth_img = cv2.morphologyEx(raw_img, cv2.MORPH_OPEN, se1)
+    #    true_kern=np.ones(kern)
+    #    smooth_img= cv2.erode(raw_img, (3,3), iterations=1)
+    #    smooth_img=remove_isol(raw_img)
+        smooth_img=cv2.dilate(smooth_img, (4,4), iterations=1)
+        return utils.imgs.Image(raw_img.name,smooth_img)
+
+def prepare_seq(img_seq,z_dim=None,shift=1.0):
+    if(z_dim is None):
+        z_dim= float(img_seq[0].shape[0])
+    action_array=np.array(img_seq)
+    z_max=np.amax(action_array)+2.0*shift
+    z_min=np.amin( action_array[action_array!=0])
+    z_delta=z_max-z_min
+    action_array[action_array!=0]+=shift
+    action_array[action_array!=0]-=z_min
+    action_array[action_array!=0]/=z_delta
+    action_array[action_array!=0]*=z_dim
+    return action_array,int(z_dim)
+
+class GetCords(object):
+    def __init__(self,z_min,z_max,z_scaling=None, zx=True):
+        self.zx=zx
+        self.z_scaling=z_scaling
+        self.z_min=z_min
+        self.z_max=z_max
+        self.z_delta=z_max-z_min
+
+    def get_index(self,x,y,z):
+        z-=z_min
+        z=np.floor(z)
+        if(self.zx):
+            return int(x),int(z)
+        else:
+            return int(y),int(z)
+
+    def scale_z(self,z):
+        return (z/self.z_max)*self.z_scaling
 
 def remove_isol(img_i):
     kernel = np.ones((3,3),np.float32)
@@ -203,10 +227,6 @@ def remove_isol(img_i):
     img_i = cv2.filter2D(img_i,-1,kernel)
     img_i[ img_i<2.0]=0.0
     img_i[img_i!=0]=DEFAULT_DEPTH_VALUE
-    #img_i=img_i.astype(int)
-
-    #ret,binary_img=cv2.threshold(img_i,1,255,cv2.THRESH_BINARY)
-    #binary_img[binary_img!=0]=DEFAULT_DEPTH_VALUE
     return img_i#binary_img
 
 def upper_bound(img_seq,shift=3):
