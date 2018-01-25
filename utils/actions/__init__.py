@@ -152,23 +152,23 @@ class CombineTransforms(object):
 
     def __call__(self,img_i):
 #        print(img_i.shape)
-        imgs=[transform_i(img_i)[0] 
-            for transform_i in self.transforms
-                if img_i is not None]
-        for img_i in imgs:
-            print(img_i.shape)
-        new_img=np.concatenate(imgs)
-        return utils.imgs.Image(img_i.name,new_img)
+        #imgs=[transform_i(img_i)[0] 
+        #    for transform_i in self.transforms
+        #        if img_i is not None]
+        #for img_i in imgs:
+        #    print(img_i.shape)
+        #new_img=np.concatenate(imgs)
+        return self.transforms[0](img_i) #utils.imgs.Image(img_i.name,new_img)
 
 def proj_set_frames():
     return CombineTransforms([utils.actions.frames.ProjFrames(True),
-                              utils.actions.frames.ProjFrames(False),
-                              lambda x:x])
+                              utils.actions.frames.ProjFrames(False)])
+#                              lambda x:x])
                         
 if __name__ == "__main__":
     full_path="../exper/full"
-    basic_path="../exper/basic"
-    proj_path="../exper/basic"
+    basic_path="../exper/test"
+    proj_path="../exper/proj"
     #bound_frames=utils.actions.frames.ProjFrames(True,True) 
     #bound_frames=utils.actions.frames.BoundFrames(True,None,smooth_img=False) #utils.actions.frames.ProjFrames(False) 
     #rescale=utils.actions.unify.Rescale()
