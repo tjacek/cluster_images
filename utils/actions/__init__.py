@@ -151,23 +151,28 @@ class CombineTransforms(object):
         self.transforms=transforms
 
     def __call__(self,img_i):
-#        print(img_i.shape)
-        #imgs=[transform_i(img_i)[0] 
-        #    for transform_i in self.transforms
-        #        if img_i is not None]
-        #for img_i in imgs:
-        #    print(img_i.shape)
-        #new_img=np.concatenate(imgs)
-        return self.transforms[0](img_i) #utils.imgs.Image(img_i.name,new_img)
+        trans_seq=[transform_i(img_i) 
+            for transform_i in self.transforms]
+        n_trans=len(self.transforms)
+        n_seq=len(img_i)
+        def conc_helper(i):
+            trans_img=[ trans_seq[j][i]
+                               for j in range(n_trans)]
+            for t in trans_img:
+                print(t.shape)
+            new_img= np.concatenate(trans_img)
+            print(new_img.shape)
+            name_i=img_i[i].name
+            return utils.imgs.Image(name_i,new_img)
+        return [conc_helper(i) for i in range(n_seq)]
 
 def proj_set_frames():
     return CombineTransforms([utils.actions.frames.ProjFrames(True),
-                              utils.actions.frames.ProjFrames(False)])
-#                              lambda x:x])
+                              utils.actions.frames.ProjFrames(False),lambda x:x])
                         
 if __name__ == "__main__":
     full_path="../exper/full"
-    basic_path="../exper/test"
+    basic_path="../exper/basic"
     proj_path="../exper/proj"
     #bound_frames=utils.actions.frames.ProjFrames(True,True) 
     #bound_frames=utils.actions.frames.BoundFrames(True,None,smooth_img=False) #utils.actions.frames.ProjFrames(False) 

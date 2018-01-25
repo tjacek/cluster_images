@@ -200,25 +200,6 @@ def prepare_seq(img_seq,z_dim=None,shift=1.0):
     action_array[action_array!=0]*=z_dim
     return action_array,int(z_dim)
 
-class GetCords(object):
-    def __init__(self,z_min,z_max,z_scaling=None, zx=True):
-        self.zx=zx
-        self.z_scaling=z_scaling
-        self.z_min=z_min
-        self.z_max=z_max
-        self.z_delta=z_max-z_min
-
-    def get_index(self,x,y,z):
-        z-=z_min
-        z=np.floor(z)
-        if(self.zx):
-            return int(x),int(z)
-        else:
-            return int(y),int(z)
-
-    def scale_z(self,z):
-        return (z/self.z_max)*self.z_scaling
-
 def remove_isol(img_i):
     kernel = np.ones((3,3),np.float32)
     kernel[1][1]=0.0
@@ -228,17 +209,3 @@ def remove_isol(img_i):
     img_i[ img_i<2.0]=0.0
     img_i[img_i!=0]=DEFAULT_DEPTH_VALUE
     return img_i#binary_img
-
-def upper_bound(img_seq,shift=3):
-    max_z=max([np.amax(img_i)#.item()
-                  for img_i in img_seq])
-    max_z+=shift
-    return max_z
-
-def lower_bound(img_seq,shift=3):
-    min_z=min([np.amin(img_i[np.nonzero(img_i)]).item()
-                  for img_i in img_seq])
-    min_z-=shift
-    if(min_z<0):
-        min_z=0
-    return min_z
