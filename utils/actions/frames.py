@@ -51,18 +51,7 @@ class MotionFrames(object):
             diff_seq=diff_frames(img_seq)
         else:
             diff_seq=img_seq
-        #def tau_helper(diff_i):
-        #    diff_i[diff_i!=0]=self.tau
-        #    return diff_i
-        #diff_seq=[ tau_helper(diff_i)
-        #        for diff_i in diff_seq]
-        n=len(diff_seq)#-1        
-        #def motion_helper(img_i),img_j):
-        #    motion_img=np.zeros(img_j.shape)
-        #    img_i[img_j!=0]=0.0
-        #    motion_img[img_i!=0]=img_i[img_i!=0]-1
-        #    motion_img[img_j!=0]=img_j[img_j!=0]
-        #    return utils.imgs.Image(img_i.name,motion_img,img_i.org_dim)
+        n=len(diff_seq)
         def motion_helper(i):
             motion_img=np.zeros(diff_seq[0].shape)
             for t in range(self.tau):
@@ -72,7 +61,7 @@ class MotionFrames(object):
                     motion_img[diff_t!=0]=t
             name_i=diff_seq[i].name
             return utils.imgs.Image(name_i,motion_img)
-        return [ self.scale*motion_helper(i)#diff_seq[i],diff_seq[i+1])
+        return [ self.scale*motion_helper(i)
                    for i in range(n) ]
 
 def diff_frames(img_seq,threshold=0.1):
