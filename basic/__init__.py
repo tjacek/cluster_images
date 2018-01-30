@@ -5,7 +5,6 @@ import numpy as np
 import utils.pcloud #as pcloud
 import scipy.stats
 import scipy.stats.stats as st
-from sklearn.decomposition import PCA
 import utils
 import utils.imgs
 import utils.actions
@@ -52,7 +51,7 @@ def get_basic_features(feat_type='skew'):
         cloud_extractors=[corl_features]
     elif(feat_type=='skew'):
         cloud_extractors=[skewness_features]
-    elif(feat_type=='area')
+    elif(feat_type=='area'):
         cloud_extractors=[area_feat]
     else:
         cloud_extractors=[area_feat,skewness_features,std_features,corl_features]

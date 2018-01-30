@@ -58,7 +58,7 @@ def read_object(path):
     return obj
 
 def seq_to_string(seq,extra_data=None):
-    if(exta_data!=None):
+    if(extra_data!=None):
         array=[ vector_to_string(elem_i) + extra_data(i)
                  for i,elem_i in enumerate(seq)]    
     else:
