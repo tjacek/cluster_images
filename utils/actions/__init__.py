@@ -139,20 +139,46 @@ def show_actions(actions):
 
 
 class SingleFrame(object):
-    def __init__(self,scale=60):
+    def __init__(self,scale=64):
         self.scale=scale
 
     def __call__(self,img_i):
         new_img=img_i[0:self.scale]
         return utils.imgs.Image(img_i.name,new_img)
+
+class CombineTransforms(object):
+    def __init__(self, transforms):
+        self.transforms=transforms
+
+    def __call__(self,img_i):
+        trans_seq=[transform_i(img_i) 
+            for transform_i in self.transforms]
+        n_trans=len(self.transforms)
+        n_seq=len(img_i)
+        def conc_helper(i):
+            trans_img=[ trans_seq[j][i]
+                               for j in range(n_trans)]
+            for t in trans_img:
+                print(t.shape)
+            new_img= np.concatenate(trans_img)
+            print(new_img.shape)
+            name_i=img_i[i].name
+            return utils.imgs.Image(name_i,new_img)
+        return [conc_helper(i) for i in range(n_seq)]
+
+def proj_set_frames():
+    return CombineTransforms([utils.actions.frames.ProjFrames(True),
+                              utils.actions.frames.ProjFrames(False),lambda x:x])
+                        
 if __name__ == "__main__":
-    in_path="../../exper/scale"
-    out_path="../../exper/time"
+    full_path="../exper/full"
+    basic_path="../exper/basic"
+    proj_path="../exper/proj"
     #bound_frames=utils.actions.frames.ProjFrames(True,True) 
     #bound_frames=utils.actions.frames.BoundFrames(True,None,smooth_img=False) #utils.actions.frames.ProjFrames(False) 
     #rescale=utils.actions.unify.Rescale()
-    time_frames=utils.actions.frames.TimeFrames() 
-    transform_actions(in_path,out_path,time_frames,seq_transform=True,dataset_format='cp_dataset')
+    time_frames= proj_set_frames()
+    transform_actions(basic_path,proj_path,time_frames,seq_transform=True,dataset_format='mhad_dataset')
     
     #in_path="../cross/10_set/train_10"#preproc/unified'
     #out_path="../cross/10_set/train_select" #/preproc/train'

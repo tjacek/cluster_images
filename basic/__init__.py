@@ -5,7 +5,6 @@ import numpy as np
 import utils.pcloud #as pcloud
 import scipy.stats
 import scipy.stats.stats as st
-from sklearn.decomposition import PCA
 import utils
 import utils.imgs
 import utils.actions
