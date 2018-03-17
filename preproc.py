@@ -91,11 +91,9 @@ def decompose(extractor_type):
 def get_deep(nn_path):
     return {'extractor_id':'deep','nn_path':nn_path}
 
-in_path="../../AArtyk2/time"
-nn_path="../../AArtyk3/all_models"
-seq_path="../../AArtyk3/all_seqs"
-out_path="../../AArtyk3/all_feats"
+in_path="../../AArtyk/time/full"
+nn_path="../../AArtyk/all_models"
+seq_path="../../AArtyk/all_seqs"
+out_path="../../AArtyk/all_feats"
 deep_feats(in_path,seq_path,out_path,aggregate_type='simple',
-            extractor_type=nn_path,dataset_format='mhad_dataset')
-#all_models(in_path,seq_path,out_path,nn_path)
-#all_feats(in_path,seq_path,out_path+'/a1.txt',aggregate_type='simple',extractor_type=get_deep(nn_path+'/nn_1'))
+            extractor_type=nn_path,dataset_format='cp_dataset')#'mhad_dataset')
