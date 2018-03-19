@@ -35,22 +35,27 @@ class Wrap(object):
 def knn(new_x,train_dataset,k=1):
     distance=[dtw_metric(new_x,x_i) 
               for x_i in train_dataset['x']]
-    distance=np.array(distance)
-    dist_inds=distance.argsort()[0:k]
+    dist_inds=get_dist_inds(distance,k)
     y=   train_dataset['y']
     
-
     nearest=[y[i] for i in dist_inds]
     print(train_dataset['x'][0].shape)
     print(nearest)
     print(dist_inds)
-    count =Counter(nearest)
-    new_cat=count.most_common()[0][0]
+    new_cat=most_common(nearest)
     print(new_cat)
     return new_cat
 
 def get_k_distances(distances,dist_inds):
     return [distances[i]  for i in dist_inds]
+
+def get_dist_inds(distance,k=1):
+    distance=np.array(distance)
+    return distance.argsort()[0:k]
+
+def most_common(nearest):
+    count =Counter(nearest)
+    return count.most_common()[0][0]    
 
 def dtw_metric(s,t):
     n=len(s)
