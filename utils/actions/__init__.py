@@ -101,14 +101,14 @@ def new_action(old_action,new_seq):
                       old_action.cat,old_action.person)
 
 def apply_select(in_path,out_path=None,selector=None, 
-                 dataset_format='cp_dataset',norm=False):
-    read_actions=utils.actions.read.ReadActions(dataset_format,norm=norm)
+                 dataset_format='cp_dataset',norm=False,img_seq=True):
+    read_actions=utils.actions.read.ReadActions(dataset_format,img_seq=img_seq,norm=norm)
     actions=read_actions(in_path)
     s_actions=raw_select(actions,selector)
     if(out_path==None):
         return s_actions
     else:
-        save_actions=utils.actions.read.SaveActions()
+        save_actions=utils.actions.read.SaveActions(img_actions=img_seq)
         save_actions(s_actions,out_path)
 
 def raw_select(actions,selector=None):

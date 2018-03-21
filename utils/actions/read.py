@@ -88,8 +88,12 @@ class ReadActions(object):
         if(len(actions)==0):
             raise Exception("No actions found at " + str(action_path))
         if(self.as_dict):
-            actions={ action_i.cat+'_' +action_i.name:action_i
-                      for action_i in actions}
+            def dict_helper(action_i):
+                key_i=action_i.cat+'_' +action_i.name
+                key_i=key_i.split('.')[0]
+                return (key_i,action_i)
+            actions=dict([ dict_helper(action_i)
+                            for action_i in actions])
         return actions
 
     def parse_action(self,action_dir):
@@ -118,6 +122,7 @@ class SaveActions(object):
     def __init__(self,unorm=False,img_actions=True):
         self.unorm=unorm
         self.img_actions=img_actions
+        print(self.img_actions)
 
     @utils.paths.path_args
     def __call__(self,actions,outpath):
@@ -133,7 +138,7 @@ class SaveActions(object):
             dirs.make_dir(cat_dir_i)
         for action_i in actions:
             cat_path_i=outpath.append(str(action_i.cat),copy=True)
-            if(self.img_actions):
+            if(self.img_actions and 0==1):
                 action_i.save(cat_path_i,self.unorm)
             else:
                 action_i.to_text_file(cat_path_i)
