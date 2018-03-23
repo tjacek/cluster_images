@@ -8,9 +8,7 @@ def concat_actions(in_path1,in_path2,out_path,dataset_format='cp_dataset'):
     actions1=action_reader(in_path1)
     actions2=action_reader(in_path2)
     def helper_unified(key_i):
-        actionA=actions1[key_i]
-        actionB=actions2[key_i]
-        return unified_action(actionA,actionB)
+        return unified_action(actions1[key_i],actions2[key_i])
     unified_actions=[ helper_unified(key_i) 
                         for key_i in actions1]
     save_actions=utils.actions.read.SaveActions(img_actions=False)
@@ -24,7 +22,7 @@ def unified_action(actionA,actionB):
     	                        cat=actionA.cat,person=actionA.person)
 
 if __name__ == "__main__":
-    in_path1= '../../AArtyk/simple/corl/seq'
-    in_path2= '../../AArtyk/simple/skew/seq'
-    out_path= '../../AArtyk/simple/conc'
+    in_path1='../../AA_dtw2/corl/seq'
+    in_path2="../../AA_dtw2/skew/seq" #'../../AArtyk/simple/skew/seq'
+    out_path="../../AA_dtw2/united/seq" #'../../AArtyk/simple/conc'
     concat_actions(in_path1,in_path2,out_path)
