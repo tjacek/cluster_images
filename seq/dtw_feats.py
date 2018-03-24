@@ -23,8 +23,8 @@ def make_dtw_feat(in_path,out_path,
                 for x_i,y_i in seq_xy]
 
     def extr_data(i):
-    	y_i=str(all_seqs['y'][i])
-    	person_i=str(all_seqs['persons'][i])
+        y_i=str(all_seqs['y'][i])
+        person_i=str(all_seqs['persons'][i])
         return '#'+y_i+'#'+person_i         
     feat_text= utils.paths.files.seq_to_string(dtw_feats,extr_data)
     utils.paths.files.save_string(out_path,feat_text)

@@ -125,5 +125,7 @@ def find_separated_cats(pairs_path,threshold=5,n_cats=20):
     return [ i+1     
                 for i in range(n_cats)
                     if(dtw_pairs.category_separation(i+1)<threshold)]
-#save_dtw_pairs("../../AA_dtw/corl/seq","../../AA_dtw/corl_pairs",train=True)
-print(find_separated_cats("../../AA_dtw/eff/corl_pairs",threshold=10))
+
+if __name__ == "__main__":
+    save_dtw_pairs("../../AA_dtw2/corl/seq","../../AA_dtw2/corl_pairs",train=True)
+#print(find_separated_cats("../../AA_dtw/eff/corl_pairs",threshold=10))
