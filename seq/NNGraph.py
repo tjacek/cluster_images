@@ -59,6 +59,25 @@ def make_nngraph(dtw_pairs,k=2):
         nn_graph.values[name_i]=nn_values
     return nn_graph
 
+def is_connected(nn_graph):
+    names=nn_graph.names
+    used=Set()
+    def helper(names):
+        unchecked=[]
+        nns=[nn_graph.names[name_i] 
+                for name_i in names]
+        for nn_i in nns:
+            if(not nn_i in used):
+                used.update(nn_i)
+                unchecked.append(nn_i)     
+        return unchecked
+    to_check=[names[0]]
+    while(len(to_check)!=0):
+        to_check=helper(to_check)
+    return used==Set(names)
+
+
+
 def filter_actions(in_path,out_path,actions,dataset_format='cp_dataset'):
     actions=Set(actions)
     def action_helper(action_i):
