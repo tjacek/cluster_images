@@ -11,8 +11,9 @@ import utils.data
 def use_dtw(dataset_path,k=0,dataset_format='cp_dataset',select_type='modulo'):
     train,test=seq.seq_dataset(dataset_path)
     wrap=Wrap()
+    print(len(train['y']))
     y_pred=wrap(train,test)
-    check_prediction(y_pred,test['y'])
+    seq.check_prediction(y_pred,test['y'])
 
 class Wrap(object):
     def __init__(self):
@@ -21,9 +22,10 @@ class Wrap(object):
     @clock
     def __call__(self,train,test): 
         def knn_helper(i,test_i):
-            name_i=train['names'][i]
+            name_i=test['names'][i]
+            cat_true_i=test['y'][i]
             cat_i=knn(test_i,train) 
-            self.results[name_i]=cat_i
+            self.results[name_i]=(cat_i,cat_true_i)
             return cat_i
         return [knn_helper(i,test_i) 
                  for i,test_i in enumerate(test['x'])]
@@ -81,5 +83,5 @@ def d2(v,u):
     return dist
 
 if __name__ == "__main__":
-    path= '../../AArtyk/simple/conc'
-    use_dtw(path,0,'basic_dataset')
+    path= '../../AA_dtw2/united/seq'
+    use_dtw(path,0,'cp_dataset')
