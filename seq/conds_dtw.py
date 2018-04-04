@@ -24,7 +24,8 @@ class DTWPairs(object):
         self.pairs[x][y]=value
         	
     def __getitem__(self,pair):
-        return self.pairs[pair[0]][pair[1]]
+        x,y=pair
+        return self.pairs[x][y]
     
     def category_separation(self,cat):
         cat_names=self.get_cats(cat)
@@ -127,5 +128,5 @@ def find_separated_cats(pairs_path,threshold=5,n_cats=20):
                     if(dtw_pairs.category_separation(i+1)<threshold)]
 
 if __name__ == "__main__":
-    save_dtw_pairs("../../AA_dtw2/corl/seq","../../AA_dtw2/corl_pairs",train=True)
+    save_dtw_pairs("../../AA_dtw2/max_z/seq","../../AA_dtw2/pairs/max_z_pairs",train=True)
 #print(find_separated_cats("../../AA_dtw/eff/corl_pairs",threshold=10))
