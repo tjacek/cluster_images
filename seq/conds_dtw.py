@@ -59,11 +59,14 @@ class DTWPairs(object):
         return [self.cats[name_i] for name_i in names]
 
     def correct_pred(self,correct_seq):
-        pred_seq=self.nearest_seq(correct_seq)
+        pred_cat=self.nn_cats(correct_seq,k=1)[0]
         correct_cat=self.cats[correct_seq]
-        pred_cat=self.cats[pred_seq]
-        print(pred_cat,correct_cat)
         return correct_cat==pred_cat
+        #pred_seq=self.nearest_seq(correct_seq)
+        #correct_cat=self.cats[correct_seq]
+        #pred_cat=self.cats[pred_seq]
+        #print(pred_cat,correct_cat)
+        #return correct_cat==pred_cat
 
     def get_nn(self,name_i,k=1):
         keys,values=self.get_values(name_i)
@@ -82,6 +85,10 @@ class DTWPairs(object):
         keys=self.pairs[name].keys()
         return [ key_i  for key_i in keys
                               if(key_i!=name)]
+
+def read_dtw_pairs(in_path):
+    dtw_pairs=utils.paths.files.read_object(in_path)
+    return DTWPairs(dtw_pairs)
 
 def save_dtw_pairs(in_path,out_path,train=True,dataset_format='cp_dataset'): 
     read_actions=utils.actions.read.ReadActions(img_seq=False,dataset_format=dataset_format)
@@ -128,5 +135,7 @@ def find_separated_cats(pairs_path,threshold=5,n_cats=20):
                     if(dtw_pairs.category_separation(i+1)<threshold)]
 
 if __name__ == "__main__":
-    save_dtw_pairs("../../AA_dtw2/max_z/seq","../../AA_dtw2/pairs/max_z_pairs",train=True)
-#print(find_separated_cats("../../AA_dtw/eff/corl_pairs",threshold=10))
+    pair_path="../../AA_dtw2/pairs/max_z_pairs"
+    #save_dtw_pairs("../../AA_dtw2/max_z/seq","../../AA_dtw2/pairs/max_z_pairs",train=True)
+    dtw_pairs=read_dtw_pairs(pair_path)
+    print(len(dtw_pairs.without_outliners()))

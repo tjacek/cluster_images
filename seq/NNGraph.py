@@ -46,8 +46,7 @@ class NNGraph(object):
             print(self.values[name_i])
 
 def read_nngraph(in_path,k=2):
-    dtw_pairs=utils.paths.files.read_object(in_path)
-    dtw_pairs=seq.conds_dtw.DTWPairs(dtw_pairs)
+    dtw_pairs=seq.conds_dtw.read_dtw_pairs(in_path)
     return make_nngraph(dtw_pairs,k=k)
 
 def make_nngraph(dtw_pairs,k=2):

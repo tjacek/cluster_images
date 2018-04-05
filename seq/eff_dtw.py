@@ -35,6 +35,7 @@ def get_actions(in_path,train=False,dataset_format='cp_dataset'):
     if(train):
         return utils.actions.raw_select(actions,1)
     return actions
+    
 if __name__ == "__main__":
 #cats=[1, 3, 4, 5, 6, 7, 9, 11, 12, 13, 15, 18, 19, 20]
 #[1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 15, 18, 20]
