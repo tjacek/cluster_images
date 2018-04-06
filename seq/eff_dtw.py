@@ -41,5 +41,5 @@ if __name__ == "__main__":
 #[1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 15, 18, 20]
     #select_cats("../../AA_dtw2/corl/seq","../../AA_dtw2/eff/corl",cats)
     #select_cats("../../AA_dtw2/skew/seq","../../AA_dtw2/eff",cats)
-    eff_feats("../../AA_dtw2/skew/seq","../../AA_dtw2/eff/skew","../../AA_dtw2/eff/skew_feats.txt")
+    eff_feats("../../AA_dtw/corl/seq","../../AA_dtw/eff/wo_corl","../../AA_dtw/eff/wo_feats.txt")
     #eff_feats("../../AA_dtw2/skew/seq","../../AA_dtw2/skew/","../../AA_dtw/skew_feats.txt")

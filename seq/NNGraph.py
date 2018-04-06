@@ -9,7 +9,7 @@ class NNGraph(object):
     def __init__(self):
         self.names={}
         self.values={}
-    
+
     def cliqe_reduction(self):
         removed_names=Set()
         used_set=[]
@@ -60,21 +60,9 @@ def make_nngraph(dtw_pairs,k=2):
 
 def is_connected(nn_graph):
     names=nn_graph.names
-    used=Set()
-    def helper(names):
-        unchecked=[]
-        nns=[nn_graph.names[name_i] 
-                for name_i in names]
-        for nn_i in nns:
-            if(not nn_i in used):
-                used.update(nn_i)
-                unchecked.append(nn_i)     
-        return unchecked
-    to_check=[names[0]]
     while(len(to_check)!=0):
         to_check=helper(to_check)
     return used==Set(names)
-
 
 
 def filter_actions(in_path,out_path,actions,dataset_format='cp_dataset'):
@@ -85,8 +73,13 @@ def filter_actions(in_path,out_path,actions,dataset_format='cp_dataset'):
         selector=action_helper,dataset_format=dataset_format)
 
 if __name__ == "__main__":
-    nn_graph=read_nngraph("../../AA_dtw2/skew_pairs")
-#nn_graph.show()
-    to_filter=nn_graph.cliqe_reduction()
-    print(len(to_filter))
-    filter_actions("../../AA_dtw2/skew/seq","../../AA_dtw2/eff/skew",to_filter)
+#    nn_graph=read_nngraph("../../AA_dtw/pairs/corl_pairs")
+#    print(len(nn_graph))
+#    to_filter=nn_graph.cliqe_reduction()
+#    print(len(to_filter))
+    pair_path="../../AA_dtw/eff/clique_pairs"
+    #save_dtw_pairs("../../AA_dtw/eff/corl","../../AA_dtw/eff/clique_pairs",train=True)
+    dtw_pairs=seq.conds_dtw.read_dtw_pairs(pair_path)
+    print(len(dtw_pairs))
+    to_filter=dtw_pairs.without_outliners()
+    filter_actions("../../AA_dtw/corl/seq","../../AA_dtw/eff/wo_corl",to_filter)

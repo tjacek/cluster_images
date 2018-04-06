@@ -135,7 +135,8 @@ def find_separated_cats(pairs_path,threshold=5,n_cats=20):
                     if(dtw_pairs.category_separation(i+1)<threshold)]
 
 if __name__ == "__main__":
-    pair_path="../../AA_dtw2/pairs/max_z_pairs"
-    #save_dtw_pairs("../../AA_dtw2/max_z/seq","../../AA_dtw2/pairs/max_z_pairs",train=True)
+    pair_path="../../AA_dtw/eff/clique_pairs"
+    #save_dtw_pairs("../../AA_dtw/eff/corl","../../AA_dtw/eff/clique_pairs",train=True)
     dtw_pairs=read_dtw_pairs(pair_path)
+    print(len(dtw_pairs))
     print(len(dtw_pairs.without_outliners()))
