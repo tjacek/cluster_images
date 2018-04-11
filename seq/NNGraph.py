@@ -72,14 +72,28 @@ def filter_actions(in_path,out_path,actions,dataset_format='cp_dataset'):
     utils.actions.apply_select(in_path,out_path,img_seq=False,
         selector=action_helper,dataset_format=dataset_format)
 
+def remove_redudancy(pair_path,in_path,out_path):
+    nn_graph=read_nngraph(pair_path)
+    to_filter=nn_graph.cliqe_reduction()
+    filter_actions(in_path,out_path,to_filter)
+   
+
+def remove_irr(pair_path,in_path,out_path):
+    dtw_pairs=seq.conds_dtw.read_dtw_pairs(pair_path)
+    to_filter=dtw_pairs.without_outliners()
+    filter_actions(in_path,out_path,to_filter)
+
 if __name__ == "__main__":
+#   remove_redudancy("../../AA_dtw/eff/skew/skew_pairs","../../AA_dtw/skew/seq","../../AA_dtw/eff/clique")
+#    seq.conds_dtw.save_dtw_pairs("../../AA_dtw/eff/skew/clique","../../AA_dtw/eff/skew/clique_pairs",train=True)
+    remove_irr("../../AA_dtw/eff/skew/clique_pairs","../../AA_dtw/skew/seq","../../AA_dtw/eff/skew/wo")
 #    nn_graph=read_nngraph("../../AA_dtw/pairs/corl_pairs")
 #    print(len(nn_graph))
 #    to_filter=nn_graph.cliqe_reduction()
 #    print(len(to_filter))
-    pair_path="../../AA_dtw/eff/clique_pairs"
-    #save_dtw_pairs("../../AA_dtw/eff/corl","../../AA_dtw/eff/clique_pairs",train=True)
-    dtw_pairs=seq.conds_dtw.read_dtw_pairs(pair_path)
-    print(len(dtw_pairs))
-    to_filter=dtw_pairs.without_outliners()
-    filter_actions("../../AA_dtw/corl/seq","../../AA_dtw/eff/wo_corl",to_filter)
+#    pair_path="../../AA_dtw/eff/skew/skew_pairs"
+#save_dtw_pairs("../../AA_dtw/eff/corl","../../AA_dtw/eff/clique_pairs",train=True)
+#    dtw_pairs=seq.conds_dtw.read_dtw_pairs(pair_path)
+#    print(len(dtw_pairs))
+#    to_filter=dtw_pairs.without_outliners()
+#    filter_actions("../../AA_dtw/skew/seq","../../AA_dtw/eff/wo_corl",to_filter)
