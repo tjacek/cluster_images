@@ -37,9 +37,5 @@ def get_actions(in_path,train=False,dataset_format='cp_dataset'):
     return actions
     
 if __name__ == "__main__":
-#cats=[1, 3, 4, 5, 6, 7, 9, 11, 12, 13, 15, 18, 19, 20]
-#[1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 15, 18, 20]
-    #select_cats("../../AA_dtw2/corl/seq","../../AA_dtw2/eff/corl",cats)
-    #select_cats("../../AA_dtw2/skew/seq","../../AA_dtw2/eff",cats)
-    eff_feats("../../AA_dtw/corl/seq","../../AA_dtw/eff/wo_corl","../../AA_dtw/eff/wo_feats.txt")
-    #eff_feats("../../AA_dtw2/skew/seq","../../AA_dtw2/skew/","../../AA_dtw/skew_feats.txt")
+    eff_feats("../../AA_dtw/skew/seq","../../AA_dtw/eff/skew/clique","../../AA_dtw/eff/clique_feats.txt")
+  
