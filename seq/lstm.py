@@ -7,6 +7,7 @@ import deep.lstm
 import utils.data
 import deep.reader
 import seq
+import deep.tools
 
 def make_model(train_dataset,make=True,n_epochs=0,p=0.5):
     if(make):
@@ -96,13 +97,32 @@ def get_paths(dir_path,nn,seq='seq',lstm='lstm'):
 
 def create_dataset(seq_path,nn_path):
     train,test=seq.seq_dataset(seq_path,masked=True)
-    model=make_model(train,False,n_epochs=100,p=0.0)
-    model.get_model().save(nn_path)    
+    model=make_model(train,True,n_epochs=400,p=0.5)
+    model.get_model().save(str(nn_path))   
     check_model(model,test)
 
-if __name__ == "__main__":
-    path='../../Documents/X2017/dtw_contr/skew/seq'
-    nn_path='../../Documents/X2017/dtw_contr/skew/lstm'
+def check_dataset(seq_path,nn_path,n_cats=20):
+    preproc=deep.tools.ImgPreproc2D()
+    nn_reader=deep.reader.NNReader(preproc)
+    for i in range(n_cats):
+        seq_i=str(seq_path) + '_' + str(i)
+        train,test=seq.seq_dataset(seq_i,masked=True)
+        model=nn_reader(nn_path+'_'+str(i))
+        check_model(model,test)
 
-#    path,nn_path=get_paths('../ensemble3/','select/',seq='seq',lstm='lstm')
-    create_dataset(path,nn_path)
+def all_lstm(seq_path,out_path,n_cats=20):
+    for i in range(n_cats):
+        seq_i=str(seq_path) + '_' + str(i)
+        out_i=str(out_path) + '_' + str(i)
+        create_dataset(seq_i,out_i)
+
+
+
+if __name__ == "__main__":
+#    in_path1='../../AA_konf/united/seq'
+#    in_path2='../../AA_konf/united/lstm'
+#    create_dataset(in_path1,in_path2)
+    path="../../AA_konf4/selected/nn"
+    nn_path="../../AA_konf4/s_lstms/nn"
+    #create_dataset(path,nn_path)
+    all_lstm(path,nn_path)
