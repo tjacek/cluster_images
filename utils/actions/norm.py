@@ -11,8 +11,35 @@ class UnitNormalization(object):
 
     def __call__(self,x):
         def norm_helper(i,x_i):
+            if(self.var[i]==0):
+                return 0
             return  (x_i - self.mean[i])/self.var[i]
         return [ norm_helper(i,x_i) for i,x_i in enumerate(x)]
+
+class Binarize(object):
+    def __init__(self,mean,var):
+        self.mean=mean
+        self.var=var
+
+    def __call__(self,x):
+        def bin_helper(i,x_i):
+            if(self.var[i]==0):
+                return 0
+            if(x_i==0):
+                return 0.0
+            k=int((x_i - self.mean[i])/self.var[i])
+            return k
+        return [ bin_helper(i,x_i) for i,x_i in enumerate(x)]        
+
+class SimpleBinarize(object):
+    def __call__(self,x):
+        def bin_helper(i,x_i):
+            if(x_i>0):
+                return 1.0
+            else:
+                return 0.0 
+        return [ bin_helper(i,x_i) for i,x_i in enumerate(x)] 
+
 
 @utils.paths.dirs.ApplyToFiles(True)
 def normalize_actions(in_path,out_path,dataset_format='cp_dataset'):
@@ -28,8 +55,8 @@ def normalize_actions(in_path,out_path,dataset_format='cp_dataset'):
 def make_unit_normalization(frames):
     frames=np.array(frames)
     fr_mean=np.mean(frames,axis=0)
-    fr_std=np.std(frames,axis=0)
-    return UnitNormalization(fr_mean,fr_std)
+    fr_std= np.std(frames,axis=0)#np.std(frames,axis=0)
+    return Binarize(fr_mean,fr_std)
 
 def get_frames(actions):
     all_frames=[]
@@ -38,6 +65,6 @@ def get_frames(actions):
     return all_frames
 
 if __name__ == "__main__":
-    in_path="../../AA_konf/united_seqs/"#nn_0"
-    out_path="../../AA_konf/norm_seqs/"
+    in_path="../../AA_disk/all_seqs/"#nn_0"
+    out_path="../../AA_disk/disk2_seqs/"
     normalize_actions(in_path,out_path)
