@@ -5,12 +5,10 @@ import utils.actions.read
 import utils.paths.dirs
 
 class TimeSeriesTransform(object):
-    def __init__(self,dataset_format='cp_dataset'):
-        self.dataset_format=dataset_format
  
-    @utils.paths.dirs.ApplyToFiles(True)
-    def __call__(in_path,out_path,dataset_format='cp_dataset'):
-        action_reader=utils.actions.read.ReadActions(self.dataset_format,img_seq=False,as_dict=False)
+#    @utils.paths.dirs.ApplyToFiles(True)
+    def __call__(self,in_path,out_path,dataset_format='cp_dataset'):
+        action_reader=utils.actions.read.ReadActions(dataset_format,img_seq=False,as_dict=False)
         actions=action_reader(in_path)
         frames=get_frames(actions)
         unit_norm=self.get_series_transform(frames)
