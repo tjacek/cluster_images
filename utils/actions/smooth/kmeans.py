@@ -2,6 +2,8 @@ import sys,os
 sys.path.append(os.path.abspath('../cluster_images'))
 import numpy as np 
 import utils.actions.smooth
+import utils.actions.tools
+
 from sklearn import cluster
 
 class ClusteringDisk(utils.actions.smooth.TimeSeriesTransform):
@@ -9,10 +11,8 @@ class ClusteringDisk(utils.actions.smooth.TimeSeriesTransform):
         super(ClusteringDisk, self).__init__(dataset_format)
         self.n_clusters=n_clusters
 
-    def get_series_transform(self,frames):
-        frames=np.array(frames)
-        frames=frames.T    
-        features=frames.tolist()
+    def get_series_transform(self,frames):   
+        features=utils.actions.tools.to_features(frames)
         means=[ self.get_means(feature_i) for feature_i in features]
         return NearestPointsDiskr(means)
 
