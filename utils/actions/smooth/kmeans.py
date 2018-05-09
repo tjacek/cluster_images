@@ -25,11 +25,17 @@ class ClusteringDisk(utils.actions.smooth.TimeSeriesTransform):
             print("Zero var")
             return None	
         print(feature_i.shape)
-        clust=cluster.MiniBatchKMeans(n_clusters=self.n_clusters,batch_size=300)
-        clust.fit(feature_i)
-        centers=clust.cluster_centers_
-        centers=np.sort(np.array(centers),axis=0)
-        return centers
+        return make_clusters(features,self.n_clusters)
+
+class FullClusteringDisk(utils.actions.smooth.TimeSeriesTransform):
+    def __init__(self, n_clusters=16,dataset_format='cp_dataset'):
+        super(FullClusteringDisk, self).__init__(dataset_format)
+        self.n_clusters=n_clusters
+
+    def get_series_transform(self,frames):   
+        clusters=make_clusters(frames,self.n_clusters)
+        print(clusters)
+        return FullClusters(clusters)
 
 class NearestPointsDiskr(object):
     def __init__(self,var):
@@ -46,10 +52,26 @@ class NearestPointsDiskr(object):
         distance=[ np.abs(x_i-point_j) for point_j in points]
         return float(np.argmin(distance))
 
+class FullClusters(object):
+    def __init__(self,centers):
+        self.centers=centers
+
+    def __call__(self,frame_i):
+        distance=[ np.linalg.norm(frame_i- center_j)
+                    for center_j in self.centers]	
+        return [float(np.argmin(distance))]
+
+def make_clusters(features,n_clusters):
+    clust=cluster.MiniBatchKMeans(n_clusters=n_clusters,batch_size=300)
+    clust.fit(features)
+    centers=clust.cluster_centers_
+    centers=np.sort(np.array(centers),axis=0)
+    return centers
+
 if __name__ == "__main__":
-    in_path="../../AA_disk3/norm_seqs/"
-    out_path="../../AA_disk3/clust_seqs/"    
-    clust_disk=ClusteringDisk()
+    in_path="../../AA_disk4/all_seqs/"
+    out_path="../../AA_disk4/clust_seqs/"    
+    clust_disk=FullClusteringDisk()
     path_dec=utils.paths.dirs.ApplyToFiles(True)
     clust_disk= path_dec(clust_disk)
     clust_disk(in_path,out_path)
