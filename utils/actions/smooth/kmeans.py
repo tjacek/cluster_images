@@ -69,7 +69,7 @@ def make_clusters(features,n_clusters):
     return centers
 
 if __name__ == "__main__":
-    in_path="../../AA_disk4/all_seqs/"
+    in_path="../../AA_disk4/norm_seqs/"
     out_path="../../AA_disk4/clust_seqs/"    
     clust_disk=FullClusteringDisk()
     path_dec=utils.paths.dirs.ApplyToFiles(True)
