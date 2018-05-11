@@ -3,53 +3,65 @@ sys.path.append(os.path.abspath('../cluster_images'))
 import numpy as np
 import utils.actions.read
 import utils.actions.tools
+import bow.hist
 
 def show_separation(in_path,dataset_format='cp_dataset'):
     action_reader=utils.actions.read.ReadActions(dataset_format,img_seq=False,as_dict=False)
     actions=action_reader(in_path)
-    by_cat=utils.actions.tools.by_category(actions)
-    n_cats=len(by_cat)
+    quality=compute_quality(actions)
+    print(np.sort(quality) )    
+
+def compute_quality(actions):
+    hists=bow.hist.make_action_histograms(actions)
     n_feats=utils.actions.tools.count_feats(actions)
-    histograms=[make_histograms(actions_i) for actions_i in by_cat.values()]  
+    n_actions=len(actions)
+    hist_by_feat=[[ hists[j][i]
+                    for j in range(n_actions)] 
+                        for i in range(n_feats)]
+    quality=[feature_quality(hist_by_feat[i])
+                for i in range(n_feats)]
+    return quality
+
+def feature_quality(histograms,n_cats=20):
+    hist_by_cat=bow.hist.hist_by_cat(histograms,n_cats)
+    cat_dist=[[ hist_distance(hist_i,hist_by_cat[cat_j])
+                for cat_j in range(n_cats)]
+                    for hist_i in histograms]
     
-    hist_by_feat=[[histograms[i][j] 
-                    for i in range(n_cats)]
-                        for j in range(n_feats)]
-    sepa_meas=[cat_separation(hist_of_feat) 
-                for hist_of_feat in hist_by_feat]
-    for sepa_i in  np.sort(sepa_meas):
-        print(sepa_i)
-    #print(len(histograms[0][0]))    
+    def sep_helper(i,hist_i):
+        cat_dist_i= cat_dist[i]
+        cat_i= hist_i.info['cat']
+        return action_measure(cat_i,cat_dist_i)
+    
+    for i,hist_i in enumerate(histograms):
+        hist_i.info['quality']=sep_helper(i,hist_i)
+    return feature_measure(hist_by_cat)    
 
+def show_histogram(hists):
+    for i,hist_i in enumerate(hists):
+        print(i)
+        print(len(hist_i))
+        print(hist_i)
 
-def show_histogram(in_path,dataset_format='cp_dataset'):
-    action_reader=utils.actions.read.ReadActions(dataset_format,img_seq=False,as_dict=False)
-    actions=action_reader(in_path)
-    histograms=make_histograms(actions)
-    for histogram_i in histograms:
-        print(histogram_i)
-
-def cat_separation(hist_of_feat):
-    dist_matrix=[[ np.linalg.norm(hist_i-hist_j) 
-                    for hist_i in hist_of_feat]
-                        for hist_j in hist_of_feat]
-    dist_matrix=np.array(dist_matrix)
-    return np.sum(dist_matrix)#, axis=0) 
+def hist_distance(hist_i, hist_list):
+    dist_matrix=[ np.linalg.norm(hist_i.data-hist_j.data) 
+                    for hist_j in hist_list]
+    return np.mean(dist_matrix)
    
-def make_histograms(actions,n_clust=10):
-    frames=utils.actions.tools.get_frames(actions)
-    features=utils.actions.tools.to_features(frames)
-    histograms=[get_histogram(feature_i,n_clust) for feature_i in features]
-    return histograms
+def action_measure(cat_i,cat_dist):
+    cat_i_dist=cat_dist[cat_i]
+    sep_quality =(np.median(cat_dist)-cat_i_dist) #/(1.0 + cat_i_dist)
+    return sep_quality
 
-def get_histogram(feature_i,n_clust=10):
-    histogram=np.zeros( (n_clust,),dtype=float)
-    for x_j in feature_i:
-    	j=int(x_j)-1
-    	histogram[j]+=1
-    histogram/=sum(histogram)
-    return histogram
+def feature_measure(hist_by_cat):
+    quality_matrix=[[hist_ij.info['quality'] 
+                        for hist_ij in cat_hist_i]
+                            for cat_hist_i in hist_by_cat.values()]  
+    
+    fm=max([np.median(q_i) for q_i in quality_matrix])
+    print(fm)
+    return fm
 
 if __name__ == "__main__":
-    in_path="../../AA_disk3/clust_seqs/nn_0"	
+    in_path="../../AA_disk3/clust_seqs/nn_1"	
     show_separation(in_path)

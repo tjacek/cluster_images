@@ -13,7 +13,7 @@ class Histogram(object):
 def make_action_histograms(actions,n_clust=10):
     def action_helper(j,action_i,feature_j):
         hist_ij=get_histogram(feature_j,n_clust=10)
-        cat_i=int(action_i.cat)
+        cat_i=int(action_i.cat)-1
         info={'cat':cat_i,'name':action_i.name}
         return Histogram(hist_ij,j,info)
     return [[  action_helper(j,action_i,feature_j)
@@ -54,6 +54,6 @@ def get_histogram(feature_i,n_clust=10):
 def hist_by_cat(histograms,n_cats=20):
     by_cat={ cat_i:[] for cat_i in range(n_cats)}
     for hist_i in histograms:
-        cat_i=int(hist_i.info['cat'])-1
+        cat_i=hist_i.info['cat']
         by_cat[cat_i].append(hist_i)
     return by_cat	
