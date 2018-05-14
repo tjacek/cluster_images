@@ -25,7 +25,7 @@ class ClusteringDisk(utils.actions.smooth.TimeSeriesTransform):
             print("Zero var")
             return None	
         print(feature_i.shape)
-        return make_clusters(features,self.n_clusters)
+        return make_clusters(feature_i,self.n_clusters)
 
 class FullClusteringDisk(utils.actions.smooth.TimeSeriesTransform):
     def __init__(self, n_clusters=16,dataset_format='cp_dataset'):
@@ -48,7 +48,7 @@ class NearestPointsDiskr(object):
     def get_cluster(self,x_i,i):
         points=self.all_points[i]
         if(points is None):
-            return 0.0	
+            return x_i	
         distance=[ np.abs(x_i-point_j) for point_j in points]
         return float(np.argmin(distance))
 
@@ -69,9 +69,9 @@ def make_clusters(features,n_clusters):
     return centers
 
 if __name__ == "__main__":
-    in_path="../../AA_disk4/norm_seqs/"
-    out_path="../../AA_disk4/clust_seqs/"    
-    clust_disk=FullClusteringDisk()
+    in_path="../../AA_disk3/norm_seqs/"
+    out_path="../../AA_disk3/clust_seqs/"    
+    clust_disk=ClusteringDisk()
     path_dec=utils.paths.dirs.ApplyToFiles(True)
     clust_disk= path_dec(clust_disk)
     clust_disk(in_path,out_path)

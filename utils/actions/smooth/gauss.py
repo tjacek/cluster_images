@@ -29,7 +29,11 @@ class GaussDisk(utils.actions.smooth.TimeSeriesTransform):
 
         crit=[model_i.bic(data) for model_i in models]            
         print(crit)
-        s_model=models[np.argmin(crit)]
+        s=np.argmin(crit)
+        if(crit[s]>0.0):
+            print("No clustering")
+            return None
+        s_model=models[s]
         centers=np.sort(s_model.means_,axis=0)
         print("Selected number %d" % len(centers))
         print(centers)
@@ -58,8 +62,8 @@ class GaussCluster(object):
         return mix_i.predict(cord_j)[0] 	
 
 if __name__ == "__main__":
-    in_path="../../AA_disk5/norm_seqs/"
-    out_path="../../AA_disk5/clust_seqs/"    
+    in_path="../../AA_disk6/united/"
+    out_path="../../AA_disk6/gauss_seqs/"    
     clust_disk=GaussDisk()
     path_dec=utils.paths.dirs.ApplyToFiles(True)
     clust_disk= path_dec(clust_disk)
