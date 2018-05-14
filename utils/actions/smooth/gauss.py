@@ -3,6 +3,7 @@ sys.path.append(os.path.abspath('../cluster_images'))
 import numpy as np 
 import utils.actions.smooth
 import utils.actions.tools
+import utils.actions.smooth.kmeans
 
 from sklearn import cluster
 from sklearn.mixture import GaussianMixture
@@ -16,8 +17,7 @@ class GaussDisk(utils.actions.smooth.TimeSeriesTransform):
         frames=np.array(frames)#.T
         features=utils.actions.tools.to_features(frames)
         models=[self.select_model(feature_i) for feature_i in features]
-        return GaussCluster(models)
-
+        return utils.actions.smooth.kmeans.NearestPointsDiskr(models)
     def select_model(self,data):
         data=np.array(data)
         data=np.expand_dims(data,axis=1)
@@ -29,9 +29,12 @@ class GaussDisk(utils.actions.smooth.TimeSeriesTransform):
 
         crit=[model_i.bic(data) for model_i in models]            
         print(crit)
-        s=np.argmin(crit)
-        print("Selected number %d" % s)
-        return models[s]
+        s_model=models[np.argmin(crit)]
+        centers=np.sort(s_model.means_,axis=0)
+        print("Selected number %d" % len(centers))
+        print(centers)
+        return centers
+#        return models[s]
 
     def fit_model(self,i,data):
         model_i=GaussianMixture(n_components=i,
