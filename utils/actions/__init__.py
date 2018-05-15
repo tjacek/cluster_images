@@ -34,7 +34,7 @@ class Action(object):
                        self.cat,self.person)
 
     def transform(self,fun, img_seq=True):
-        print(str(self))
+#        print(str(self))
         if(img_seq):
             img_dec=self.get_img_dec(fun)
         else:
@@ -46,6 +46,12 @@ class Action(object):
         return Action(self.name,new_seq,
                       self.cat,self.person)
     
+    def feature_transform(self,fun):
+        trans_features=[ fun(feature_i)
+                         for feature_i in self.to_series()]
+        img_seq=np.array(trans_features).T
+        return Action(self.name,img_seq,self.cat,self.person)                  
+
     def get_img_dec(self,fun):
         def img_dec(img_i):
             new_img=fun(img_i)
@@ -57,7 +63,6 @@ class Action(object):
 
     @utils.paths.path_args
     def save(self,outpath,unorm=False):
-        print(outpath)
         full_outpath=outpath.append(self.name,copy=True)
         dirs.make_dir(full_outpath)
         if(unorm):
@@ -70,6 +75,7 @@ class Action(object):
     @utils.paths.path_args
     def to_text_file(self,outpath):
         full_outpath=outpath.append(self.name,copy=True)
+#        print(self.img_seq)
         text_action=files.seq_to_string(self.img_seq)
         files.save_string(full_outpath,text_action)
 
@@ -95,10 +101,6 @@ class Action(object):
         if(type(first_frame)==list):
             return len(first_frame)
         return first_frame.shape[0]
-
-def new_action(old_action,new_seq):
-    return Action(old_action.name,new_seq,
-                      old_action.cat,old_action.person)
 
 def apply_select(in_path,out_path=None,selector=None, 
                  dataset_format='cp_dataset',norm=False,img_seq=True):
