@@ -9,12 +9,13 @@ import utils.data
 
 @paths.path_args
 def use_dtw(dataset_path,k=0,dataset_format='cp_dataset',select_type='modulo'):
-    train,test=seq.seq_dataset(dataset_path)
+    train,test=seq.seq_dataset(dataset_path,dataset_format=dataset_format)
     wrap=Wrap()
     print(len(train['y']))
     y_pred=wrap(train,test)
     seq.check_prediction(y_pred,test['y'])
-
+    wrap.show()
+    
 class Wrap(object):
     def __init__(self):
         self.results={}
@@ -83,5 +84,5 @@ def d2(v,u):
     return dist
 
 if __name__ == "__main__":
-    path= '../../AA_dtw2/united/seq'
-    use_dtw(path,0,'cp_dataset')
+    path= "../../Documents/DD/seqs" #'../../AA_dtw2/max_z/seq'
+    use_dtw(path,0,'basic_dataset')
