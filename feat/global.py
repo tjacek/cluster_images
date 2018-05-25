@@ -19,13 +19,9 @@ def get_global_features(in_path,out_path,dataset_format='cp_dataset'):
 def extract_features(action_i):
     series_i=action_i.to_series()
     data_vector=[]
-    feature_extractors=[mean_of_feats,std_of_feats,skew_of_feats,corrl_of_feats]
+    feature_extractors=[mean_of_feats,std_of_feats,skew_of_feats]#,corrl_of_feats]
     for extractor_i in feature_extractors:
-        data_vector+=extractor_i(series_i)
-    #mean_vector=mean_of_feats(series_i)
-    #sd_vector=std_of_feats(series_i)
-    #skew_vector=skew_of_feats(series_i)
-    #data_vector=mean_vector+sd_vector +skew_vector           
+        data_vector+=extractor_i(series_i)         
     return (data_vector,action_i.cat,action_i.person)	
 
 def mean_of_feats(series_i):
@@ -46,7 +42,6 @@ def corrl_of_feats(series_i):
     s_pairs=itertools.combinations(series_i,2)
     corl=[st.pearsonr(pair_i[0],pair_i[1])[0] 
             for pair_i in s_pairs]
-    #print(type(corl[0]))
     return corl
 
 def save_global(feat_vectors,out_path):
@@ -60,6 +55,6 @@ def save_global(feat_vectors,out_path):
     utils.paths.files.save_string(out_path,feat_text)
 
 if __name__ == "__main__":
-    in_path=  "../../konf/simple/seq"#'../../final_paper/UTKinect/simple/seq'
-    out_path=  "../../konf/simple/dataset.txt"#'../../final_paper/UTKinect/simple/dataset.txt'
-    get_global_features(in_path,out_path,dataset_format='cp_dataset')
+    in_path= "../../Documents/UT/united"#'../../final_paper/UTKinect/simple/seq'
+    out_path=  "../../Documents/UT/united1.txt"#'../../final_paper/UTKinect/simple/dataset.txt'
+    get_global_features(in_path,out_path,dataset_format='basic_dataset')
