@@ -68,9 +68,11 @@ class Action(object):
         if(unorm):
             saved_imgs= utils.imgs.unorm(self.img_seq)
         else:
-            saved_imgs= self.img_seq    
-        [img_i.save(full_outpath,i,file_type='.png') 
-         for i,img_i in enumerate(saved_imgs)]
+            saved_imgs= self.img_seq
+        for i,img_i in enumerate(saved_imgs):   
+            if(img_i!=utils.imgs.Image):
+                img_i=utils.imgs.Image('img'+str(i), img_i)
+            img_i.save(full_outpath,i,file_type='.png') 
 
     @utils.paths.path_args
     def to_text_file(self,outpath):
@@ -148,30 +150,6 @@ class SingleFrame(object):
         new_img=img_i[0:self.scale]
         return utils.imgs.Image(img_i.name,new_img)
 
-class CombineTransforms(object):
-    def __init__(self, transforms):
-        self.transforms=transforms
-
-    def __call__(self,img_i):
-        trans_seq=[transform_i(img_i) 
-            for transform_i in self.transforms]
-        n_trans=len(self.transforms)
-        n_seq=len(img_i)
-        def conc_helper(i):
-            trans_img=[ trans_seq[j][i]
-                               for j in range(n_trans)]
-            for t in trans_img:
-                print(t.shape)
-            new_img= np.concatenate(trans_img)
-            print(new_img.shape)
-            name_i=img_i[i].name
-            return utils.imgs.Image(name_i,new_img)
-        return [conc_helper(i) for i in range(n_seq)]
-
-def proj_set_frames():
-    return CombineTransforms([utils.actions.frames.ProjFrames(True),
-                              utils.actions.frames.ProjFrames(False),lambda x:x])
-                        
 if __name__ == "__main__":
     full_path="../exper/full"
     basic_path="../exper/basic"

@@ -15,28 +15,45 @@ class UnifyPipeline(object):
         self.preproc=preproc
 
     def __call__(self,action_i):
-        action_frames=self.apply_tansform(action_i) 
+        action_frames=self.get_multi_frames(action_i) 
         img_seq=[ self.unify(frames_i) 
                     for frames_i in action_frames]
-        return utils.actions.tools.new_action(action_i)
+        return utils.actions.tools.new_action(action_i,img_seq)
 
-    def apply_transforms(self,action_i):
+    def get_multi_frames(self,action_i):
         new_frames=[]
         for transform_i in self.transforms:
             new_frames+=transform_i(action_i)
-        return zip(new_frames)
+        return new_frames#[list(tuple_i) for tuple_i in zip(*new_frames)]
 
     def unify(self,frames):      
-        proc_frames=[self.preproc(frame_i) for frame_i in frames] 
-        return np.concatenate(proc_frames)
+        proc_frames=self.preproc(frames) #for frame_i in frames] 
+        conc_frames=np.concatenate(proc_frames,axis=0)
+        return conc_frames
+
+class BasicPipeline(UnifyPipeline):
+    def __init__(self):
+        transforms=[time_frames]
+        preproc=Rescale()
+        super(BasicPipeline, self).__init__(transforms,preproc)
+        
+def inject_pipline(pipline,dataset_format='cp_dataset'):
+    a_tranform=utils.actions.tools.ActionTransform(transform_type='action',in_seq=True,
+                                         out_seq=True,dataset_format=dataset_format)
+    return lambda in_path,out_path: a_tranform(in_path,out_path,pipline)
 
 class Rescale(object):
     def __init__(self,new_dim=(64,64)):
         self.new_dim=new_dim
 
-    def __call__(self,img_i):
-#        if(type(img_i)==utils.imgs.Image):
-#            img_i=img_i.get_orginal()
+    def __call__(self,imgs):
+        if(type(imgs)==list):
+            return [ self.rescale_img(img_i) for img_i in imgs]
+        else:
+            return self.rescale_img(imgs)
+
+    def rescale_img(self,img_i):
+        print(type(img_i))
         new_img=cv2.resize(img_i,self.new_dim, interpolation = cv2.INTER_CUBIC)
         return utils.imgs.new_img(img_i,new_img)
 
@@ -78,8 +95,8 @@ class CleanImg(object):
     def __call__(self):
         return np.zeros(self.dims)
         
-def time_frames(self,action_i):
-    n=len(action_i)-1:
+def time_frames(action_i):
+    n=len(action_i)-1
     time_frames=[]
     for i in range(n):
         time_frames.append([action_i[i],action_i[i+1]])
@@ -162,10 +179,14 @@ def prepare_seq(img_seq,z_dim=None,shift=1.0):
 #    unify_actions.append(tmp_path,time_path,out_path)
 
 if __name__ == "__main__":
-    time_path="../dataset2a/preproc/basic/time"
-    xz_path="../dataset2a/preproc/basic/xz"
-    yz_path="../dataset2a/preproc/basic/yz"
-    out_path="../dataset2a/preproc/unified"
-    proj_unify(time_path,xz_path,yz_path,out_path,'proj_tmp','basic_dataset')
+    pipline=inject_pipline(BasicPipeline(),dataset_format='cp_dataset')
+    in_path="../../Documents/AC1/test"
+    out_path="../../Documents/AC1/out"
+    pipline(in_path,out_path)
+    #time_path="../dataset2a/preproc/basic/time"
+    #xz_path="../dataset2a/preproc/basic/xz"
+    #yz_path="../dataset2a/preproc/basic/yz"
+    #out_path="../dataset2a/preproc/unified"
+    #proj_unify(time_path,xz_path,yz_path,out_path,'proj_tmp','basic_dataset')
     #apply_unify=UnifyActions(dataset_format='basic_dataset')
     #apply_unify.append(in_path_x,in_path_y,out_path,norm=[False,False])
