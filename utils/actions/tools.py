@@ -3,8 +3,9 @@ from sets import Set
 import utils.actions
 
 class ActionTransform(object):
-    def __init__(self,seq_transform=False,in_seq=True,out_seq=False, dataset_format='basic_dataset'):
-        self.seq_transform=seq_transform
+    def __init__(self,transform_type='img',in_seq=True,
+                      out_seq=False, dataset_format='basic_dataset'):
+        self.transform_type=transform_type
         self.out_seq=out_seq
         self.read=utils.actions.read.ReadActions(dataset_format=dataset_format,img_seq=in_seq)
         self.save=utils.actions.read.SaveActions(img_actions=out_seq)
@@ -13,13 +14,15 @@ class ActionTransform(object):
         actions=self.read(in_path)
         print("Number of actions %d" % len(actions))
         print(actions[0].img_seq[0].shape)
-        if(self.seq_transform):
+        if(self.transform_type=='img_seg'):
             transformed_actions=[ action_i(transformation)
                            for action_i in actions]
-        else:
+        elif(self.transform_type=='img'):
             transformed_actions=[ action_i.transform(transformation,img_seq=self.out_seq)
                               for action_i in actions]
-        print("OK")
+        else:
+            transformed_actions=[ transformation(action_i)
+                                    for action_i in actions]
         self.save(transformed_actions,out_path)
         
 def by_category(actions):

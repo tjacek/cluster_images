@@ -23,8 +23,16 @@ class UnifyPipeline(object):
     def get_multi_frames(self,action_i):
         new_frames=[]
         for transform_i in self.transforms:
-            new_frames+=transform_i(action_i)
-        return new_frames#[list(tuple_i) for tuple_i in zip(*new_frames)]
+            new_frames+=[transform_i(action_i)]
+        def frame_helper(frames):
+            flat_frames=[]
+            for frame_i in frames:
+                if(type(frame_i)==list):
+                    flat_frames+=frame_i
+                else:
+                    flat_frames.append(frame_i)
+            return flat_frames
+        return [frame_helper(tuple_i) for tuple_i in zip(*new_frames)]
 
     def unify(self,frames):      
         proc_frames=self.preproc(frames) #for frame_i in frames] 
@@ -36,6 +44,12 @@ class BasicPipeline(UnifyPipeline):
         transforms=[time_frames]
         preproc=Rescale()
         super(BasicPipeline, self).__init__(transforms,preproc)
+
+class FullPipeline(UnifyPipeline):
+    def __init__(self):
+        transforms=[time_frames,ProjFrames(zx=True),ProjFrames(zx=False)]
+        preproc=Rescale()
+        super(FullPipeline, self).__init__(transforms,preproc)
         
 def inject_pipline(pipline,dataset_format='cp_dataset'):
     a_tranform=utils.actions.tools.ActionTransform(transform_type='action',in_seq=True,
@@ -55,17 +69,20 @@ class Rescale(object):
     def rescale_img(self,img_i):
         print(type(img_i))
         new_img=cv2.resize(img_i,self.new_dim, interpolation = cv2.INTER_CUBIC)
-        return utils.imgs.new_img(img_i,new_img)
+        return new_img#utils.imgs.new_img(img_i,new_img)
 
 class ProjFrames(object):
-    def __init__(self,zx=True,smooth=(3,3),default_depth=150):
-        self.zx= 0 if(self.zx) else 1
+    def __init__(self,zx=True,smooth=(10,10),default_depth=150.0):
+        self.zx= 0 if(zx) else 1
         self.default_depth=default_depth
         self.smooth=smooth
 
     def __call__(self,action_i):
-        action_seq,z_dim=prepare_seq(img_seq)
-        clean_img=CleanImg(action_seq.shape[self.zx],z_dim)
+        print(action_i.name)
+        action_seq,z_dim=prepare_seq(action_i.img_seq)
+        dim_0=action_seq.shape[self.zx+1]
+        dim_1=z_dim+2
+        clean_img=CleanImg(dim_0,dim_1)
         def proj_helper(img_i):
             proj_i=clean_img()
             for point, z in np.ndenumerate(img_i):
@@ -79,17 +96,16 @@ class ProjFrames(object):
         return [ proj_helper(img_i) for img_i in action_i.img_seq]
 
     def smooth_img(self,raw_img):
-        se1 = cv2.getStructuringElement(cv2.MORPH_RECT, self.smooth)
-        smooth_img = cv2.morphologyEx(raw_img, cv2.MORPH_OPEN, se1)
-    #    true_kern=np.ones(kern)
+    #    se1 = cv2.getStructuringElement(cv2.MORPH_RECT, self.smooth)
+    #    smooth_img = cv2.morphologyEx(raw_img, cv2.MORPH_OPEN, se1)
+        true_kern=np.ones(self.smooth)
     #    smooth_img= cv2.erode(raw_img, (3,3), iterations=1)
     #    smooth_img=remove_isol(raw_img)
-        smooth_img=cv2.dilate(smooth_img, self.smooth, iterations=1)
-        return utils.imgs.Image(raw_img.name,smooth_img)
-
+        smooth_img=cv2.dilate(raw_img, true_kern, iterations=1)
+        return smooth_img
 
 class CleanImg(object):
-    def __init__(x,y):
+    def __init__(self,x,y):
         self.dims=(x,y)
 
     def __call__(self):
@@ -115,71 +131,8 @@ def prepare_seq(img_seq,z_dim=None,shift=1.0):
     action_array[action_array!=0]*=z_dim
     return action_array,int(z_dim)
 
-#def trans_img(x):    
-#    return x.T.copy()
-
-#class UnifyActions(object):
-#    def __init__(self,dataset_format='cp_dataset',new_dim=(60,60)):
-#        self.read_actions=utils.actions.read.ReadActions(dataset_format,norm=False,as_dict=True)    
-#        self.rescale=Rescale(new_dim)
-
-#    def __call__(self,in_path_x,in_path_y,out_path):
-#        all_actions= self.preproc_actions([in_path_x,in_path_y], [True,True],[False,True])
-#        self.unify(all_actions,out_path)
-
-#    def append(self,in_path_x,in_path_y,out_path):
-#        all_actions= self.preproc_actions([in_path_x,in_path_y], [False,True],[False,False])
-#        self.unify(all_actions,out_path)
-
-#    def unify(self,all_actions,out_path):
-#        actions_x= all_actions[0]
-#        actions_y= all_actions[1]    
-#        new_actions=unify_datasets(actions_x,actions_y)
-#        utils.actions.read.save_actions(new_actions,out_path)
-
-#    def preproc_actions(self,paths,scaled,trans):
-#        def preproc_helper(i):
-#            actions=self.read_actions(paths[i])
-#            if(scaled[i]):
-#                actions=dict_action_tranform(actions,self.rescale)
-#            if(trans[i]):
-
-#                actions=dict_action_tranform(actions,trans_img)
-#            return actions
-#        size=len(paths)
-#        return [ preproc_helper(i)
-#                 for i in range(size)]
-
-#def dict_action_tranform(actions,helper):
-#    return { name_i:action_i.transform(helper)
-#               for name_i,action_i in actions.items()}
-
-#def unify_datasets(actions_x,actions_y):
-#    actions_names=actions_x.keys()
-#    return [ unify_action(actions_x[name_i],actions_y[name_i])
-#             for name_i in actions_names]
-
-#def unify_action(action_i,action_j):
-#    print(action_i.name)
-#    new_seq=[ unify_img(img_i,img_j)
-#              for img_i,img_j in zip(action_i.img_seq,action_j.img_seq)]
-#    return utils.actions.new_action(action_i,new_seq)          
-
-#def unify_img(img_i,img_j):
-#    new_img=np.concatenate((img_i.get_orginal(),img_j.get_orginal()))
-#    return utils.imgs.new_img(img_i,new_img)
-
-#@utils.paths.path_args
-#def proj_unify(time_path,xz_path,yz_path,out_path,
-#                tmp_dir='proj_tmp',dataset_format='cp_dataset'):
-#    tmp_path=out_path.set_name(tmp_dir,copy=True)
-#    utils.paths.dirs.make_dir(tmp_path)
-#    unify_actions=UnifyActions(dataset_format)
-#    unify_actions(xz_path,yz_path,tmp_path)
-#    unify_actions.append(tmp_path,time_path,out_path)
-
 if __name__ == "__main__":
-    pipline=inject_pipline(BasicPipeline(),dataset_format='cp_dataset')
+    pipline=inject_pipline(FullPipeline(),dataset_format='cp_dataset')
     in_path="../../Documents/AC1/test"
     out_path="../../Documents/AC1/out"
     pipline(in_path,out_path)
