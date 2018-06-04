@@ -18,18 +18,12 @@ class ImgPreproc(object):
     def __call__(self,imgset):
         x,y=get_dims(imgset)
         new_height=self.get_new_height(x)
-        split_points=self.get_split_points(new_height)
         def reshape_helper(img_i):
-            frames=[img_i[start_i:end_i] 
-                        for start_i,end_i in split_points]
+            frames=np.vsplit(img_i,self.dim) 
             splited_img=np.stack(frames)
-            print(splited_img.shape)
+            print(np.max(splited_img))
             return splited_img
         return [ reshape_helper(img_i) for img_i in imgset]
-
-    def get_split_points(self,new_height):
-        return [ (i*new_height,(i+1)*new_height) 
-                    for i in range(self.dim)]
 
     def get_new_height(self,x):
         if(x % self.dim != 0):
