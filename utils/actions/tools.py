@@ -1,6 +1,7 @@
 import numpy as np
 from sets import Set
 import utils.actions
+import utils.selection 
 
 class ActionTransform(object):
     def __init__(self,transform_type='img',in_seq=True,
@@ -24,7 +25,21 @@ class ActionTransform(object):
             transformed_actions=[ transformation(action_i)
                                     for action_i in actions]
         self.save(transformed_actions,out_path)
-        
+
+class ActionSelection(object):
+    def __init__(self,in_seq=True,out_seq=False, dataset_format='cp_dataset'):
+        self.read=utils.actions.read.ReadActions(dataset_format=dataset_format,img_seq=in_seq)
+        self.save=utils.actions.read.SaveActions(img_actions=out_seq)
+    
+    def __call__(self, in_path,out_path,selector):
+        actions=self.read(in_path)
+        if(type(selector)==int):
+            selector=utils.selection.SelectModulo(selector)
+        s_actions=[ action_i 
+                    for action_i in actions
+                        if(selector(action_i))]
+        self.save(s_actions,out_path)
+
 def by_category(actions):
     n_cats=count_cats(actions)
     by_cat={ cat_i:[]  for cat_i in range(n_cats)}

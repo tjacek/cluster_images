@@ -10,7 +10,6 @@ import utils.paths
 import utils.selection 
 import utils.actions.read
 import re
-from utils.actions.frames import diff_frames
 
 class Action(object):
     def __init__(self,name,img_seq,cat=None,person=None):
@@ -104,16 +103,16 @@ class Action(object):
             return len(first_frame)
         return first_frame.shape[0]
 
-def apply_select(in_path,out_path=None,selector=None, 
-                 dataset_format='cp_dataset',norm=False,img_seq=True):
-    read_actions=utils.actions.read.ReadActions(dataset_format,img_seq=img_seq,norm=norm)
-    actions=read_actions(in_path)
-    s_actions=raw_select(actions,selector)
-    if(out_path==None):
-        return s_actions
-    else:
-        save_actions=utils.actions.read.SaveActions(img_actions=img_seq)
-        save_actions(s_actions,out_path)
+#def apply_select(in_path,out_path=None,selector=None, 
+#                 dataset_format='cp_dataset',norm=False,img_seq=True):
+#    read_actions=utils.actions.read.ReadActions(dataset_format,img_seq=img_seq,norm=norm)
+#    actions=read_actions(in_path)
+#    s_actions=raw_select(actions,selector)
+#    if(out_path==None):
+#        return s_actions
+#    else:
+#        save_actions=utils.actions.read.SaveActions(img_actions=img_seq)
+#        save_actions(s_actions,out_path)
 
 def raw_select(actions,selector=None):
     if(selector==None):
@@ -124,19 +123,19 @@ def raw_select(actions,selector=None):
                for action_i in actions
                  if selector(action_i)]
 
-def transform_actions(in_path,out_path,transformation,seq_transform=True,dataset_format='cp_dataset'):
-    read_actions=utils.actions.read.ReadActions(dataset_format,img_seq=True,norm=False,as_dict=False)
-    actions=read_actions(in_path)
-    print("Number of actions %d" % len(actions))
-    if(seq_transform):
-        transformed_actions=[ action_i(transformation)
-                           for action_i in actions]
-    else:
-        transformed_actions=[ action_i.transform(transformation)
-                              for action_i in actions]
-   
-    save_actions=utils.actions.read.SaveActions()
-    save_actions(transformed_actions,out_path)
+#def transform_actions(in_path,out_path,transformation,seq_transform=True,dataset_format='cp_dataset'):
+#    read_actions=utils.actions.read.ReadActions(dataset_format,img_seq=True,norm=False,as_dict=False)
+#    actions=read_actions(in_path)
+#    print("Number of actions %d" % len(actions))
+#    if(seq_transform):
+#        transformed_actions=[ action_i(transformation)
+#                           for action_i in actions]
+#    else:
+#        transformed_actions=[ action_i.transform(transformation)
+#                              for action_i in actions]
+#   
+#    save_actions=utils.actions.read.SaveActions()
+#    save_actions(transformed_actions,out_path)
 
 def show_actions(actions):
     print([len(action_i) for action_i in actions])

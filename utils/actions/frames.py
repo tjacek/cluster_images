@@ -9,7 +9,6 @@ import utils.text
 import utils.paths 
 import utils.selection 
 import utils.actions.bound 
-from utils.actions.unify import Rescale 
 import re
 import cv2
 
